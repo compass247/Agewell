@@ -81,7 +81,7 @@ jobs:
       - name: Update lead Lambda
         working-directory: backend/lead-handler
         run: |
-          npm ci --omit=dev
+          npm install --omit=dev --no-audit --no-fund
           zip -rq ../../lead-handler.zip . -x "build.mjs"
           cd ../..
           aws lambda update-function-code \
