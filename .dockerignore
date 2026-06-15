@@ -1,0 +1,14 @@
+node_modules
+dist
+.git
+.github
+.gitignore
+BD_Requirements
+infra
+backend
+*.md
+.env
+.env.*
+Dockerfile
+.dockerignore
+npm-debug.log*

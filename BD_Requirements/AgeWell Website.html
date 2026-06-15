@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Compass AgeWell — Chăm sóc sức khỏe tại nhà bằng tiếng Việt</title>
+  <meta name="description" content="Compass AgeWell — chăm sóc sức khỏe tại nhà bằng tiếng Việt cho người Việt cao tuổi dùng Medicare. Khám từ xa, quản lý bệnh mãn tính, review thuốc." />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/logo-color.png" />
+
+  <!-- Open Graph (Facebook, Zalo, Messenger) -->
+  <meta property="og:title" content="Compass AgeWell — Chăm sóc sức khỏe tại nhà bằng tiếng Việt" />
+  <meta property="og:description" content="Bác sĩ, dược sĩ và điều phối viên người Việt đồng hành cùng bạn mỗi tháng — qua điện thoại, ngay tại nhà." />
+  <meta property="og:image" content="https://compassagewell.com/assets/hero-banner.png" />
+  <meta property="og:url" content="https://compassagewell.com" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="vi_VN" />
+  <meta property="og:locale:alternate" content="en_US" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Compass AgeWell — Chăm sóc sức khỏe tại nhà bằng tiếng Việt" />
+  <meta name="twitter:description" content="Bác sĩ, dược sĩ và điều phối viên người Việt đồng hành cùng bạn mỗi tháng." />
+  <meta name="twitter:image" content="https://compassagewell.com/assets/hero-banner.png" />
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://compassagewell.com" />
+
+  <!-- Resources referenced as strings inside JSX (lifted for offline bundling) -->
+  <meta name="ext-resource-dependency" content="assets/logo-color.png" data-resource-id="logoColor" />
+  <meta name="ext-resource-dependency" content="assets/logo-white.png" data-resource-id="logoWhite" />
+  <meta name="ext-resource-dependency" content="assets/hero-banner.png" data-resource-id="heroBanner" />
+  <meta name="ext-resource-dependency" content="assets/bac-si.png" data-resource-id="team0" />
+  <meta name="ext-resource-dependency" content="assets/duoc-si.png" data-resource-id="team1" />
+  <meta name="ext-resource-dependency" content="assets/dieu-phoi-vien.png" data-resource-id="team2" />
+
+  <template id="__bundler_thumbnail" data-bg-color="#f9f8f6">
+    <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+      <rect width="1200" height="800" fill="#f9f8f6" />
+      <circle cx="600" cy="360" r="150" fill="#26a146" />
+      <circle cx="600" cy="360" r="86" fill="#ffffff" />
+      <path d="M600 296 L618 342 L664 360 L618 378 L600 424 L582 378 L536 360 L582 342 Z" fill="#f47d42" />
+      <rect x="470" y="556" width="260" height="22" rx="11" fill="#16291d" />
+      <rect x="510" y="596" width="180" height="16" rx="8" fill="#007bc3" />
+    </svg>
+  </template>
+
+
+  <!-- Vietnamese-safe fallback font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- React + Babel (pinned) -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <!-- Plain data (no JSX) -->
+  <script src="content-data.js"></script>
+
+  <!-- Components + app (JSX) -->
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="icons.jsx"></script>
+  <script type="text/babel" src="shared.jsx"></script>
+  <script type="text/babel" src="sections-a.jsx"></script>
+  <script type="text/babel" src="sections-b.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored.
+# The Cloudflare API token can also be supplied via env: TF_VAR_cloudflare_api_token
+
+aws_region    = "us-east-1"
+domain        = "compassagewell.com"
+api_subdomain = "api.compassagewell.com"
+
+# Cloudflare zone for compassagewell.com (Overview tab → Zone ID)
+cloudflare_zone_id   = "REPLACE_WITH_ZONE_ID"
+cloudflare_api_token = "REPLACE_WITH_TOKEN" # prefer TF_VAR_cloudflare_api_token instead
+
+# SES lead notifications (leave empty to disable email; verify the sender in SES first)
+ses_from = "no-reply@compassagewell.com"
+ses_to   = "leads@compassagewell.com"
+
+# GitHub repo for the OIDC deploy role trust policy
+github_repo = "compass247/Agewell"
+
+# CI passes the real image tag; leave default for the first bootstrap apply.
+# container_image = ""
