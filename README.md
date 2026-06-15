@@ -7,6 +7,13 @@ Built as a **Vite + React 18** static site, served by **nginx on AWS ECS Fargate
 behind an ALB, with a serverless lead form (**API Gateway → Lambda → DynamoDB + SES**).
 Infra is **Terraform**; deploys are automated via **GitHub Actions**. DNS is on **Cloudflare**.
 
+## Tài liệu
+
+- **[docs/DEPLOYMENT-PLAYBOOK.md](docs/DEPLOYMENT-PLAYBOOK.md)** — hướng dẫn triển khai từ đầu đến cuối (dựng lại dự án tương tự: design → git → AWS ECS → domain → launch).
+- **[docs/DEVELOPER-GUIDE.md](docs/DEVELOPER-GUIDE.md)** — hướng dẫn dev: code, fix bug, test, deploy cho các thay đổi/bổ sung của BD.
+- [infra/README.md](infra/README.md) — bootstrap & vận hành hạ tầng Terraform.
+- [CLAUDE.md](CLAUDE.md) — quy ước & kiến trúc cho Claude Code.
+
 ## Local development
 
 ```bash
