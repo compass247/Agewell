@@ -31,6 +31,7 @@ infra/*.tfstate.*
 infra/.terraform.lock.hcl
 infra/*.tfvars
 !infra/*.tfvars.example
+infra/tf.plan
 crash.log
 
 # Backend build artifacts
