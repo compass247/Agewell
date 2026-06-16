@@ -35,11 +35,15 @@ npm run preview  # serve built dist/
 
 ## Deploy
 
-- Push to `main` triggers `.github/workflows/deploy.yml` (image → ECR → ECS rolling
-  deploy + Lambda update). Don't add infra changes here — those go through the manual
-  `infra.yml` workflow.
-- Infra lives in `infra/` (Terraform). See `infra/README.md` for bootstrap. State is in
-  S3 with a DynamoDB lock.
+- Push to `main` triggers `.github/workflows/deploy.yml`: a `terraform apply` (infra/DB)
+  job runs FIRST, then image → ECR → ECS rolling deploy + Lambda update. Infra now
+  deploys automatically on merge — no manual apply.
+- PRs run `terraform plan` (in `ci.yml`) and post the plan as a PR comment — review
+  infra/DB changes before merging. Watch for DynamoDB table destroy = data loss.
+- DB schema lives in ONE place: `backend/lead-handler/table-schema.json` (both local
+  dev `create-local-table.mjs` and `infra/backend.tf` read it, so they never drift).
+- Infra lives in `infra/` (Terraform). `infra.yml` is a manual escape hatch for
+  plan/apply. State is in S3 with a DynamoDB lock. See `infra/README.md` for bootstrap.
 
 ## Conventions
 

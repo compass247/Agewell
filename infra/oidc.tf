@@ -34,8 +34,47 @@ resource "aws_iam_role" "github_deploy" {
   })
 }
 
-# Permissions the deploy workflow needs: push to ECR, update the ECS
-# service, update the Lambda, and pass the relevant roles.
+# Terraform on CI manages the whole stack (ECS, ALB, ACM, API GW, DynamoDB,
+# Lambda, IAM roles, the OIDC provider, S3/Dynamo state). Enumerating every
+# action is brittle — one new resource type breaks apply. Standard pattern for
+# a Terraform CI role: PowerUserAccess (everything except IAM/Organizations)
+# plus a scoped IAM-management policy. Trust is locked to this repo, so the
+# blast radius is the project's own AWS account.
+resource "aws_iam_role_policy_attachment" "github_deploy_poweruser" {
+  role       = aws_iam_role.github_deploy.name
+  policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
+}
+
+# IAM management that PowerUserAccess excludes — needed because Terraform creates
+# and updates roles, policies, and the GitHub OIDC provider in this stack.
+resource "aws_iam_role_policy" "github_deploy_iam" {
+  name = "${var.project}-github-deploy-iam"
+  role = aws_iam_role.github_deploy.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid    = "IamManage"
+      Effect = "Allow"
+      Action = [
+        "iam:GetRole", "iam:GetRolePolicy", "iam:GetPolicy", "iam:GetPolicyVersion",
+        "iam:ListRolePolicies", "iam:ListAttachedRolePolicies", "iam:ListPolicyVersions",
+        "iam:CreateRole", "iam:DeleteRole", "iam:UpdateRole",
+        "iam:PutRolePolicy", "iam:DeleteRolePolicy",
+        "iam:AttachRolePolicy", "iam:DetachRolePolicy",
+        "iam:CreatePolicy", "iam:DeletePolicy", "iam:CreatePolicyVersion", "iam:DeletePolicyVersion",
+        "iam:TagRole", "iam:UntagRole", "iam:TagPolicy", "iam:UntagPolicy",
+        "iam:PassRole",
+        "iam:CreateOpenIDConnectProvider", "iam:DeleteOpenIDConnectProvider",
+        "iam:GetOpenIDConnectProvider", "iam:UpdateOpenIDConnectProviderThumbprint",
+        "iam:TagOpenIDConnectProvider"
+      ]
+      Resource = "*"
+    }]
+  })
+}
+
+# Legacy least-privilege policy — kept for the deploy job's narrow needs
+# (it still works alongside the broader infra permissions above).
 resource "aws_iam_role_policy" "github_deploy" {
   name = "${var.project}-github-deploy"
   role = aws_iam_role.github_deploy.id
