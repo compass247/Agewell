@@ -17,7 +17,12 @@ const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "*";
 const SES_FROM = process.env.SES_FROM;          // verified sender, e.g. "no-reply@compassagewell.com"
 const SES_TO = process.env.SES_TO;              // BD inbox; comma-separated allowed
 
-const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({ region: REGION }));
+// DYNAMODB_ENDPOINT lets local dev point at DynamoDB Local (http://localhost:8000).
+// Unset in production, so the SDK uses the real AWS endpoint.
+const DDB_ENDPOINT = process.env.DYNAMODB_ENDPOINT || undefined;
+const ddb = DynamoDBDocumentClient.from(
+  new DynamoDBClient({ region: REGION, endpoint: DDB_ENDPOINT })
+);
 const ses = new SESv2Client({ region: REGION });
 
 const corsHeaders = {

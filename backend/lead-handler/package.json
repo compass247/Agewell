@@ -5,11 +5,15 @@
   "type": "module",
   "main": "index.mjs",
   "scripts": {
-    "build": "node build.mjs"
+    "db:init": "cross-env DYNAMODB_ENDPOINT=http://localhost:8000 LEADS_TABLE=agewell-leads node create-local-table.mjs",
+    "dev": "cross-env DYNAMODB_ENDPOINT=http://localhost:8000 LEADS_TABLE=agewell-leads ALLOWED_ORIGIN=* AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local AWS_REGION=us-east-1 node local-server.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.726.0",
     "@aws-sdk/lib-dynamodb": "^3.726.0",
     "@aws-sdk/client-sesv2": "^3.726.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
   }
 }

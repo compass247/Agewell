@@ -3,7 +3,7 @@ import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 
 export default [
-  { ignores: ["dist/**", "node_modules/**", "BD_Requirements/**", "infra/**", "backend/**/node_modules/**", "vite.config.js", "eslint.config.js"] },
+  { ignores: ["dist/**", "node_modules/**", "BD_Requirements/**", "infra/**", "backend/**", "vite.config.js", "eslint.config.js"] },
   js.configs.recommended,
   {
     files: ["src/**/*.{js,jsx}"],

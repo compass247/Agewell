@@ -105,18 +105,55 @@ Checklist tay khi `npm run dev`/`preview`:
 - [ ] Responsive: thu nhỏ trình duyệt xuống ~375px (mobile) + desktop
 - [ ] Form: validation báo lỗi khi bỏ trống tên/SĐT; submit thành công hiện màn cảm ơn
 
-### 4b. Test form end-to-end (khi đụng tới form/backend)
-Dev server proxy `/api` sang `VITE_API_TARGET`. Cách nhanh nhất là trỏ thẳng vào API production:
+### 4b. Test form end-to-end ở local (FULL STACK — chạy như live)
+
+Để form gửi được ở local mà KHÔNG đụng production, chạy backend + database ngay trên máy:
+Vite (`:5173`) → proxy `/api` → backend local (`:8787`) → **DynamoDB Local** (`:8000`).
+
+**Cần Docker Desktop đang chạy.** Lần đầu cài deps backend: `npm --prefix backend/lead-handler install`.
+
+Mở **3 terminal** (hoặc dùng script):
+```powershell
+# Terminal 1 — DynamoDB Local + admin UI (qua Docker)
+npm run db:up
+npm run db:init        # tạo bảng agewell-leads trong DynamoDB Local (chỉ lần đầu / sau khi db:up lại)
+
+# Terminal 2 — backend local (Lambda handler bọc trong server :8787)
+npm run backend:dev
+
+# Terminal 3 — frontend
+npm run dev            # http://localhost:5173
+```
+→ Mở `http://localhost:5173`, submit form → lead lưu vào **DynamoDB Local** (không phải production).
+
+**Xem data đã lưu**: mở `http://localhost:8001` (DynamoDB Admin UI) → bảng `agewell-leads`.
+Hoặc CLI:
+```powershell
+aws dynamodb scan --table-name agewell-leads --endpoint-url http://localhost:8000 --region us-east-1
+```
+
+**Tắt khi xong**:
+```powershell
+npm run db:down        # dừng & xoá container DynamoDB Local (data inMemory sẽ mất — sạch sẽ)
+```
+
+> Cấu hình local nằm ở: `backend/docker-compose.local.yml` (DB), `backend/lead-handler/local-server.mjs`
+> (server bọc handler), `backend/lead-handler/create-local-table.mjs` (tạo bảng), `.env.local`
+> (Vite trỏ `/api` về `:8787`). Handler dùng chung — biến `DYNAMODB_ENDPOINT` chỉ set ở local,
+> production không có nên tự dùng AWS thật.
+
+### 4c. (Thay thế) Test form local nhưng gọi API production
+Nếu lười dựng backend local, trỏ thẳng form vào API thật:
 ```powershell
 # .env.local
 VITE_API_BASE=https://api.compassagewell.com
 ```
-Rồi submit thử trên `npm run dev`. Kiểm record:
+Submit trên `npm run dev` → lead vào **DynamoDB production**. Gõ tên "TEST" để dễ xoá:
 ```powershell
 aws dynamodb scan --table-name agewell-leads --region us-east-1 --query 'Count'
 ```
 
-### 4c. Test container (khi sửa Dockerfile/nginx)
+### 4d. Test container (khi sửa Dockerfile/nginx)
 ```powershell
 docker build -t web:test .
 docker run -d --name web-test -p 8099:80 web:test

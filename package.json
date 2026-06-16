@@ -8,7 +8,11 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "db:up": "docker compose -f backend/docker-compose.local.yml up -d",
+    "db:down": "docker compose -f backend/docker-compose.local.yml down",
+    "db:init": "npm --prefix backend/lead-handler run db:init",
+    "backend:dev": "npm --prefix backend/lead-handler run dev"
   },
   "dependencies": {
     "react": "18.3.1",
