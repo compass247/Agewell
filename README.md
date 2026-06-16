@@ -9,6 +9,7 @@ Infra is **Terraform**; deploys are automated via **GitHub Actions**. DNS is on 
 
 ## Tài liệu
 
+- **[docs/HOC-NEN-TANG.md](docs/HOC-NEN-TANG.md)** — 📚 tài liệu HỌC nền tảng kỹ thuật từ cơ bản đến go-live (cho người muốn hiểu sâu để tự quản lý: internet, code, cloud, Docker, database, CI/CD, GitOps...). Bắt đầu từ đây nếu bạn muốn *hiểu* chứ không chỉ *làm*.
 - **[docs/DEPLOYMENT-PLAYBOOK.md](docs/DEPLOYMENT-PLAYBOOK.md)** — hướng dẫn triển khai từ đầu đến cuối (dựng lại dự án tương tự: design → git → AWS ECS → domain → launch).
 - **[docs/DEVELOPER-GUIDE.md](docs/DEVELOPER-GUIDE.md)** — hướng dẫn dev: code, fix bug, test, deploy cho các thay đổi/bổ sung của BD.
 - [infra/README.md](infra/README.md) — bootstrap & vận hành hạ tầng Terraform.
