@@ -164,35 +164,68 @@ docker rm -f web-test
 
 ---
 
-## 5. Deploy
+## 5. Deploy (GitOps — mọi thay đổi qua git, có review trên PR)
 
-### 5a. Deploy code (mọi thay đổi frontend/backend) — TỰ ĐỘNG
+**Nguyên tắc**: KHÔNG `terraform apply` thủ công nữa. Mọi thay đổi — frontend, backend, **database,
+hạ tầng** — đều đi qua git. Quy trình chuẩn:
+
+```
+local: sửa (FE/BE/DB/infra) + test  →  push nhánh feature  →  mở PR
+   PR tự chạy:  lint + build + docker + TERRAFORM PLAN (xem trước infra/DB sẽ đổi gì)
+   → review plan trong comment PR  →  merge vào main
+   main tự chạy:  terraform APPLY (infra/DB) TRƯỚC  →  build image → ECR → ECS  →  Lambda
+   → live cập nhật
+```
+
+### 5a. Quy trình chuẩn (mọi thay đổi)
 ```powershell
+git checkout -b feature/ten-thay-doi
+# ... sửa code/infra, test local ...
 git add -A
 git commit -m "mô tả thay đổi"
-git push origin main
+git push -u origin feature/ten-thay-doi
+gh pr create --fill
 ```
-→ GitHub Actions `deploy.yml` tự chạy: build image → ECR → ECS rolling deploy → update Lambda.
-Mất ~3-4 phút. Trang cũ vẫn phục vụ tới khi task mới healthy (zero downtime).
+→ Mở PR, **CI tự chạy**: lint + build + docker smoke + `terraform plan`. Plan in vào **comment PR**
+để bạn xem chính xác infra/DB sẽ thay đổi gì (read-only, an toàn, KHÔNG đụng live).
+
+→ Review xanh → **merge** → `deploy.yml` tự chạy 2 job:
+1. **`infra`**: `terraform apply` (cập nhật hạ tầng + DB) — chạy TRƯỚC.
+2. **`deploy`**: build image → ECR → ECS rolling deploy → update Lambda.
 
 Theo dõi:
 ```powershell
 gh run watch (gh run list --workflow deploy.yml --limit 1 --json databaseId --jq '.[0].databaseId') --exit-status
 ```
 
-### 5b. Deploy thay đổi hạ tầng (infra/*.tf) — THỦ CÔNG
-KHÔNG đi qua `deploy.yml`. Chạy local:
+> Thay đổi chỉ-text/chỉ-code nhỏ vẫn có thể push thẳng `main` (bỏ qua PR) — nhưng với thay đổi
+> **infra/DB**, LUÔN đi qua PR để xem `terraform plan` trước.
+
+### 5b. ⚠️ Thay đổi database / infra — đọc kỹ plan trên PR
+Khi PR đụng `infra/*.tf` hoặc `backend/lead-handler/table-schema.json`, comment plan sẽ hiện thay đổi.
+**Tuyệt đối kiểm tra**:
+- Dòng `destroy` hoặc `-/+ replace` trên `aws_dynamodb_table.leads` = **XOÁ BẢNG → MẤT DỮ LIỆU**.
+  (Thường do đổi `hashKey`/`rangeKey`. Thêm field thường KHÔNG cần đổi schema — DynamoDB schemaless.)
+- Nếu thấy destroy bảng có data thật → KHÔNG merge. Backup trước (DynamoDB có point-in-time recovery),
+  lên kế hoạch migration.
+
+Schema DB nằm ở **1 file duy nhất**: `backend/lead-handler/table-schema.json` (cả local lẫn Terraform
+đọc từ đó). Thêm Global Secondary Index (vd query lead theo `phone`): thêm vào `attributes` +
+`globalSecondaryIndexes` trong file đó → PR → review plan → merge.
+
+### 5c. Cửa thoát hiểm — chạy Terraform thủ công (hiếm khi cần)
+Khi cần debug/rollback/import resource ngoài luồng tự động, dùng workflow `infra.yml`:
 ```powershell
-$env:TF_VAR_cloudflare_api_token = "<token>"
-$env:TF_VAR_cloudflare_zone_id   = "<zone-id>"
+gh workflow run infra.yml -f action=plan    # hoặc -f action=apply
+```
+Hoặc chạy local (cần `$env:TF_VAR_cloudflare_api_token` + `$env:TF_VAR_cloudflare_zone_id`):
+```powershell
 cd infra
-terraform plan -out tf.plan       # REVIEW kỹ trước khi apply
+terraform plan -out tf.plan
 terraform apply tf.plan
 ```
-> Hoặc dùng workflow `infra.yml` (`gh workflow run infra.yml -f action=plan`) nếu đã set
-> `CLOUDFLARE_API_TOKEN` secret. Mặc định nên review plan trước, chỉ apply khi chắc.
 
-### 5c. Rollback (nếu deploy lỗi)
+### 5d. Rollback (nếu deploy lỗi)
 Mỗi image tag bằng git SHA. Rollback = trỏ ECS về image cũ:
 ```powershell
 # Cách đơn giản: revert commit rồi push
@@ -279,6 +312,8 @@ aws dynamodb scan --table-name agewell-leads --region us-east-1 --output json
 - **Đừng commit** `infra/terraform.tfvars`, `.env*`, token, access key (đã gitignore — đừng ép thêm).
 - **Đừng sửa** `BD_Requirements/` — đó là prototype gốc để tham chiếu, không build/serve.
 - **Đừng đổi tên key** trong `content-data.js` mà không sửa component dùng nó.
-- **Đừng push** thay đổi infra qua `git push` mong nó tự apply — infra phải `terraform apply` thủ công.
+- **Thay đổi infra/DB LUÔN qua PR** để xem `terraform plan` trước khi merge. Khi merge main, infra
+  **tự apply** — nên đọc kỹ plan trên PR (đặc biệt cảnh báo destroy bảng DB = mất data).
+- **Đừng đổi `hashKey` trong `table-schema.json`** trên bảng có data thật — Terraform sẽ xoá+tạo lại bảng.
 - **Giữ `npm run build` + `npm run lint` luôn xanh** — CI chặn merge nếu đỏ.
 - Mọi text mới phải có **cả vi và en**.

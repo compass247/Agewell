@@ -1,0 +1,9 @@
+{
+  "_comment": "Single source of truth for the DynamoDB leads table. BOTH the local dev table (create-local-table.mjs) AND production (infra/backend.tf) read this file, so they can never drift. To add a Global Secondary Index later (e.g. query leads by phone), add it to globalSecondaryIndexes AND declare its key attributes in attributes.",
+  "tableName": "agewell-leads",
+  "hashKey": "leadId",
+  "attributes": [
+    { "name": "leadId", "type": "S" }
+  ],
+  "globalSecondaryIndexes": []
+}

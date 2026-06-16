@@ -5,14 +5,36 @@
 data "aws_caller_identity" "current" {}
 
 # ---------------- DynamoDB ----------------
+# Schema comes from the SAME file local dev uses
+# (backend/lead-handler/table-schema.json), so the two can never drift.
+locals {
+  leads_schema = jsondecode(file("${path.module}/../backend/lead-handler/table-schema.json"))
+}
+
 resource "aws_dynamodb_table" "leads" {
   name         = "${var.project}-leads"
   billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "leadId"
+  hash_key     = local.leads_schema.hashKey
+  range_key    = try(local.leads_schema.rangeKey, null)
 
-  attribute {
-    name = "leadId"
-    type = "S"
+  # Key + index attributes from the shared schema.
+  dynamic "attribute" {
+    for_each = local.leads_schema.attributes
+    content {
+      name = attribute.value.name
+      type = attribute.value.type
+    }
+  }
+
+  # Optional Global Secondary Indexes (empty by default).
+  dynamic "global_secondary_index" {
+    for_each = try(local.leads_schema.globalSecondaryIndexes, [])
+    content {
+      name            = global_secondary_index.value.name
+      hash_key        = global_secondary_index.value.hashKey
+      range_key       = try(global_secondary_index.value.rangeKey, null)
+      projection_type = try(global_secondary_index.value.projection, "ALL")
+    }
   }
 
   point_in_time_recovery {
@@ -172,7 +194,7 @@ resource "aws_apigatewayv2_domain_name" "api" {
   domain_name_configuration {
     certificate_arn = aws_acm_certificate_validation.api.certificate_arn
     endpoint_type   = "REGIONAL"
-    security_policy  = "TLS_1_2"
+    security_policy = "TLS_1_2"
   }
 }
 

@@ -1,10 +1,13 @@
 name: Deploy
 
-# Deploys the frontend (ECR + ECS) and backend Lambda on every push to main.
-# Requires the infra to exist already (see infra/) and these repo settings:
-#   Secrets:   AWS_DEPLOY_ROLE_ARN
+# On every push to main: apply infrastructure (Terraform) FIRST, then deploy
+# the frontend (ECR + ECS) and backend Lambda. Infra runs before code so any
+# new infra (env vars, DB changes, etc.) is ready before the new code runs.
+#
+# Required repo settings:
+#   Secrets:   AWS_DEPLOY_ROLE_ARN, CLOUDFLARE_API_TOKEN, TF_STATE_BUCKET
 #   Variables: AWS_REGION, ECR_REPOSITORY, ECS_CLUSTER, ECS_SERVICE,
-#              LEAD_LAMBDA_NAME, API_BASE  (e.g. https://api.compassagewell.com)
+#              LEAD_LAMBDA_NAME, API_BASE, CLOUDFLARE_ZONE_ID
 
 on:
   push:
@@ -20,7 +23,48 @@ permissions:
   contents: read
 
 jobs:
+  # ---------------- Infra: terraform apply (runs first) ----------------
+  infra:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    env:
+      TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TF_VAR_cloudflare_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID }}
+      TF_VAR_aws_region: ${{ vars.AWS_REGION }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+
+      # Lambda zip is produced by archive_file from backend/lead-handler,
+      # so its production deps must be present before apply.
+      - name: Prepare Lambda deps
+        run: npm install --omit=dev --no-audit --no-fund
+        working-directory: backend/lead-handler
+
+      - name: Terraform init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="region=${{ vars.AWS_REGION }}" \
+            -backend-config="dynamodb_table=agewell-tf-lock"
+
+      - name: Terraform apply
+        run: terraform apply -auto-approve
+
+  # ---------------- Deploy: build image, ECS, Lambda ----------------
   deploy:
+    needs: infra
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
