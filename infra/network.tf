@@ -43,7 +43,7 @@ resource "aws_security_group" "alb" {
   }
 }
 
-# Security group for the ECS tasks — only the ALB may reach port 80.
+# Security group for the ECS tasks — only the ALB may reach the Next.js port.
 resource "aws_security_group" "ecs" {
   name        = "${var.project}-ecs"
   description = "ECS task ingress from ALB only"
@@ -51,8 +51,8 @@ resource "aws_security_group" "ecs" {
 
   ingress {
     description     = "From ALB"
-    from_port       = 80
-    to_port         = 80
+    from_port       = 3000 # Next.js server (was nginx :80 pre-cutover)
+    to_port         = 3000
     protocol        = "tcp"
     security_groups = [aws_security_group.alb.id]
   }
