@@ -10,7 +10,7 @@
 
 resource "aws_security_group" "cms_host" {
   name        = "${var.project}-cms-host"
-  description = "ECS EC2 host for Directus — Directus port from ALB only"
+  description = "ECS EC2 host for Directus - Directus port from ALB only"
   vpc_id      = data.aws_vpc.default.id
 
   # Directus admin/API — only from the shared ALB.

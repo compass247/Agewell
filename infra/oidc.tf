@@ -66,7 +66,12 @@ resource "aws_iam_role_policy" "github_deploy_iam" {
         "iam:PassRole",
         "iam:CreateOpenIDConnectProvider", "iam:DeleteOpenIDConnectProvider",
         "iam:GetOpenIDConnectProvider", "iam:UpdateOpenIDConnectProviderThumbprint",
-        "iam:TagOpenIDConnectProvider"
+        "iam:TagOpenIDConnectProvider",
+        # Instance profile management — the CMS EC2 capacity provider needs one.
+        "iam:CreateInstanceProfile", "iam:DeleteInstanceProfile",
+        "iam:GetInstanceProfile",
+        "iam:AddRoleToInstanceProfile", "iam:RemoveRoleFromInstanceProfile",
+        "iam:TagInstanceProfile"
       ]
       Resource = "*"
     }]
