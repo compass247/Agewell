@@ -1,5 +1,5 @@
 import createMiddleware from "next-intl/middleware";
-import { routing } from "./i18n/routing.js";
+import { routing } from "./src/i18n/routing.js";
 
 // Locale middleware: redirects "/" to "/vi" (or "/en" by Accept-Language),
 // and ensures every page is served under a locale prefix. This replaces the
@@ -7,6 +7,11 @@ import { routing } from "./i18n/routing.js";
 export default createMiddleware(routing);
 
 export const config = {
-  // Match everything except API routes, Next internals, and static assets.
-  matcher: ["/((?!api|_next|assets|.*\\..*).*)"],
+  // Match "/" explicitly, all locale-prefixed paths, and everything else
+  // except API routes, Next internals, and files with an extension.
+  matcher: [
+    "/",
+    "/(vi|en)/:path*",
+    "/((?!api|_next|_vercel|assets|.*\\..*).*)",
+  ],
 };
