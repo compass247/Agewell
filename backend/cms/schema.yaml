@@ -1,0 +1,213 @@
+# Directus schema snapshot — Compass AgeWell CMS content model.
+#
+# Apply with the Directus CLI (see backend/cms/README.md):
+#   docker compose -f backend/cms/docker-compose.cms.yml exec directus \
+#     npx directus schema apply --yes /directus/schema.yaml
+#
+# This file is the single source of truth for the content model. It is loaded
+# both locally (Phase 0 spike) and in production, so the two never drift.
+#
+# Content model overview:
+#   languages           — VI/EN locale list (vi-VN default, en-US)
+#   posts               — blog articles (status + per-language translations)
+#   posts_translations  — translated fields per article per language
+#   homepage            — singleton mirroring src/content-data.js structure
+#   pages               — other dynamic pages (services, team, FAQ)
+#   leads (read-only)   — mirror of DynamoDB leads for the BD dashboard
+#
+# NOTE: This is a documented, hand-authored seed of the model. The canonical
+# machine snapshot is generated from a live instance with
+# `directus schema snapshot` once the collections are created in the Studio
+# (see README "Generating the real snapshot"). Until then, create collections
+# via the Studio UI using this file as the spec.
+
+version: 1
+directus: 11.3.5
+
+# ----------------------------------------------------------------------------
+# Collections (spec — create these in the Studio, then snapshot to overwrite)
+# ----------------------------------------------------------------------------
+collections:
+  - collection: languages
+    meta:
+      icon: translate
+      note: Supported content languages (VI/EN).
+    schema:
+      name: languages
+
+  - collection: posts
+    meta:
+      icon: article
+      note: Blog articles. Editorial text lives in posts_translations.
+      archive_field: status
+      archive_value: archived
+      sort_field: sort
+    schema:
+      name: posts
+
+  - collection: posts_translations
+    meta:
+      icon: translate
+      hidden: true
+      note: Per-language fields for a post.
+    schema:
+      name: posts_translations
+
+  - collection: homepage
+    meta:
+      icon: home
+      singleton: true
+      note: Homepage content — mirrors src/content-data.js. Translated per language.
+    schema:
+      name: homepage
+
+  - collection: homepage_translations
+    meta:
+      icon: translate
+      hidden: true
+    schema:
+      name: homepage_translations
+
+  - collection: pages
+    meta:
+      icon: description
+      note: Dynamic pages (services detail, team, FAQ).
+    schema:
+      name: pages
+
+  - collection: pages_translations
+    meta:
+      icon: translate
+      hidden: true
+    schema:
+      name: pages_translations
+
+  - collection: leads
+    meta:
+      icon: inbox
+      note: >-
+        Read-only mirror of DynamoDB leads for the BD dashboard. Populated by a
+        sync from DynamoDB Streams — do NOT edit here (source of truth is AWS).
+      singleton: false
+    schema:
+      name: leads
+
+# ----------------------------------------------------------------------------
+# Fields — documented spec for each collection. Key fields only; the Studio
+# generates id/sort/user-audit fields automatically.
+# ----------------------------------------------------------------------------
+fields:
+  # --- languages ---
+  - collection: languages
+    field: code
+    type: string
+    schema: { is_primary_key: true, is_nullable: false }
+    meta: { interface: input, note: "Locale code, e.g. vi-VN / en-US" }
+  - collection: languages
+    field: name
+    type: string
+    meta: { interface: input }
+  - collection: languages
+    field: direction
+    type: string
+    schema: { default_value: ltr }
+    meta: { interface: select-dropdown }
+
+  # --- posts (non-translated) ---
+  - collection: posts
+    field: id
+    type: uuid
+    schema: { is_primary_key: true, has_auto_increment: false }
+    meta: { hidden: true, readonly: true, special: ["uuid"] }
+  - collection: posts
+    field: status
+    type: string
+    schema: { default_value: draft, is_nullable: false }
+    meta:
+      interface: select-dropdown
+      display: labels
+      width: half
+      options:
+        choices:
+          - { text: Published, value: published }
+          - { text: Draft, value: draft }
+          - { text: Archived, value: archived }
+  - collection: posts
+    field: slug
+    type: string
+    schema: { is_nullable: false, is_unique: true }
+    meta:
+      interface: input
+      width: half
+      note: "URL slug, shared across languages (the /[lang]/blog/<slug> path)."
+      options: { slug: true }
+  - collection: posts
+    field: cover_image
+    type: uuid
+    meta: { interface: file-image, special: ["file"] }
+  - collection: posts
+    field: published_at
+    type: timestamp
+    meta: { interface: datetime, width: half }
+  - collection: posts
+    field: translations
+    type: alias
+    meta:
+      interface: translations
+      special: ["translations"]
+      options: { languageField: code }
+
+  # --- posts_translations ---
+  - collection: posts_translations
+    field: id
+    type: integer
+    schema: { is_primary_key: true, has_auto_increment: true }
+    meta: { hidden: true }
+  - collection: posts_translations
+    field: posts_id
+    type: uuid
+    meta: { hidden: true }
+  - collection: posts_translations
+    field: languages_code
+    type: string
+    meta: { hidden: true }
+  - collection: posts_translations
+    field: title
+    type: string
+    meta: { interface: input }
+  - collection: posts_translations
+    field: excerpt
+    type: text
+    meta: { interface: input-multiline }
+  - collection: posts_translations
+    field: body
+    type: text
+    meta: { interface: input-rich-text-html, note: "Article body (WYSIWYG)." }
+  - collection: posts_translations
+    field: meta_title
+    type: string
+    meta: { interface: input, note: "SEO <title> override (optional)." }
+  - collection: posts_translations
+    field: meta_description
+    type: text
+    meta: { interface: input-multiline, note: "SEO meta description." }
+
+# ----------------------------------------------------------------------------
+# Relations — translations wiring (o2m from posts to posts_translations,
+# m2o from posts_translations.languages_code to languages.code).
+# ----------------------------------------------------------------------------
+relations:
+  - collection: posts_translations
+    field: posts_id
+    related_collection: posts
+    meta:
+      one_field: translations
+      junction_field: languages_code
+      sort_field: null
+    schema: { on_delete: CASCADE }
+  - collection: posts_translations
+    field: languages_code
+    related_collection: languages
+    meta:
+      junction_field: posts_id
+    schema: { on_delete: SET NULL }
