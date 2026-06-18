@@ -16,11 +16,13 @@ const CMS_BASE = process.env.NEXT_PUBLIC_CMS_BASE || "";
 // Map our app locale (vi/en) to Directus language codes (vi-VN/en-US).
 const LANG_TO_CODE = { vi: "vi-VN", en: "en-US" };
 
-async function cms(path, { tags = [], revalidate = 3600 } = {}) {
+async function cms(path, { tags = [], revalidate = 3600, noStore = false } = {}) {
   if (!CMS_BASE) return null; // CMS not configured → callers fall back gracefully
   const res = await fetch(`${CMS_BASE}${path}`, {
     headers: { "Content-Type": "application/json" },
-    next: { tags, revalidate },
+    // noStore: always fetch fresh (used by the dynamic homepage). Otherwise
+    // tag-cached so blog pages can be revalidated on publish.
+    ...(noStore ? { cache: "no-store" } : { next: { tags, revalidate } }),
   });
   if (!res.ok) {
     throw new Error(`CMS GET ${path} → ${res.status}`);
@@ -78,14 +80,18 @@ export async function getPost(slug, lang) {
 export async function getHomepage(lang) {
   const code = LANG_TO_CODE[lang] || LANG_TO_CODE.vi;
   try {
+    // no-store: the homepage is dynamic (force-dynamic), so always read fresh.
     const data = await cms(
       `/items/homepage?fields=translations.*` +
         `&deep[translations][_filter][languages_code][_eq]=${code}`,
-      { tags: ["homepage"] }
+      { noStore: true }
     );
     const tr = data?.translations?.[0];
     return tr || null;
-  } catch {
+  } catch (err) {
+    // Log so CMS connectivity issues are visible in CloudWatch (the homepage
+    // still falls back to content-data.js — it never breaks).
+    console.error("getHomepage failed:", err?.message);
     return null;
   }
 }
