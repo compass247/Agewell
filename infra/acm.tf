@@ -4,7 +4,7 @@
    ============================================================ */
 resource "aws_acm_certificate" "web" {
   domain_name               = var.domain
-  subject_alternative_names = ["www.${var.domain}"]
+  subject_alternative_names = ["www.${var.domain}", var.cms_subdomain]
   validation_method         = "DNS"
 
   lifecycle {

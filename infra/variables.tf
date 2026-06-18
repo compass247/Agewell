@@ -80,3 +80,51 @@ variable "github_repo" {
   type        = string
   default     = "compass247/Agewell"
 }
+
+/* ------------------------------------------------------------
+   CMS (Directus) — self-hosted on ECS launch type EC2.
+   Phase 1 is ADDITIVE: these provision a new EC2-backed capacity
+   provider running Directus + Postgres. The existing Fargate web
+   service is untouched until the Phase 5 cutover.
+   ------------------------------------------------------------ */
+variable "cms_subdomain" {
+  description = "Subdomain for the Directus admin (host-based routing on the existing ALB)."
+  type        = string
+  default     = "cms.compassagewell.com"
+}
+
+variable "cms_instance_type" {
+  description = "EC2 instance type for the ECS EC2 capacity provider hosting Directus + Postgres. t4g.small is ARM/Graviton (cheap)."
+  type        = string
+  default     = "t4g.small"
+}
+
+variable "directus_image" {
+  description = "Pinned Directus image (NEVER :latest — it runs schema migrations on boot)."
+  type        = string
+  default     = "directus/directus:11.3.5"
+}
+
+variable "postgres_image" {
+  description = "Pinned Postgres image for the CMS database container."
+  type        = string
+  default     = "postgres:16-alpine"
+}
+
+variable "cms_admin_email" {
+  description = "Bootstrap Directus admin email (first boot only; change password after)."
+  type        = string
+  default     = "admin@compassagewell.com"
+}
+
+variable "cms_ssh_cidr" {
+  description = "CIDR allowed to SSH to the CMS EC2 host (for break-glass ops). Empty disables SSH ingress."
+  type        = string
+  default     = ""
+}
+
+variable "cms_key_name" {
+  description = "Optional EC2 key pair name for SSH to the CMS host. Empty = no key (use SSM Session Manager)."
+  type        = string
+  default     = ""
+}
