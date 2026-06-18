@@ -12,6 +12,8 @@ export const config = {
   matcher: [
     "/",
     "/(vi|en)/:path*",
-    "/((?!api|_next|_vercel|assets|.*\\..*).*)",
+    // Exclude api, healthz, Next internals, and static assets so the ALB
+    // health check hits /healthz directly (no locale redirect).
+    "/((?!api|healthz|_next|_vercel|assets|.*\\..*).*)",
   ],
 };
