@@ -1,5 +1,11 @@
 # CMS Migration Runbook — Next.js + Directus (self-host)
 
+> ✅ **ĐÃ TRIỂN KHAI XONG LÊN PRODUCTION (2026-06-18).** Site live trên Next.js + Directus:
+> homepage đọc nội dung từ CMS (publish→live verified), blog/sitemap/hreflang/healthz OK,
+> CMS tại cms.compassagewell.com, lead API nguyên vẹn. Tài liệu này giữ lại làm tham chiếu
+> vận hành + onboarding. Việc còn lại cho BD: tạo collection `posts` để viết blog, cấu hình
+> Flow webhook (Bước 4), service token lead-sync (Bước 3).
+
 Hướng dẫn từng bước đưa CMS lên production sau khi PR [#4](https://github.com/compass247/Agewell/pull/4) được merge. Mỗi bước đều có cách kiểm chứng. Thứ tự quan trọng — làm tuần tự.
 
 > **Nguyên tắc an toàn:** homepage hiện tại (Fargate nginx) **không bị đụng** cho tới bước Cutover (Bước 6). Bạn có thể dừng sau bất kỳ bước nào mà site live vẫn chạy bình thường.
@@ -8,11 +14,17 @@ Hướng dẫn từng bước đưa CMS lên production sau khi PR [#4](https://
 
 ---
 
-## Bước 0 — Chuẩn bị repo settings (GitHub)
+## Bước 0 — Chuẩn bị repo settings (GitHub) ⚠️ BẮT BUỘC TRƯỚC KHI DEPLOY
 
 Thêm các **Variables** (Settings → Secrets and variables → Actions → Variables):
 - `CMS_BASE` = `https://cms.compassagewell.com`
 - `SITE_URL` = `https://compassagewell.com`
+
+> **QUAN TRỌNG (lỗi đã gặp thật):** `NEXT_PUBLIC_CMS_BASE` được Next.js **inline lúc build**
+> trong Docker. Thiếu var `CMS_BASE` → image build với CMS base rỗng → container KHÔNG gọi
+> Directus → homepage luôn rơi về `content-data.js` **im lặng (không lỗi log)**. Sau khi set
+> var phải **build lại image**: `gh workflow run deploy.yml --ref main`.
+> Đặt nhanh: `gh variable set CMS_BASE --body "https://cms.compassagewell.com"`.
 
 (Các secret/var cũ giữ nguyên: `AWS_DEPLOY_ROLE_ARN`, `CLOUDFLARE_API_TOKEN`, `TF_STATE_BUCKET`, `AWS_REGION`, `ECR_REPOSITORY`, `ECS_CLUSTER`, `ECS_SERVICE`, `LEAD_LAMBDA_NAME`, `API_BASE`, `CLOUDFLARE_ZONE_ID`.)
 
