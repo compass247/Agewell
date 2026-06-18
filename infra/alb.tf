@@ -11,7 +11,10 @@ resource "aws_lb" "web" {
 }
 
 resource "aws_lb_target_group" "web" {
-  name        = "${var.project}-web-tg"
+  # name_prefix (not name) so create_before_destroy can stand up the new
+  # target group before the old one is removed — required when changing the
+  # port forces replacement while a listener still references it.
+  name_prefix = "awweb-"
   port        = 3000 # Next.js server (was nginx :80 pre-cutover)
   protocol    = "HTTP"
   vpc_id      = data.aws_vpc.default.id
@@ -24,6 +27,10 @@ resource "aws_lb_target_group" "web" {
     timeout             = 5
     healthy_threshold   = 2
     unhealthy_threshold = 3
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
