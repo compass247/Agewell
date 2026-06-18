@@ -12,7 +12,7 @@ resource "aws_lb" "web" {
 
 resource "aws_lb_target_group" "web" {
   name        = "${var.project}-web-tg"
-  port        = 80
+  port        = 3000 # Next.js server (was nginx :80 pre-cutover)
   protocol    = "HTTP"
   vpc_id      = data.aws_vpc.default.id
   target_type = "ip" # Fargate awsvpc networking

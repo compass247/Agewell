@@ -41,6 +41,21 @@ resource "aws_iam_role_policy_attachment" "task_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+# Let the web task read the REVALIDATE_SECRET from the CMS secret (post-cutover
+# the web container is Next.js and needs it for the /api/revalidate webhook).
+resource "aws_iam_role_policy" "task_execution_secrets" {
+  name = "${var.project}-web-exec-secrets"
+  role = aws_iam_role.task_execution.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["secretsmanager:GetSecretValue"]
+      Resource = aws_secretsmanager_secret.cms.arn
+    }]
+  })
+}
+
 resource "aws_ecs_task_definition" "web" {
   family                   = "${var.project}-web"
   requires_compatibilities = ["FARGATE"]
@@ -53,10 +68,20 @@ resource "aws_ecs_task_definition" "web" {
     name      = "web"
     image     = local.web_image
     essential = true
+    # Next.js standalone server listens on 3000 (was nginx :80 pre-cutover).
     portMappings = [{
-      containerPort = 80
+      containerPort = 3000
       protocol      = "tcp"
     }]
+    environment = [
+      { name = "NEXT_PUBLIC_CMS_BASE", value = "https://${var.cms_subdomain}" },
+      { name = "NEXT_PUBLIC_SITE_URL", value = "https://${var.domain}" },
+      { name = "NEXT_PUBLIC_API_BASE", value = "https://${var.api_subdomain}" },
+    ]
+    # Server-side secret for the /api/revalidate webhook (publish = live).
+    secrets = [
+      { name = "REVALIDATE_SECRET", valueFrom = "${aws_secretsmanager_secret.cms.arn}:REVALIDATE_SECRET::" },
+    ]
     logConfiguration = {
       logDriver = "awslogs"
       options = {
@@ -84,7 +109,7 @@ resource "aws_ecs_service" "web" {
   load_balancer {
     target_group_arn = aws_lb_target_group.web.arn
     container_name   = "web"
-    container_port   = 80
+    container_port   = 3000
   }
 
   depends_on = [aws_lb_listener.https]
