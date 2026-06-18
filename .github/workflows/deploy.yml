@@ -7,7 +7,14 @@ name: Deploy
 # Required repo settings:
 #   Secrets:   AWS_DEPLOY_ROLE_ARN, CLOUDFLARE_API_TOKEN, TF_STATE_BUCKET
 #   Variables: AWS_REGION, ECR_REPOSITORY, ECS_CLUSTER, ECS_SERVICE,
-#              LEAD_LAMBDA_NAME, API_BASE, CLOUDFLARE_ZONE_ID
+#              LEAD_LAMBDA_NAME, API_BASE, CLOUDFLARE_ZONE_ID,
+#              CMS_BASE (https://cms.compassagewell.com), SITE_URL
+#
+# NOTE (Phase 5 cutover): the web container is now Next.js (port 3000). At
+# cutover, update the web task definition's containerPort 80->3000, the ALB
+# health check path, and inject REVALIDATE_SECRET (server-side, from Secrets
+# Manager) so the /api/revalidate webhook works. Until then the existing
+# Fargate web service keeps serving the old static image unchanged.
 
 on:
   push:
@@ -85,10 +92,17 @@ jobs:
           REGISTRY: ${{ steps.ecr.outputs.registry }}
           REPO: ${{ vars.ECR_REPOSITORY }}
           API_BASE: ${{ vars.API_BASE }}
+          CMS_BASE: ${{ vars.CMS_BASE }}
+          SITE_URL: ${{ vars.SITE_URL }}
           SHA: ${{ github.sha }}
         run: |
           IMAGE="$REGISTRY/$REPO:$SHA"
-          docker build --build-arg VITE_API_BASE="$API_BASE" -t "$IMAGE" -t "$REGISTRY/$REPO:latest" .
+          # NEXT_PUBLIC_* are baked at build time (Next inlines them).
+          docker build \
+            --build-arg NEXT_PUBLIC_API_BASE="$API_BASE" \
+            --build-arg NEXT_PUBLIC_CMS_BASE="$CMS_BASE" \
+            --build-arg NEXT_PUBLIC_SITE_URL="${SITE_URL:-https://compassagewell.com}" \
+            -t "$IMAGE" -t "$REGISTRY/$REPO:latest" .
           docker push "$IMAGE"
           docker push "$REGISTRY/$REPO:latest"
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
