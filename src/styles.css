@@ -30,8 +30,8 @@
   --accent-d: var(--green-d);
   --accent-soft: var(--pastel-green);
 
-  /* Type */
-  --font: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Type — --font-be-vietnam is provided by next/font (app/[lang]/layout.jsx). */
+  --font: var(--font-be-vietnam), "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
   --fs-base: 19px;          /* tweakable base */
 
   /* Layout */

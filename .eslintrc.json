@@ -1,0 +1,7 @@
+{
+  "extends": "next/core-web-vitals",
+  "ignorePatterns": ["infra/**", "backend/**", "BD_Requirements/**", "dist/**"],
+  "rules": {
+    "@next/next/no-img-element": "off"
+  }
+}

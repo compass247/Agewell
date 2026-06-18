@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-# ---------- stage 1: build the Vite app ----------
+# ---------- stage 1: build the Next.js app ----------
 FROM node:20-alpine AS build
 WORKDIR /app
 
@@ -8,27 +8,33 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 
-# Build. VITE_API_BASE is baked in at build time (Vite inlines import.meta.env).
-# Empty default = same-origin /api; CI sets it to the API subdomain.
-ARG VITE_API_BASE=""
-ENV VITE_API_BASE=$VITE_API_BASE
+# NEXT_PUBLIC_* are inlined at build time. CI sets these per deploy.
+ARG NEXT_PUBLIC_API_BASE=""
+ARG NEXT_PUBLIC_CMS_BASE=""
+ARG NEXT_PUBLIC_SITE_URL="https://compassagewell.com"
+ENV NEXT_PUBLIC_API_BASE=$NEXT_PUBLIC_API_BASE
+ENV NEXT_PUBLIC_CMS_BASE=$NEXT_PUBLIC_CMS_BASE
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+
 COPY . .
 RUN npm run build
 
-# ---------- stage 2: serve static files with nginx ----------
-FROM nginx:1.27-alpine AS runtime
+# ---------- stage 2: minimal standalone runtime ----------
+FROM node:20-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 
-# Drop the default config and add ours
-RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx.conf /etc/nginx/conf.d/agewell.conf
+# Next.js "standalone" output: a self-contained server + traced deps.
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
+COPY --from=build /app/public ./public
 
-# Static site
-COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 3000
 
-EXPOSE 80
+# Healthcheck hits the app's /healthz route (app/healthz/route.js).
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget -q -O /dev/null http://127.0.0.1:3000/healthz || exit 1
 
-# Basic healthcheck against the dedicated endpoint
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget -q -O /dev/null http://127.0.0.1/healthz || exit 1
-
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["node", "server.js"]

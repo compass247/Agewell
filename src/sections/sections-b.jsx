@@ -1,3 +1,4 @@
+"use client";
 /* ============================================================
    COMPASS AGEWELL — Sections B
    USP+Team · Eligibility+FAQ · Testimonials · Form · Footer · ContactBar
@@ -5,6 +6,7 @@
 import { useState, useRef } from "react";
 import { Icon } from "../components/icons.jsx";
 import { AGEWELL_COLORS, Reveal, SectionHead, Placeholder, scrollToId } from "../components/shared.jsx";
+import { LangToggle } from "../components/LangToggle.jsx";
 import { submitLead } from "../api.js";
 
 const C = () => AGEWELL_COLORS;
@@ -282,7 +284,7 @@ export function SignupForm({ t }) {
 }
 
 /* ---------------- Footer ---------------- */
-export function Footer({ t, lang, setLang }) {
+export function Footer({ t, lang }) {
   const fo = t.footer;
   return (
     <footer className="site-footer">
@@ -312,9 +314,8 @@ export function Footer({ t, lang, setLang }) {
                 <a key={c.name} className="footer-chat" href={c.href}><Icon name="chat" size={18} />{c.name}</a>
               ))}
             </div>
-            <div className="lang-toggle" role="group" aria-label="Language" style={{ marginTop: 18 }}>
-              <button className={lang === "vi" ? "active" : ""} onClick={() => setLang("vi")}>VI</button>
-              <button className={lang === "en" ? "active" : ""} onClick={() => setLang("en")}>EN</button>
+            <div style={{ marginTop: 18 }}>
+              <LangToggle lang={lang} />
             </div>
           </div>
         </div>
