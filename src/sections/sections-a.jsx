@@ -1,3 +1,4 @@
+"use client";
 /* ============================================================
    COMPASS AGEWELL — Sections A
    Header · MobileAnchor · Hero · Problem · Services · CareLoop
@@ -5,11 +6,12 @@
 import { Fragment, useState, useEffect } from "react";
 import { Icon } from "../components/icons.jsx";
 import { AGEWELL_COLORS, Reveal, SectionHead, scrollToId } from "../components/shared.jsx";
+import { LangToggle } from "../components/LangToggle.jsx";
 
 const C = () => AGEWELL_COLORS;
 
 /* ---------------- Header ---------------- */
-export function Header({ t, lang, setLang }) {
+export function Header({ t, lang }) {
   return (
     <header className="site-header">
       <div className="container header-inner">
@@ -24,10 +26,7 @@ export function Header({ t, lang, setLang }) {
         </nav>
 
         <div className="header-actions">
-          <div className="lang-toggle" role="group" aria-label="Language">
-            <button className={lang === "vi" ? "active" : ""} onClick={() => setLang("vi")} aria-pressed={lang === "vi"}>VI</button>
-            <button className={lang === "en" ? "active" : ""} onClick={() => setLang("en")} aria-pressed={lang === "en"}>EN</button>
-          </div>
+          <LangToggle lang={lang} />
           <a className="btn btn-primary header-cta" href="#dangky" onClick={(e) => { e.preventDefault(); scrollToId("dangky"); }}>
             {t.headerCta}
           </a>

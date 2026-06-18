@@ -42,3 +42,23 @@ output "leads_table" {
   description = "DynamoDB table holding leads."
   value       = aws_dynamodb_table.leads.name
 }
+
+output "cms_url" {
+  description = "Directus CMS admin URL."
+  value       = "https://${var.cms_subdomain}"
+}
+
+output "cms_media_bucket" {
+  description = "S3 bucket for Directus media uploads."
+  value       = aws_s3_bucket.cms_media.id
+}
+
+output "cms_secret_arn" {
+  description = "Secrets Manager ARN holding the CMS credentials."
+  value       = aws_secretsmanager_secret.cms.arn
+}
+
+output "lead_sync_lambda_name" {
+  description = "Lambda that mirrors DynamoDB leads into the Directus dashboard."
+  value       = aws_lambda_function.lead_sync.function_name
+}

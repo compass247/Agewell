@@ -40,6 +40,12 @@ resource "aws_dynamodb_table" "leads" {
   point_in_time_recovery {
     enabled = true
   }
+
+  # Stream new/changed leads so the lead-sync Lambda can mirror them into the
+  # Directus `leads` collection (BD dashboard). Enabling a stream is a
+  # non-destructive change — the table + data are untouched.
+  stream_enabled   = true
+  stream_view_type = "NEW_IMAGE"
 }
 
 # ---------------- Lambda role ----------------

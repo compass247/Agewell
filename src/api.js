@@ -1,10 +1,10 @@
 /* ============================================================
    COMPASS AGEWELL — Lead form API client
    POSTs the signup form to the serverless backend.
-   Base URL is configurable via VITE_API_BASE (defaults to same-origin
-   so nginx/Cloudflare can route /api to the backend).
+   Base URL is configurable via NEXT_PUBLIC_API_BASE (defaults to same-origin
+   so the ALB/Cloudflare can route /api to the backend).
    ============================================================ */
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "";
 
 export async function submitLead(payload) {
   const res = await fetch(`${API_BASE}/api/lead`, {

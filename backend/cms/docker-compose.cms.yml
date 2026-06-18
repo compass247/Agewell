@@ -1,0 +1,82 @@
+# Local Directus CMS stack — Directus + Postgres.
+# This is the Phase 0 spike: stand up the CMS locally so BD can try the
+# editor before we provision anything on AWS. It is ALSO the reference
+# configuration for the production ECS/EC2 task definitions (same images,
+# same env), so local and prod never drift.
+#
+# Start:  docker compose -f backend/cms/docker-compose.cms.yml up -d
+# Stop:   docker compose -f backend/cms/docker-compose.cms.yml down
+# Admin:  http://localhost:8055   (login: admin@compassagewell.com / see .env)
+# Reset:  docker compose -f backend/cms/docker-compose.cms.yml down -v   (wipes DB)
+#
+# Copy backend/cms/.env.example -> backend/cms/.env before first run.
+services:
+  cms-db:
+    # Pin the major version — Directus runs schema migrations on boot, so a
+    # surprise Postgres bump must never happen by accident. Mirror this exact
+    # tag in the ECS postgres task definition.
+    image: postgres:16-alpine
+    container_name: agewell-cms-db
+    environment:
+      POSTGRES_USER: directus
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-directus}
+      POSTGRES_DB: directus
+    volumes:
+      - cms-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U directus -d directus"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Not exposed to the host by default — only Directus talks to it, exactly
+    # like prod where Postgres is reachable only inside the EC2 host.
+
+  directus:
+    # Pin the exact Directus version. NEVER use :latest — an unpinned image
+    # can run a breaking schema migration on restart. Bump deliberately and
+    # test before changing this tag (and the matching prod task def).
+    image: directus/directus:11.3.5
+    container_name: agewell-cms
+    ports:
+      - "8055:8055"
+    depends_on:
+      cms-db:
+        condition: service_healthy
+    environment:
+      # --- security keys (random in prod, from Secrets Manager) ---
+      SECRET: ${DIRECTUS_SECRET:-local-dev-secret-change-me}
+      KEY: ${DIRECTUS_KEY:-local-dev-key-change-me}
+
+      # --- database (points at the cms-db service) ---
+      DB_CLIENT: pg
+      DB_HOST: cms-db
+      DB_PORT: 5432
+      DB_DATABASE: directus
+      DB_USER: directus
+      DB_PASSWORD: ${DB_PASSWORD:-directus}
+
+      # --- first-run admin user (bootstrap; change password after first login) ---
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@compassagewell.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme-locally}
+
+      # --- public URL + CORS for the Next.js frontend ---
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:8055}
+      CORS_ENABLED: "true"
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+
+      # --- storage: local disk in dev; S3 in prod (STORAGE_LOCATIONS=s3) ---
+      STORAGE_LOCATIONS: local
+      STORAGE_LOCAL_DRIVER: local
+      STORAGE_LOCAL_ROOT: /directus/uploads
+
+      # --- default admin UI language: Vietnamese for BD staff ---
+      USER_REGISTER_URL_ALLOW_LIST: ""
+    volumes:
+      - cms-uploads:/directus/uploads
+      # Auto-apply our schema/collections on boot from a snapshot file.
+      # Run `npm run cms:apply` (see backend/cms/README.md) to load schema.yaml.
+      - ./schema.yaml:/directus/schema.yaml:ro
+
+volumes:
+  cms-db-data:
+  cms-uploads:

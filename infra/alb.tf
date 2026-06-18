@@ -49,8 +49,47 @@ resource "aws_lb_listener" "https" {
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
   certificate_arn   = aws_acm_certificate_validation.web.certificate_arn
 
+  # Default: the web (homepage) target group — unchanged.
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.web.arn
+  }
+}
+
+/* ------------------------------------------------------------
+   CMS (Directus) — host-based routing on the SAME ALB.
+   Additive: only requests for cms.<domain> go to Directus; the
+   default action (web/homepage) is untouched.
+   ------------------------------------------------------------ */
+resource "aws_lb_target_group" "cms" {
+  name        = "${var.project}-cms-tg"
+  port        = 8055
+  protocol    = "HTTP"
+  vpc_id      = data.aws_vpc.default.id
+  target_type = "instance" # ECS launch type EC2 (bridge networking)
+
+  health_check {
+    path                = "/server/health"
+    matcher             = "200"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 3
+  }
+}
+
+resource "aws_lb_listener_rule" "cms" {
+  listener_arn = aws_lb_listener.https.arn
+  priority     = 100
+
+  condition {
+    host_header {
+      values = [var.cms_subdomain]
+    }
+  }
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.cms.arn
   }
 }

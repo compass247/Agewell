@@ -25,3 +25,15 @@ resource "cloudflare_record" "www" {
   ttl             = var.cloudflare_proxied ? 1 : 300
   allow_overwrite = true
 }
+
+# CMS (Directus admin) — CNAME to the same ALB. DNS-only so the ALB's ACM
+# cert (which now includes the cms SAN) terminates TLS.
+resource "cloudflare_record" "cms" {
+  zone_id         = var.cloudflare_zone_id
+  name            = var.cms_subdomain
+  type            = "CNAME"
+  content         = aws_lb.web.dns_name
+  proxied         = false
+  ttl             = 300
+  allow_overwrite = true
+}

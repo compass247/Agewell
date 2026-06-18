@@ -1,0 +1,10 @@
+{
+  "name": "agewell-lead-sync",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Mirror DynamoDB leads into the Directus leads collection (BD dashboard).",
+  "dependencies": {
+    "@aws-sdk/util-dynamodb": "^3.726.0"
+  }
+}

@@ -18,6 +18,10 @@ terraform {
       source  = "hashicorp/tls"
       version = "~> 4.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6"
+    }
   }
 
   # Remote state. Create the S3 bucket + DynamoDB lock table once (see infra/README.md),

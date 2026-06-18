@@ -1,3 +1,4 @@
+"use client";
 /* ============================================================
    COMPASS AGEWELL — Shared helpers
    ============================================================ */
@@ -31,11 +32,16 @@ export function Placeholder({ label, className, style, round }) {
   );
 }
 
-// Scroll reveal wrapper (deterministic: checks position on mount + scroll)
+// Scroll reveal wrapper (deterministic: checks position on mount + scroll).
+// SSR / pre-hydration renders WITHOUT the `reveal` class so the server HTML
+// shows content fully (no opacity:0) — important for crawlers and to avoid a
+// flash. Once mounted on the client, the scroll-reveal animation takes over.
 export function Reveal({ children, as, className, style, delay }) {
   const ref = useRef(null);
+  const [mounted, setMounted] = useState(false);
   const [shown, setShown] = useState(false);
   useEffect(() => {
+    setMounted(true);
     const el = ref.current;
     if (!el) return;
     let raf = 0;
@@ -60,10 +66,14 @@ export function Reveal({ children, as, className, style, delay }) {
     };
   }, []);
   const Tag = as || "div";
+  // Before mount: no reveal class (content visible). After mount: animate in.
+  const cls = !mounted
+    ? (className || "")
+    : "reveal" + (shown ? " in" : "") + (className ? " " + className : "");
   return (
     <Tag
       ref={ref}
-      className={"reveal" + (shown ? " in" : "") + (className ? " " + className : "")}
+      className={cls}
       style={{ transitionDelay: delay ? delay + "ms" : undefined, ...(style || {}) }}
     >
       {children}
