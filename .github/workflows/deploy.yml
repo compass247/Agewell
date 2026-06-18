@@ -53,11 +53,15 @@ jobs:
         with:
           terraform_version: "1.9.8"
 
-      # Lambda zip is produced by archive_file from backend/lead-handler,
-      # so its production deps must be present before apply.
-      - name: Prepare Lambda deps
+      # Lambda zips are produced by archive_file from backend/lead-handler and
+      # backend/lead-sync, so their production deps must be present before apply.
+      - name: Prepare Lambda deps (lead-handler)
         run: npm install --omit=dev --no-audit --no-fund
         working-directory: backend/lead-handler
+
+      - name: Prepare Lambda deps (lead-sync)
+        run: npm install --omit=dev --no-audit --no-fund
+        working-directory: backend/lead-sync
 
       - name: Terraform init
         run: |

@@ -57,3 +57,8 @@ output "cms_secret_arn" {
   description = "Secrets Manager ARN holding the CMS credentials."
   value       = aws_secretsmanager_secret.cms.arn
 }
+
+output "lead_sync_lambda_name" {
+  description = "Lambda that mirrors DynamoDB leads into the Directus dashboard."
+  value       = aws_lambda_function.lead_sync.function_name
+}

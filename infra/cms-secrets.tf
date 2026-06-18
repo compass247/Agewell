@@ -34,6 +34,17 @@ resource "random_password" "revalidate" {
   special = false
 }
 
+# Directus static token for the lead-sync service account. Generated in the
+# Directus Studio (a service user with create/update on `leads`), then stored
+# here via TF_VAR_directus_sync_token. Empty until provisioned — the sync
+# Lambda skips work if the token is unset.
+variable "directus_sync_token" {
+  description = "Directus static token for the lead-sync service account. Set via TF_VAR_directus_sync_token after creating the service user."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
 # One Secrets Manager secret holding all CMS credentials as a JSON document.
 resource "aws_secretsmanager_secret" "cms" {
   name        = "${var.project}-cms"

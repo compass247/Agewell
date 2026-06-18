@@ -96,4 +96,25 @@ the site never breaks if the CMS is unreachable.
 In production, a Directus **Flow** on `posts` (create/update/delete) fires a
 webhook to the Next.js `/api/revalidate` route (HMAC-signed with
 `REVALIDATE_SECRET`), which calls `revalidateTag`. The published page is live in
-seconds — no GitHub Actions rebuild. (Wired in Phase 2.)
+seconds — no GitHub Actions rebuild.
+
+Configure the Flow (Settings → Flows → Create):
+1. Trigger: **Event Hook**, scope `items.create` + `items.update` +
+   `items.delete` on `posts` (and `homepage`).
+2. Operation: **Webhook**, `POST https://compassagewell.com/api/revalidate?secret=<REVALIDATE_SECRET>`,
+   body `{ "collection": "{{$trigger.collection}}", "slugs": ["{{$trigger.payload.slug}}"] }`.
+
+## Lead dashboard (service token)
+
+The `lead-sync` Lambda mirrors DynamoDB leads into the `leads` collection so BD
+can view + export them. It authenticates with a **static token** for a
+dedicated service user:
+
+1. Studio → Settings → Access Control → create role **"Lead Sync"** with
+   create/update/read on `leads` only.
+2. Create a user in that role, open it, generate a **static token**, save.
+3. Provide it to Terraform as `TF_VAR_directus_sync_token` (stored in the
+   Lambda env). Until set, the sync Lambda no-ops safely.
+
+The lead WRITE path (form → Lambda → DynamoDB → SES) is unchanged; this sync is
+one-way and additive. DynamoDB stays the source of truth; PII never leaves AWS.

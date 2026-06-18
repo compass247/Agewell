@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 backend/lead-handler/node_modules/
+backend/lead-sync/node_modules/
 
 # Build output
 dist/

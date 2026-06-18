@@ -86,8 +86,10 @@ collections:
     meta:
       icon: inbox
       note: >-
-        Read-only mirror of DynamoDB leads for the BD dashboard. Populated by a
-        sync from DynamoDB Streams — do NOT edit here (source of truth is AWS).
+        Read-only mirror of DynamoDB leads for the BD dashboard. Populated by
+        the lead-sync Lambda from DynamoDB Streams — do NOT edit here (source of
+        truth is AWS DynamoDB). Fields: lead_id (unique), name, phone, services,
+        message, lang, source, created_at. Give BD read + CSV export here.
       singleton: false
     schema:
       name: leads
