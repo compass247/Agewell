@@ -91,6 +91,24 @@ This is one-time. After it runs, the homepage is editable in the Studio; the
 Next.js frontend overlays Directus content on top of `src/content-data.js` so
 the site never breaks if the CMS is unreachable.
 
+## Medical Team page (`pages` / slug=team)
+
+The `/[lang]/team` route reads a `pages` item with `slug=team`. Set up the
+whole thing — content model, the seeded page, and the revalidate webhook — with
+one idempotent script (no Studio clicking required):
+
+```bash
+DIRECTUS_URL=https://cms.compassagewell.com \
+DIRECTUS_TOKEN=<admin-static-token> \      # or DIRECTUS_EMAIL + DIRECTUS_PASSWORD
+REVALIDATE_SECRET=<secret> \               # from AWS Secrets Manager; omit to skip the webhook
+  node backend/cms/setup-team-page.mjs
+```
+
+It creates `pages` + `pages_translations` (mirroring `posts`), grants Public
+read, seeds a published `team` page with bilingual sample copy, and adds a
+"Revalidate pages" Flow. Re-runnable; it never overwrites the team page once it
+has content. Full step-by-step (VI): [`docs/TEAM-PAGE.md`](../../docs/TEAM-PAGE.md).
+
 ## Publish = live (no rebuild)
 
 In production, a Directus **Flow** on `posts` (create/update/delete) fires a
