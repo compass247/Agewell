@@ -301,3 +301,11 @@ relations:
     meta:
       junction_field: pages_id
     schema: { on_delete: SET NULL }
+  # cover_image M2O -> directus_files. Required for the image picker to persist
+  # the selection; without it the Studio drops the value on Save.
+  - collection: posts
+    field: cover_image
+    related_collection: directus_files
+  - collection: pages
+    field: cover_image
+    related_collection: directus_files
