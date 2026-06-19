@@ -82,6 +82,25 @@ collections:
     schema:
       name: pages_translations
 
+  - collection: team_members
+    meta:
+      icon: groups
+      note: >-
+        Structured team members for the /[lang]/team grid (photo + bilingual
+        role/name/bio). Sorted by `sort`. Created via setup-team-members.mjs.
+      archive_field: status
+      archive_value: archived
+      sort_field: sort
+    schema:
+      name: team_members
+
+  - collection: team_members_translations
+    meta:
+      icon: translate
+      hidden: true
+    schema:
+      name: team_members_translations
+
   - collection: leads
     meta:
       icon: inbox
@@ -309,3 +328,21 @@ relations:
   - collection: pages
     field: cover_image
     related_collection: directus_files
+  # team_members.photo (same file-relation requirement as cover_image).
+  - collection: team_members
+    field: photo
+    related_collection: directus_files
+  - collection: team_members_translations
+    field: team_members_id
+    related_collection: team_members
+    meta:
+      one_field: translations
+      junction_field: languages_code
+      sort_field: null
+    schema: { on_delete: CASCADE }
+  - collection: team_members_translations
+    field: languages_code
+    related_collection: languages
+    meta:
+      junction_field: team_members_id
+    schema: { on_delete: SET NULL }

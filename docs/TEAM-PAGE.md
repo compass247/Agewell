@@ -75,10 +75,40 @@ $env:RESET="1"; node backend/cms/setup-team-page.mjs; Remove-Item Env:\RESET
 5. Nếu đã bật webhook (việc 3): web cập nhật trong vài giây. Nếu chưa: có thể
    chậm tới ~1 giờ (do bộ nhớ đệm).
 
+## Lưới thành viên đẹp (Team Members) — KHUYẾN NGHỊ
+
+Trang Team gồm **2 phần**:
+1. **Phần đầu (intro)** — tiêu đề + đoạn mô tả tự do: nhập ở **Content → Pages → team**.
+2. **Lưới thành viên** — từng người có ảnh/vai trò/tên/mô tả: nhập ở **Content →
+   Team Members**. Web tự dựng lưới thẻ đẹp (3 cột) giống trang chủ.
+
+> Nếu chỉ đổ chữ vào ô Nội dung của Pages→team thì trang sẽ **xấu** (chỉ là khối
+> chữ). Hãy nhập từng người ở **Team Members** để có lưới đẹp.
+
+### Thiết lập (một lần) — chạy script
+```powershell
+$env:DIRECTUS_URL="https://cms.compassagewell.com"
+$env:DIRECTUS_EMAIL="admin@compassagewell.com"
+$env:DIRECTUS_PASSWORD="<mat-khau>"
+$env:REVALIDATE_SECRET="<secret>"
+node backend/cms/setup-team-members.mjs
+```
+Script tạo collection **Team Members** + quyền đọc Public + webhook, và seed sẵn 3
+người mẫu (ảnh để trống). Idempotent; `RESET=1` để tạo lại sạch khi cần.
+
+### Biên tập thành viên (bất cứ lúc nào)
+1. **Content → Team Members** → mở từng người (hoặc bấm **+** để thêm).
+2. Upload **Photo**, điền **Role / Name / Bio** ở cả 2 tab Tiếng Việt + English.
+3. Đặt **Status = Published**. Kéo-thả để sắp thứ tự hiển thị.
+4. **Save** → web cập nhật trong vài giây.
+
 ## Cách trang hoạt động (tham khảo kỹ thuật)
 
-- Route: `app/[lang]/team/page.jsx` gọi `getPage("team", lang)` trong `src/cms.js`.
-- Nếu CMS chưa có trang / không kết nối được → tự **fallback** sang đội ngũ tĩnh
-  trong `src/content-data.js` (`usp.team`), nên trang **không bao giờ trống**.
-- Webhook gọi `app/api/revalidate/route.js` với `collection=pages` để xoá cache.
-- Cấu trúc `pages` được đặc tả trong `backend/cms/schema.yaml`.
+- Route: `app/[lang]/team/page.jsx` gọi `getPage("team", lang)` (intro) +
+  `getTeamMembers(lang)` (lưới) trong `src/cms.js`.
+- Lưới render bằng class CSS `team-grid`/`team-card` có sẵn (`src/styles.css`).
+- Nếu **chưa có** Team Members trong CMS → tự **fallback** sang đội ngũ tĩnh
+  trong `src/content-data.js` (`usp.team`), nên trang **không bao giờ trống/xấu**.
+- Webhook gọi `app/api/revalidate/route.js` với `collection=pages` (intro) hoặc
+  `collection=team_members` (lưới) để xoá cache.
+- Cấu trúc `pages`, `team_members` đặc tả trong `backend/cms/schema.yaml`.
