@@ -73,6 +73,28 @@ export async function getPost(slug, lang) {
 }
 
 /**
+ * Fetch a single published dynamic page by slug for a language (e.g. the
+ * Medical Team page, slug="team"). Returns null if missing/unreachable so the
+ * caller can fall back to static content instead of hard-failing.
+ */
+export async function getPage(slug, lang) {
+  const code = LANG_TO_CODE[lang] || LANG_TO_CODE.vi;
+  try {
+    const data = await cms(
+      `/items/pages?filter[status][_eq]=published&filter[slug][_eq]=${encodeURIComponent(slug)}` +
+        `&fields=id,slug,cover_image,translations.*` +
+        `&deep[translations][_filter][languages_code][_eq]=${code}` +
+        `&limit=1`,
+      { tags: ["pages", `page:${slug}`] }
+    );
+    if (!data || !data.length) return null;
+    return flattenPage(data[0]);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Fetch the homepage singleton content for a language. Returns null on any
  * error; the homepage overlays this onto content-data.js, so a null result
  * just means "use the static fallback" and the page never breaks.
@@ -94,6 +116,20 @@ export async function getHomepage(lang) {
     console.error("getHomepage failed:", err?.message);
     return null;
   }
+}
+
+// Collapse a page's single-language translations array into flat fields.
+function flattenPage(p) {
+  const tr = p.translations?.[0] || {};
+  return {
+    id: p.id,
+    slug: p.slug,
+    coverImage: p.cover_image ? `${CMS_BASE}/assets/${p.cover_image}` : null,
+    title: tr.title || "",
+    body: tr.body || "",
+    metaTitle: tr.meta_title || tr.title || "",
+    metaDescription: tr.meta_description || "",
+  };
 }
 
 // Collapse the single-language translations array into flat fields.

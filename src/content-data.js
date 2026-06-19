@@ -8,8 +8,10 @@ export const AGEWELL_CONTENT = {
     dir: "vi",
     nav: [
       { id: "dichvu",  label: "Dịch vụ" },
+      { id: "team",    label: "Đội ngũ y tế", type: "route", href: "/team" },
       { id: "dieukien", label: "Câu hỏi thường gặp" },
       { id: "dangky",  label: "Liên hệ" },
+      { id: "blog",    label: "Blog", type: "route", href: "/blog" },
     ],
     headerCta: "Đăng ký tư vấn",
     hotline: { label: "Gọi miễn phí", number: "855-999-9911", tel: "+18559999911" },
@@ -153,8 +155,10 @@ export const AGEWELL_CONTENT = {
     dir: "en",
     nav: [
       { id: "dichvu",  label: "Services" },
+      { id: "team",    label: "Medical Team", type: "route", href: "/team" },
       { id: "dieukien", label: "FAQ" },
       { id: "dangky",  label: "Contact" },
+      { id: "blog",    label: "Blog", type: "route", href: "/blog" },
     ],
     headerCta: "Get a free consult",
     hotline: { label: "Toll-free", number: "855-999-9911", tel: "+18559999911" },

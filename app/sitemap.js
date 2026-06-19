@@ -8,8 +8,8 @@ export default async function sitemap() {
   const langs = ["vi", "en"];
   const entries = [];
 
-  // Static routes (home, blog index) per language.
-  for (const path of ["", "/blog"]) {
+  // Static routes (home, blog index, team) per language.
+  for (const path of ["", "/blog", "/team"]) {
     entries.push({
       url: `${SITE_URL}/vi${path}`,
       lastModified: new Date(),

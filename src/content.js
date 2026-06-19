@@ -19,7 +19,9 @@ const KEY_MAP = {
   testi: "testi",
   form: "form",
   footer: "footer",
-  nav: "nav",
+  // nav is intentionally NOT overlaid from CMS: it now carries route links
+  // (Blog, Team) and per-item `type` logic that must stay dev-controlled, so
+  // editing the homepage `nav` in Directus can't drop or break those entries.
   header_cta: "headerCta",
   hotline: "hotline",
   contact_bar: "contactBar",
