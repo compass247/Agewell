@@ -7,6 +7,11 @@ definitions, so local and prod don't drift.
 
 See the full plan: the approved plan file under `~/.claude/plans/`.
 
+> **Test locally first.** The full local-first workflow (mirror prod schema →
+> seed → run Next.js against local Directus → only then deploy) is documented in
+> [`docs/LOCAL-DEV.md`](../../docs/LOCAL-DEV.md). Helper scripts:
+> `npm run cms:up`, `cms:snapshot:prod`, `cms:apply:local`, `cms:seed:local`.
+
 ## Prerequisites
 
 - Docker Desktop running

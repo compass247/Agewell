@@ -13,7 +13,10 @@
     "db:init": "npm --prefix backend/lead-handler run db:init",
     "backend:dev": "npm --prefix backend/lead-handler run dev",
     "cms:up": "docker compose -f backend/cms/docker-compose.cms.yml --env-file backend/cms/.env up -d",
-    "cms:down": "docker compose -f backend/cms/docker-compose.cms.yml down"
+    "cms:down": "docker compose -f backend/cms/docker-compose.cms.yml down",
+    "cms:snapshot:prod": "node backend/cms/schema-sync.mjs snapshot",
+    "cms:apply:local": "node backend/cms/schema-sync.mjs apply",
+    "cms:seed:local": "node backend/cms/setup-team-page.mjs && node backend/cms/setup-blog.mjs && node backend/cms/setup-team-members.mjs"
   },
   "dependencies": {
     "next": "14.2.18",
