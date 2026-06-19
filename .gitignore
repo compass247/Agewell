@@ -27,6 +27,9 @@ Thumbs.db
 .env.*
 !.env.example
 
+# Directus schema snapshot (pulled from an instance; structure only, not committed)
+backend/cms/snapshot.json
+
 # Terraform
 infra/.terraform/
 infra/*.tfstate
