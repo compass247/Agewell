@@ -109,6 +109,21 @@ read, seeds a published `team` page with bilingual sample copy, and adds a
 "Revalidate pages" Flow. Re-runnable; it never overwrites the team page once it
 has content. Full step-by-step (VI): [`docs/TEAM-PAGE.md`](../../docs/TEAM-PAGE.md).
 
+## Blog (`posts`) setup
+
+Same one-shot approach for the blog. Creates `posts` + `posts_translations`,
+grants Public read, seeds one sample post, and adds a "Revalidate posts" flow:
+
+```bash
+DIRECTUS_URL=https://cms.compassagewell.com \
+DIRECTUS_TOKEN=<admin-static-token> \      # or DIRECTUS_EMAIL + DIRECTUS_PASSWORD
+REVALIDATE_SECRET=<secret> \
+  node backend/cms/setup-blog.mjs
+```
+
+Idempotent; `RESET=1` drops the (empty) posts collections to recover from a
+half-applied run. After it runs, manage articles in Studio → Content → Posts.
+
 ## Publish = live (no rebuild)
 
 In production, a Directus **Flow** on `posts` (create/update/delete) fires a
