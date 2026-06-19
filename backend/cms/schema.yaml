@@ -194,9 +194,83 @@ fields:
     type: text
     meta: { interface: input-multiline, note: "SEO meta description." }
 
+  # --- pages (non-translated) ---
+  # Dynamic pages (e.g. the Medical Team page, slug="team"). Mirrors `posts`
+  # but without published_at — pages are evergreen, not dated articles. The
+  # app route /[lang]/<slug> fetches by slug; see src/cms.js getPage().
+  - collection: pages
+    field: id
+    type: uuid
+    schema: { is_primary_key: true, has_auto_increment: false }
+    meta: { hidden: true, readonly: true, special: ["uuid"] }
+  - collection: pages
+    field: status
+    type: string
+    schema: { default_value: draft, is_nullable: false }
+    meta:
+      interface: select-dropdown
+      display: labels
+      width: half
+      options:
+        choices:
+          - { text: Published, value: published }
+          - { text: Draft, value: draft }
+          - { text: Archived, value: archived }
+  - collection: pages
+    field: slug
+    type: string
+    schema: { is_nullable: false, is_unique: true }
+    meta:
+      interface: input
+      width: half
+      note: "URL slug, shared across languages (the /[lang]/<slug> path), e.g. team."
+      options: { slug: true }
+  - collection: pages
+    field: cover_image
+    type: uuid
+    meta: { interface: file-image, special: ["file"] }
+  - collection: pages
+    field: translations
+    type: alias
+    meta:
+      interface: translations
+      special: ["translations"]
+      options: { languageField: code }
+
+  # --- pages_translations ---
+  - collection: pages_translations
+    field: id
+    type: integer
+    schema: { is_primary_key: true, has_auto_increment: true }
+    meta: { hidden: true }
+  - collection: pages_translations
+    field: pages_id
+    type: uuid
+    meta: { hidden: true }
+  - collection: pages_translations
+    field: languages_code
+    type: string
+    meta: { hidden: true }
+  - collection: pages_translations
+    field: title
+    type: string
+    meta: { interface: input }
+  - collection: pages_translations
+    field: body
+    type: text
+    meta: { interface: input-rich-text-html, note: "Page body (WYSIWYG)." }
+  - collection: pages_translations
+    field: meta_title
+    type: string
+    meta: { interface: input, note: "SEO <title> override (optional)." }
+  - collection: pages_translations
+    field: meta_description
+    type: text
+    meta: { interface: input-multiline, note: "SEO meta description." }
+
 # ----------------------------------------------------------------------------
 # Relations — translations wiring (o2m from posts to posts_translations,
-# m2o from posts_translations.languages_code to languages.code).
+# m2o from posts_translations.languages_code to languages.code; same for pages).
 # ----------------------------------------------------------------------------
 relations:
   - collection: posts_translations
@@ -212,4 +286,18 @@ relations:
     related_collection: languages
     meta:
       junction_field: posts_id
+    schema: { on_delete: SET NULL }
+  - collection: pages_translations
+    field: pages_id
+    related_collection: pages
+    meta:
+      one_field: translations
+      junction_field: languages_code
+      sort_field: null
+    schema: { on_delete: CASCADE }
+  - collection: pages_translations
+    field: languages_code
+    related_collection: languages
+    meta:
+      junction_field: pages_id
     schema: { on_delete: SET NULL }

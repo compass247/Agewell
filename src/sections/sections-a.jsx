@@ -7,8 +7,29 @@ import { Fragment, useState, useEffect } from "react";
 import { Icon } from "../components/icons.jsx";
 import { AGEWELL_COLORS, Reveal, SectionHead, scrollToId } from "../components/shared.jsx";
 import { LangToggle } from "../components/LangToggle.jsx";
+import { Link, usePathname } from "../i18n/navigation.js";
 
 const C = () => AGEWELL_COLORS;
+
+/* ---------------- Nav item ----------------
+   One menu entry, shared by Header / MobileAnchor / Footer. Handles three
+   link kinds so the same `t.nav` array drives every nav:
+   - type "route" (Blog, Team): a locale-aware <Link> to another page.
+   - anchor on the homepage: smooth-scroll to the in-page section.
+   - anchor while on a sub-page (blog/team): navigate back to "/#id" instead
+     of silently doing nothing (the old behaviour, since the section is absent). */
+export function NavItem({ n }) {
+  const pathname = usePathname(); // locale-stripped, e.g. "/" or "/blog"
+  if (n.type === "route") {
+    return <Link href={n.href}>{n.label}</Link>;
+  }
+  if (pathname === "/") {
+    return (
+      <a href={"#" + n.id} onClick={(e) => { e.preventDefault(); scrollToId(n.id); }}>{n.label}</a>
+    );
+  }
+  return <Link href={`/#${n.id}`}>{n.label}</Link>;
+}
 
 /* ---------------- Header ---------------- */
 export function Header({ t, lang }) {
@@ -21,7 +42,7 @@ export function Header({ t, lang }) {
 
         <nav className="nav-anchor" aria-label="Section navigation">
           {t.nav.map((n) => (
-            <a key={n.id} href={"#" + n.id} onClick={(e) => { e.preventDefault(); scrollToId(n.id); }}>{n.label}</a>
+            <NavItem key={n.id} n={n} />
           ))}
         </nav>
 
@@ -49,7 +70,7 @@ export function MobileAnchor({ t }) {
     <div className={"mobile-anchor" + (show ? "" : " hidden")} aria-hidden={!show}>
       <ul>
         {t.nav.map((n) => (
-          <li key={n.id}><a href={"#" + n.id} onClick={(e) => { e.preventDefault(); scrollToId(n.id); }}>{n.label}</a></li>
+          <li key={n.id}><NavItem n={n} /></li>
         ))}
       </ul>
     </div>

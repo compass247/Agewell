@@ -10,6 +10,7 @@
 import { useEffect } from "react";
 import { Header, MobileAnchor, Hero, Problem, Services, CareLoop } from "../sections/sections-a.jsx";
 import { UspTeam, Eligibility, SignupForm, Footer, ContactBar } from "../sections/sections-b.jsx";
+import { scrollToId } from "./shared.jsx";
 
 // Fixed design tokens (previously controlled by the removed tweaks panel).
 const ACCENT = "#26a146";
@@ -26,6 +27,17 @@ export default function HomePageClient({ C, lang }) {
     r.setProperty("--accent-d", ACCENT_D);
     r.setProperty("--accent-soft", ACCENT_SOFT);
     r.setProperty("--fs-base", FONT_SIZE + "px");
+  }, []);
+
+  // Landing on "/#id" (e.g. an anchor nav item clicked from /blog or /team)
+  // — apply the same header-offset smooth scroll as in-page nav, since the
+  // browser's native hash jump ignores the 76px sticky header.
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (!id) return;
+    // next frame so sections are laid out before we measure the offset.
+    const raf = requestAnimationFrame(() => scrollToId(id));
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   return (

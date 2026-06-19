@@ -7,6 +7,7 @@ import { useState, useRef } from "react";
 import { Icon } from "../components/icons.jsx";
 import { AGEWELL_COLORS, Reveal, SectionHead, Placeholder, scrollToId } from "../components/shared.jsx";
 import { LangToggle } from "../components/LangToggle.jsx";
+import { NavItem } from "./sections-a.jsx";
 import { submitLead } from "../api.js";
 
 const C = () => AGEWELL_COLORS;
@@ -300,7 +301,7 @@ export function Footer({ t, lang }) {
             <h4>{fo.navTitle}</h4>
             <ul>
               {t.nav.map((n) => (
-                <li key={n.id}><a href={"#" + n.id} onClick={(e) => { e.preventDefault(); go(n.id); }}>{n.label}</a></li>
+                <li key={n.id}><NavItem n={n} /></li>
               ))}
             </ul>
           </div>
