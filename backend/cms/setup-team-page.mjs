@@ -208,7 +208,26 @@ async function setupSchema() {
     console.log("= translations relation (exists)");
   }
 
+  // cover_image needs an M2O relation to directus_files, otherwise the Studio
+  // shows an image picker but Save silently drops the value (the field can't
+  // store the file's foreign key). special:["file"] alone is NOT enough.
+  await ensureFileRelation("pages", "cover_image");
+
   await grantPublicRead();
+}
+
+// Ensure a file/image field has its relation to directus_files (idempotent).
+async function ensureFileRelation(collection, field) {
+  const rel = await api(`/relations/${collection}/${field}`);
+  if (rel.status === 200) { console.log(`= ${collection}.${field} -> directus_files (exists)`); return; }
+  const r = await api(`/relations`, "POST", {
+    collection, field, related_collection: "directus_files",
+  });
+  if (r.status >= 400) {
+    console.log(`! Failed to relate ${collection}.${field} to directus_files (${r.status}).`);
+  } else {
+    console.log(`+ ${collection}.${field} -> directus_files`);
+  }
 }
 
 // Grant the Public policy read access to pages + pages_translations so the
