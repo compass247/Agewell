@@ -57,6 +57,15 @@ REVALIDATE_SECRET=<secret> \
 
 Chạy xong, mở `https://compassagewell.com/vi/team` và `/en/team` để kiểm tra.
 
+Script tự cấp **quyền đọc Public** cho `pages` (để web đọc nội dung không cần
+đăng nhập). Nếu lần trước đã chạy bị lỗi nửa chừng (sai cấu trúc), chạy lại
+**một lần** với cờ `RESET=1` để xoá cấu trúc `pages` cũ (đang trống) rồi tạo lại
+sạch — KHÔNG dùng `RESET=1` khi trang đã có nội dung thật:
+
+```powershell
+$env:RESET="1"; node backend/cms/setup-team-page.mjs; Remove-Item Env:\RESET
+```
+
 ## Bước 2 — Biên tập nội dung (làm bất cứ lúc nào)
 
 1. Vào `https://cms.compassagewell.com`, đăng nhập.

@@ -98,19 +98,50 @@ async function ensureField(collection, field) {
   console.log(`+ ${collection}.${field.field}`);
 }
 
+// Drop a collection if it exists (used by RESET to recover from a half-created
+// schema). Directus deletes its fields/relations with it. Only ever called for
+// pages/pages_translations, and only when RESET=1 is set explicitly.
+async function dropCollection(name) {
+  const exists = await api(`/collections/${name}`);
+  if (exists.status !== 200) return;
+  const r = await api(`/collections/${name}`, "DELETE");
+  if (r.status >= 400 && r.status !== 404) {
+    throw new Error(`drop ${name} → ${r.status}: ${JSON.stringify(r.body)}`);
+  }
+  console.log(`- ${name} (dropped)`);
+}
+
 // ---- Step 1: content model -------------------------------------------------
 async function setupSchema() {
   console.log("\n[1/3] Content model: pages + pages_translations");
 
+  // RESET=1 wipes the (empty) pages collections first — use it to recover from
+  // a half-applied schema, e.g. a prior run that created pages with the wrong
+  // id type. Safe only before real content exists. Drop the translations child
+  // first (it has the FK to pages).
+  if (process.env.RESET === "1") {
+    console.log("RESET=1 → dropping existing pages collections first");
+    await dropCollection("pages_translations");
+    await dropCollection("pages");
+  }
+
+  // Define the UUID primary key INSIDE the collection payload so Directus
+  // creates pages.id as uuid from the start. (Creating the collection without
+  // a PK field makes Directus auto-generate an integer id, which then can't
+  // form a foreign key with the uuid pages_id — the relation step fails.)
   await ensureCollection({
     collection: "pages",
     schema: { name: "pages" },
-    meta: { icon: "description", archive_field: "status", archive_value: "archived", sort_field: "sort" },
-  });
-  await ensureField("pages", {
-    field: "id", type: "uuid",
-    schema: { is_primary_key: true, has_auto_increment: false },
-    meta: { hidden: true, readonly: true, special: ["uuid"] },
+    // No sort_field: we don't create a `sort` column, and declaring one makes
+    // Public reads fail with "no permission to access field sort".
+    meta: { icon: "description", archive_field: "status", archive_value: "archived" },
+    fields: [
+      {
+        field: "id", type: "uuid",
+        schema: { is_primary_key: true, has_auto_increment: false },
+        meta: { hidden: true, readonly: true, special: ["uuid"] },
+      },
+    ],
   });
   await ensureField("pages", {
     field: "status", type: "string",
@@ -184,15 +215,25 @@ async function setupSchema() {
 // frontend getPage() can fetch published content unauthenticated (matches how
 // posts/homepage are read).
 async function grantPublicRead() {
-  // The Public policy has no role (role: null) and is marked admin_access:false.
-  const policies = await api(`/policies?filter[role][_null]=true&limit=-1`);
-  const pub = (policies.body?.data || []).find((p) => p.admin_access === false);
+  // Find the built-in Public policy. On Directus 11 the `role` field on
+  // directus_policies can be non-readable, so detect it by its hallmark
+  // instead: name "$t:public_label" with admin_access=false & app_access=false.
+  const policies = await api(`/policies?fields=id,name,admin_access,app_access&limit=-1`);
+  const list = policies.body?.data || [];
+  const pub =
+    list.find((p) => p.name === "$t:public_label") ||
+    list.find((p) => p.admin_access === false && p.app_access === false);
   if (!pub) {
-    console.log("! Could not auto-detect the Public policy. Grant read on " +
-      "pages + pages_translations manually: Studio → Settings → Access Policies → Public.");
+    console.log("! Could not auto-detect the Public policy. Grant read on pages + " +
+      "pages_translations manually: Studio → Settings → Access Policies → Public.");
     return;
   }
-  for (const collection of ["pages", "pages_translations"]) {
+  // The frontend reads these collections unauthenticated (getPage / getPosts /
+  // getHomepage + nested translations + file assets for cover images).
+  const collections = [
+    "pages", "pages_translations", "languages", "directus_files",
+  ];
+  for (const collection of collections) {
     const existing = await api(
       `/permissions?filter[policy][_eq]=${pub.id}&filter[collection][_eq]=${collection}` +
       `&filter[action][_eq]=read&limit=1`
