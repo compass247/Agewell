@@ -118,6 +118,39 @@ export async function getHomepage(lang) {
   }
 }
 
+/**
+ * List published team members for a language, ordered by `sort`. Each member
+ * has a photo + bilingual role/name/bio. Returns [] on any error so the team
+ * page falls back to the static grid instead of breaking.
+ */
+export async function getTeamMembers(lang) {
+  const code = LANG_TO_CODE[lang] || LANG_TO_CODE.vi;
+  try {
+    const data = await cms(
+      `/items/team_members?filter[status][_eq]=published` +
+        `&fields=id,sort,photo,translations.role,translations.name,translations.bio,translations.languages_code` +
+        `&deep[translations][_filter][languages_code][_eq]=${code}` +
+        `&sort=sort`,
+      { tags: ["team_members"] }
+    );
+    return (data || []).map(flattenMember);
+  } catch {
+    return [];
+  }
+}
+
+// Collapse a member's single-language translations array into flat fields.
+function flattenMember(m) {
+  const tr = m.translations?.[0] || {};
+  return {
+    id: m.id,
+    photo: m.photo ? `${CMS_BASE}/assets/${m.photo}` : null,
+    role: tr.role || "",
+    name: tr.name || "",
+    bio: tr.bio || "",
+  };
+}
+
 // Collapse a page's single-language translations array into flat fields.
 function flattenPage(p) {
   const tr = p.translations?.[0] || {};

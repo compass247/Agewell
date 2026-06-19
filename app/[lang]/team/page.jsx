@@ -1,6 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { getContent } from "../../../src/content.js";
-import { getPage } from "../../../src/cms.js";
+import { getPage, getTeamMembers } from "../../../src/cms.js";
 import { SITE_URL, OG_LOCALE, languageAlternates } from "../../../src/seo.js";
 import BlogChrome from "../../../src/components/BlogChrome.jsx";
 
@@ -41,73 +41,77 @@ export default async function TeamPage({ params }) {
   const { lang } = await params;
   setRequestLocale(lang);
 
-  const [C, page] = await Promise.all([getContent(lang), getPage(SLUG, lang)]);
+  // Two sources: an optional intro (Pages → team: title + free text) and the
+  // structured member list (Team Members → the card grid). Fetched in parallel.
+  const [C, page, members] = await Promise.all([
+    getContent(lang),
+    getPage(SLUG, lang),
+    getTeamMembers(lang),
+  ]);
+
+  const heading =
+    page?.title || (lang === "en" ? "Medical Team" : "Đội ngũ y tế");
 
   return (
     <BlogChrome C={C} lang={lang}>
-      {page ? (
-        <article className="bg-white section-pad">
-          <div className="container" style={{ maxWidth: 880 }}>
-            <div className="section-head center">
-              <h1>{page.title}</h1>
-            </div>
-            {page.coverImage && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={page.coverImage}
-                alt={page.title}
-                style={{
-                  width: "100%",
-                  borderRadius: "var(--radius-lg)",
-                  margin: "0 0 28px",
-                  display: "block",
-                }}
+      <section className="bg-white section-pad">
+        <div className="container">
+          <div className="section-head center">
+            <h1>{heading}</h1>
+            {/* Optional intro text authored in Pages → team. */}
+            {page?.body && (
+              <div
+                className="lede"
+                dangerouslySetInnerHTML={{ __html: page.body }}
               />
             )}
-            {/* Body is sanitized rich-text HTML authored in Directus. */}
-            <div
-              className="article-body"
-              dangerouslySetInnerHTML={{ __html: page.body }}
-            />
           </div>
-        </article>
-      ) : (
-        // CMS page not published / unreachable → render the static team grid
-        // from content-data.js so the route never shows an empty page.
-        <TeamFallback C={C} lang={lang} />
-      )}
+
+          {members.length > 0 ? (
+            <div className="team-grid">
+              {members.map((m) => (
+                <div key={m.id} className="team-card">
+                  {m.photo && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={m.photo} alt={m.name} className="team-photo" loading="lazy" />
+                  )}
+                  <div className="tbody">
+                    {m.role && <div className="role">{m.role}</div>}
+                    <h3>{m.name}</h3>
+                    <p>{m.bio}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            // No CMS members yet → static grid from content-data.js (never empty).
+            <TeamFallbackGrid C={C} />
+          )}
+        </div>
+      </section>
     </BlogChrome>
   );
 }
 
-// Static fallback mirroring the homepage team block (src/sections/sections-b.jsx
-// UspTeam). Kept here so /team works before the Directus `pages` content exists.
-function TeamFallback({ C, lang }) {
+// Static member grid from content-data.js (usp.team), shown until Team Members
+// exist in the CMS. Header is rendered by the page above, so this is grid-only.
+function TeamFallbackGrid({ C }) {
   const u = C.usp;
-  const heading = lang === "en" ? "Medical Team" : "Đội ngũ y tế";
   return (
-    <section className="bg-white section-pad">
-      <div className="container">
-        <div className="section-head center">
-          <h1>{heading}</h1>
-          {u?.teamTitle && <p className="lede">{u.teamTitle}</p>}
+    <div className="team-grid">
+      {(u?.team || []).map((m, i) => (
+        <div key={i} className="team-card">
+          {m.img && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={m.img} alt={m.title} className="team-photo" loading="lazy" />
+          )}
+          <div className="tbody">
+            <div className="role">{m.role}</div>
+            <h3>{m.title}</h3>
+            <p>{m.text}</p>
+          </div>
         </div>
-        <div className="team-grid">
-          {(u?.team || []).map((m, i) => (
-            <div key={i} className="team-card">
-              {m.img && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={m.img} alt={m.title} className="team-photo" loading="lazy" />
-              )}
-              <div className="tbody">
-                <div className="role">{m.role}</div>
-                <h3>{m.title}</h3>
-                <p>{m.text}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+      ))}
+    </div>
   );
 }

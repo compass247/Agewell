@@ -41,6 +41,8 @@ export async function POST(request) {
 
   if (collection === "homepage") {
     tags.add("homepage");
+  } else if (collection === "team_members") {
+    tags.add("team_members");
   } else if (collection === "pages") {
     tags.add("pages");
     // If the Flow sent specific slugs, target them precisely too.
