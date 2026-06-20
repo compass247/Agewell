@@ -152,7 +152,7 @@ export function Services({ t, variant }) {
   return (
     <section className="bg-mint section-pad" id="dichvu">
       <div className="container">
-        <SectionHead eyebrow={s.eyebrow} title={s.title} lede={s.lede} />
+        <SectionHead eyebrow={s.eyebrow} title={s.title} titleHtml lede={s.lede} />
         <div className={"svc-wrap svc-v-" + variant}>
           <div className="svc-grid">
             {s.cards.map((c, i) => {

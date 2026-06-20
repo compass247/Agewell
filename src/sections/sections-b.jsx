@@ -26,7 +26,7 @@ export function UspTeam({ t }) {
   return (
     <section className="bg-white section-pad">
       <div className="container">
-        <SectionHead center eyebrow={u.eyebrow} title={u.title} />
+        <SectionHead center eyebrow={u.eyebrow} eyebrowClass="eyebrow-lg" title={u.title} />
         <div className="usp-grid">
           {u.items.map((it, i) => {
             const col = C()[it.color];

@@ -19,7 +19,7 @@ export const AGEWELL_CONTENT = {
     hero: {
       eyebrow: "Compass AgeWell",
       title: "Chăm sóc sức khỏe tại nhà bằng tiếng Việt",
-      sub: "Bác sĩ, dược sĩ và điều phối viên người Việt đồng hành cùng bạn mỗi tháng — qua điện thoại, ngay tại nhà.",
+      sub: "Bác sĩ, dược sĩ và điều phối viên nói được song ngữ Việt - Anh sẽ đồng hành chăm sóc sức khỏe mỗi tháng qua điện thoại hoặc video.",
       ctaPrimary: "Đăng ký tư vấn miễn phí",
       hotlinePre: "Hoặc gọi ngay",
       trust: ["Phù hợp với người có Medicare Original", "Nói chuyện bằng tiếng Việt"],
@@ -35,12 +35,12 @@ export const AGEWELL_CONTENT = {
         { icon: "clock", title: "Ngồi chờ hàng giờ", text: "Đến nơi lại chờ đợi mệt mỏi, trong khi sức khỏe và đôi chân không cho phép." },
         { icon: "message", title: "Rào cản ngôn ngữ", text: "Khó diễn đạt triệu chứng, không hiểu hết lời dặn của bác sĩ, lo lắng uống nhầm thuốc." },
       ],
-      bridge: "Bạn xứng đáng được chăm sóc. <b>Người thân của bạn xứng đáng được yên tâm.</b>",
+      bridge: "Bạn xứng đáng được chăm sóc.<br><b>Người thân của bạn xứng đáng được yên tâm.</b>",
     },
 
     services: {
       eyebrow: "Ba dịch vụ chính",
-      title: "Một hệ thống chăm sóc, ba cách đồng hành",
+      title: "1 hệ thống chăm sóc,<br>3 dịch vụ đồng hành",
       learnMore: "Tìm hiểu thêm",
       cards: [
         { tag: "Telehealth", icon: "video", color: "blue",
@@ -58,7 +58,7 @@ export const AGEWELL_CONTENT = {
       steps: [
         { icon: "video",   color: "blue",   title: "Khám", text: "Bác sĩ đánh giá tình trạng sức khỏe qua cuộc gọi." },
         { icon: "calendar",color: "green",  title: "Quản lý", text: "Lập kế hoạch chăm sóc và điều chỉnh thuốc phù hợp." },
-        { icon: "pill",    color: "orange", title: "Theo dõi", text: "Điều phối viên theo sát, nhắc lịch, hỏi thăm hằng tháng." },
+        { icon: "pill",    color: "orange", title: "Theo dõi", text: "Điều phối viên theo sát, nhắc lịch, hỏi thăm hàng tháng." },
       ],
       backLabel: "Quay lại",
       message: "Mỗi tháng, mỗi cuộc gọi, mỗi lần rà soát thuốc là một điểm chạm <b>xây dựng sức khỏe bền vững</b>.",
@@ -69,21 +69,21 @@ export const AGEWELL_CONTENT = {
       title: "Chăm sóc như người thân theo tiêu chuẩn chuyên gia",
       items: [
         { icon: "shield", color: "green", title: "Toàn diện", text: "Khám, quản lý bệnh và rà soát thuốc trong cùng một hệ thống — không rời rạc." },
-        { icon: "heart",  color: "orange", title: "Thấu hiểu", text: "Đội ngũ người Việt, hiểu văn hóa, lắng nghe và tôn trọng gia đình bạn." },
+        { icon: "heart",  color: "orange", title: "Thấu hiểu", text: "Đội ngũ nói song ngữ Việt - Anh, hiểu văn hóa, lắng nghe và tôn trọng gia đình bạn." },
         { icon: "repeat", color: "blue", title: "Liên tục", text: "Chăm sóc đều đặn mỗi tháng, không chờ tới khi bệnh trở nặng." },
       ],
       teamTitle: "Những người đồng hành cùng bạn",
       team: [
         { role: "Bác sĩ", title: "Bác sĩ nói tiếng Việt", text: "Đánh giá sức khỏe, chẩn đoán và xây dựng kế hoạch điều trị cho bạn.", img: "/assets/bac-si.png" },
         { role: "Dược sĩ", title: "Dược sĩ tư vấn", text: "Rà soát thuốc, giải thích cách dùng rõ ràng bằng tiếng Việt.", img: "/assets/duoc-si.png" },
-        { role: "Điều phối viên", title: "Điều phối viên chăm sóc", text: "Gọi điện hằng tháng, nhắc lịch và kết nối bạn với bác sĩ.", img: "/assets/dieu-phoi-vien.png" },
+        { role: "Điều phối viên", title: "Điều phối viên chăm sóc", text: "Gọi điện hàng tháng, nhắc lịch và kết nối bạn với bác sĩ.", img: "/assets/dieu-phoi-vien.png" },
       ],
     },
 
     elig: {
       eyebrow: "Điều kiện & chi phí",
       title: "Bạn có đủ điều kiện tham gia không?",
-      lede: "Dịch vụ dành cho người dùng Medicare Original. Hãy kiểm tra nhanh bên dưới.",
+      lede: "Dịch vụ được bảo hiểm Medicare Original chi trả tùy vào dịch vụ và loại bảo hiểm của từng khách hàng.",
       cards: [
         { type: "ok", title: "Medicare Original", text: "Bạn đủ điều kiện tham gia. Hầu hết dịch vụ nằm trong quyền lợi Medicare, không phát sinh chi phí bất ngờ. Part B có thể chi trả cho dịch vụ Khám bệnh từ xa và Quản lý bệnh mãn tính. Part D có thể chi trả cho dịch vụ Rà soát thuốc.", pill: "✓ Được hỗ trợ" },
       ],
@@ -131,7 +131,7 @@ export const AGEWELL_CONTENT = {
       errName: "Vui lòng nhập họ tên",
       errPhone: "Vui lòng nhập số điện thoại hợp lệ",
       errSubmit: "Gửi không thành công. Vui lòng thử lại hoặc gọi hotline bên dưới.",
-      submit: "Gửi đăng ký",
+      submit: "Đăng ký liên hệ tư vấn",
       submitting: "Đang gửi…",
       hotlinePre: "Hoặc gọi trực tiếp",
       success: { title: "Cảm ơn bạn đã đăng ký!", text: "Một điều phối viên người Việt sẽ gọi lại cho bạn trong vòng 24 giờ. Nếu cần gấp, hãy gọi hotline bên dưới." },
