@@ -61,11 +61,13 @@ và các quan hệ ảnh).
 $env:DIRECTUS_URL="http://localhost:8055"
 $env:DIRECTUS_EMAIL="admin@compassagewell.com"
 $env:DIRECTUS_PASSWORD="<mat-khau-local>"
-$env:REVALIDATE_SECRET="local-revalidate-secret"
 npm run cms:seed:local
 ```
 Chạy cả 3 script setup (team page, blog, team members) trỏ vào local → có trang
-team/bài blog mẫu/3 thành viên, và **cấp quyền đọc Public ở local**.
+team/bài blog mẫu/3 thành viên, **cấp quyền đọc Public**, và tạo webhook
+revalidate **trỏ về `localhost:3000`** (không phải production). `cms:seed:local`
+tự đặt `DIRECTUS_URL=localhost:8055`, `SITE_URL=localhost:3000`,
+`REVALIDATE_SECRET=local-revalidate-secret` — bạn chỉ cần cung cấp email/mật khẩu.
 
 ### Bước 5 — Chạy website local
 ```powershell
@@ -78,6 +80,20 @@ Mở:
 
 Tất cả đọc từ **Directus local**. Sửa nội dung trong Studio local
 (`localhost:8055`) → tải lại trang để thấy thay đổi.
+
+#### Vì sao có trang cập nhật ngay, có trang phải đợi?
+- **Trang chủ** đọc mới mỗi lần (force-dynamic) → sửa xong F5 là thấy ngay.
+- **Team / Blog** được **cache** (tối ưu tốc độ). Chỉ cập nhật khi Directus gửi
+  tín hiệu "revalidate" qua **webhook** → `/api/revalidate`. Đó là lý do webhook
+  local PHẢI trỏ `localhost:3000` (việc seed ở Bước 4 đã lo).
+- Nếu sửa Team/Blog mà không thấy đổi: kiểm tra webhook local có trỏ đúng
+  localhost không (Studio → Settings → Flows → mở operation → URL phải là
+  `http://localhost:3000/api/revalidate?...`). Hoặc restart `npm run dev` để xoá
+  cache trong bộ nhớ. `secret` của webhook phải khớp `REVALIDATE_SECRET` trong
+  `.env.local`, nếu lệch → trả 401, không cập nhật.
+- Webhook chạy khi item **cha** thay đổi. Sửa trong **Studio** và bấm **Save**
+  (cách BD dùng) luôn kích hoạt đúng. (Chỉ khi can thiệp API thẳng vào bảng dịch
+  con mới không trigger — không liên quan thao tác thường ngày.)
 
 ### Bước 6 — Khi mọi thứ chạy đúng ở local → mới lên production
 Theo đúng GitOps như cũ:
