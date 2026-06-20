@@ -385,12 +385,12 @@ body.no-ph .ph .ph-label { display: none; }
   box-shadow: var(--shadow);
   padding: 14px 18px;
   display: flex; align-items: center; gap: 12px;
-  max-width: 250px;
+  max-width: 290px;
 }
 .hero-badge .icon-chip { width: 46px; height: 46px; border-radius: 12px; }
 .hero-badge .icon-chip svg { width: 24px; height: 24px; }
 .hero-badge b { color: var(--ink); display: block; font-size: 1.02rem; }
-.hero-badge small { color: var(--muted); font-size: .86rem; }
+.hero-badge small { color: var(--muted); font-size: .86rem; white-space: nowrap; }
 
 @media (min-width: 880px) {
   .hero { grid-template-columns: 1.05fr 1fr; gap: 56px; }
