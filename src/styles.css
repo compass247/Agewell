@@ -800,8 +800,12 @@ body.no-ph .ph .ph-label { display: none; }
   display: grid; grid-template-columns: 1fr; gap: 12px;
 }
 @media (min-width: 560px) { .checkbox-grid { grid-template-columns: 1fr 1fr; } }
-.check-opt {
+/* `.field label { display:block }` (higher specificity) would otherwise force
+   these option labels to stack their checkbox + text vertically — scope the
+   selector to `.field .check-opt` so the flex row wins. */
+.field .check-opt {
   display: flex; align-items: center; gap: 16px;
+  margin-bottom: 0; font-size: 1rem;
   border: 1.5px solid color-mix(in oklab, var(--gray) 70%, #fff);
   border-radius: 12px;
   padding: 14px 16px;
