@@ -248,14 +248,16 @@ body.no-ph .ph .ph-label { display: none; }
 .brand img { height: 54px; width: auto; }
 
 .nav-anchor { display: none; }
-@media (min-width: 980px) {
-  .nav-anchor { display: flex; align-items: center; gap: 6px; }
+@media (min-width: 1040px) {
+  .nav-anchor { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
   .nav-anchor a {
     color: var(--ink);
     font-weight: 600;
     font-size: .98rem;
-    padding: 10px 14px;
+    padding: 9px 12px;
     border-radius: 10px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .nav-anchor a:hover { background: var(--pastel-mint); color: var(--accent-d); text-decoration: none; }
 }
@@ -317,7 +319,7 @@ body.no-ph .ph .ph-label { display: none; }
   border-radius: 10px;
 }
 .mobile-anchor a:hover { text-decoration: none; }
-@media (min-width: 980px) { .mobile-anchor { display: none; } }
+@media (min-width: 1040px) { .mobile-anchor { display: none; } }
 
 /* ============================================================
    HERO
