@@ -16,7 +16,7 @@
     "cms:down": "docker compose -f backend/cms/docker-compose.cms.yml down",
     "cms:snapshot:prod": "node backend/cms/schema-sync.mjs snapshot",
     "cms:apply:local": "node backend/cms/schema-sync.mjs apply",
-    "cms:seed:local": "node backend/cms/setup-team-page.mjs && node backend/cms/setup-blog.mjs && node backend/cms/setup-team-members.mjs"
+    "cms:seed:local": "node backend/cms/seed-local.mjs"
   },
   "dependencies": {
     "next": "14.2.18",

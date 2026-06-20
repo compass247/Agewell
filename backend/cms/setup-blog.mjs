@@ -289,8 +289,12 @@ async function setupFlow() {
     return;
   }
   const name = "Revalidate posts";
-  const found = await api(`/flows?filter[name][_eq]=${encodeURIComponent(name)}&limit=1`);
-  if (found.body?.data?.length) { console.log("= flow 'Revalidate posts' (exists)"); return; }
+  const wantUrl = `${SITE_URL}/api/revalidate?secret=${encodeURIComponent(REVALIDATE_SECRET)}`;
+  const found = await api(`/flows?filter[name][_eq]=${encodeURIComponent(name)}&fields=id,operations.id,operations.type,operations.options&limit=1`);
+  if (found.body?.data?.length) {
+    await reconcileWebhookUrl(found.body.data[0], wantUrl, name);
+    return;
+  }
 
   const flow = await api(`/flows`, "POST", {
     name, icon: "bolt", status: "active", trigger: "event", accountability: "all",
@@ -302,7 +306,7 @@ async function setupFlow() {
   const op = await api(`/operations`, "POST", {
     flow: flowId, key: "revalidate", name: "Revalidate", type: "request", position_x: 19, position_y: 1,
     options: {
-      url: `${SITE_URL}/api/revalidate?secret=${encodeURIComponent(REVALIDATE_SECRET)}`,
+      url: wantUrl,
       method: "POST",
       headers: [{ header: "Content-Type", value: "application/json" }],
       body: '{ "collection": "posts", "slugs": ["{{$trigger.payload.slug}}"] }',
@@ -312,6 +316,19 @@ async function setupFlow() {
 
   await api(`/flows/${flowId}`, "PATCH", { operation: op.body.data.id });
   console.log("+ flow 'Revalidate posts' → POST /api/revalidate on posts changes");
+}
+
+// If a flow already exists, make sure its webhook URL matches wantUrl (e.g. so a
+// flow created with the prod URL gets repointed at localhost when re-seeding
+// locally). Idempotent: no-op when already correct.
+async function reconcileWebhookUrl(flow, wantUrl, name) {
+  const op = (flow.operations || []).find((o) => o.type === "request");
+  const current = op?.options?.url || "";
+  if (!op) { console.log(`= flow '${name}' (exists, no webhook op)`); return; }
+  if (current === wantUrl) { console.log(`= flow '${name}' (exists, url ok)`); return; }
+  const r = await api(`/operations/${op.id}`, "PATCH", { options: { ...op.options, url: wantUrl } });
+  if (r.status >= 400) console.log(`! flow '${name}': failed to update url (${r.status})`);
+  else console.log(`~ flow '${name}': webhook url → ${wantUrl}`);
 }
 
 async function main() {
