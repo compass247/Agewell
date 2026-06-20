@@ -30,6 +30,9 @@ Thumbs.db
 # Directus schema snapshot (pulled from an instance; structure only, not committed)
 backend/cms/snapshot.json
 
+# Directus homepage content backup (pulled from an instance; not committed)
+backend/cms/homepage-prod.json
+
 # Claude Code tooling config (per-developer; not project code)
 .claude/
 

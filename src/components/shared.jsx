@@ -82,11 +82,13 @@ export function Reveal({ children, as, className, style, delay }) {
 }
 
 // Section header block
-export function SectionHead({ eyebrow, title, lede, center, id }) {
+export function SectionHead({ eyebrow, eyebrowClass, title, titleHtml, lede, center, id }) {
   return (
     <div className={"section-head" + (center ? " center" : "")}>
-      {eyebrow && <span className="eyebrow">{eyebrow}</span>}
-      <h2 id={id}>{title}</h2>
+      {eyebrow && <span className={"eyebrow" + (eyebrowClass ? " " + eyebrowClass : "")}>{eyebrow}</span>}
+      {titleHtml
+        ? <h2 id={id} dangerouslySetInnerHTML={{ __html: title }} />
+        : <h2 id={id}>{title}</h2>}
       {lede && <p className="lede">{lede}</p>}
     </div>
   );
