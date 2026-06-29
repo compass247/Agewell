@@ -18,6 +18,7 @@ export const PATIENT_STATUSES = [
 ];
 
 export const patientInputSchema = z.object({
+  patientExternalId: optional(z.string()),
   firstName: z.string().trim().min(1, "First name is required").max(100),
   lastName: z.string().trim().min(1, "Last name is required").max(100),
   // MM/DD/YYYY
@@ -36,7 +37,8 @@ export const patientInputSchema = z.object({
     .refine((v) => v == null || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v), {
       message: "Invalid email",
     }),
-  street: optional(z.string()),
+  address1: optional(z.string()),
+  address2: optional(z.string()),
   city: optional(z.string()),
   state: optional(z.string()),
   zip: optional(z.string()),

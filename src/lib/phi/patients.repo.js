@@ -41,13 +41,15 @@ function buildWhere({ search, status, bdRepId, csId, from, to, includeDeleted })
   if (to) clauses.push(lte(patients.createdAt, to));
   if (search) {
     const like = `%${search}%`;
-    // Name + phone are plaintext/indexed. DOB/MBI are encrypted → not searchable.
+    // Name, phone, and Patient ID are plaintext/indexed. DOB/MBI are encrypted
+    // → not searchable.
     clauses.push(
       or(
         ilike(patients.firstName, like),
         ilike(patients.lastName, like),
         ilike(patients.primaryPhone, like),
-        ilike(patients.secondaryPhone, like)
+        ilike(patients.secondaryPhone, like),
+        ilike(patients.patientExternalId, like)
       )
     );
   }
@@ -71,6 +73,7 @@ export async function listPatients(opts = {}) {
   const rows = await db
     .select({
       id: patients.id,
+      patientExternalId: patients.patientExternalId,
       firstName: patients.firstName,
       lastName: patients.lastName,
       dobEnc: patients.dobEnc,

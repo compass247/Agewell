@@ -96,12 +96,14 @@ async function main() {
   // Synthetic patients (fake data only).
   const samples = [
     {
+      patientExternalId: "PF-100001",
       firstName: "Lan",
       lastName: "Nguyen",
       dob: "03/14/1948",
       primaryPhone: "714-555-0101",
       email: "lan.fake@example.com",
-      street: "123 Bolsa Ave",
+      address1: "123 Bolsa Ave",
+      address2: "Apt 4",
       city: "Westminster",
       state: "CA",
       zip: "92683",
@@ -118,12 +120,13 @@ async function main() {
       createdBy: bdId,
     },
     {
+      patientExternalId: "PF-100002",
       firstName: "Robert",
       lastName: "Tran",
       dob: "11/02/1951",
       primaryPhone: "714-555-0201",
       email: "robert.fake@example.com",
-      street: "456 Brookhurst St",
+      address1: "456 Brookhurst St",
       city: "Anaheim",
       state: "CA",
       zip: "92804",

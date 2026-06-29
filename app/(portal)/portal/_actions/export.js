@@ -10,6 +10,7 @@ import { listPatients } from "../../../../src/lib/phi/patients.repo.js";
 
 const HEADERS = [
   "id",
+  "patientExternalId",
   "lastName",
   "firstName",
   "dob",
@@ -38,6 +39,7 @@ export async function exportCsv(filters = {}) {
     lines.push(
       [
         r.id,
+        r.patientExternalId,
         r.lastName,
         r.firstName,
         r.dob, // decrypted for the authorized export

@@ -41,6 +41,12 @@ export default function PatientForm({ action, patient, submitLabel = "Save" }) {
       {state?.error ? <div className="pf-error">{state.error}</div> : null}
 
       <h2 className="pf-h2">Identity</h2>
+      <Field
+        label="Patient ID"
+        name="patientExternalId"
+        defaultValue={p.patientExternalId}
+        placeholder="External ID (e.g. EMR)"
+      />
       <div className="pf-grid3">
         <Field label="First name" name="firstName" defaultValue={p.firstName} required />
         <Field label="Last name" name="lastName" defaultValue={p.lastName} required />
@@ -59,7 +65,8 @@ export default function PatientForm({ action, patient, submitLabel = "Save" }) {
         <Field label="Secondary phone" name="secondaryPhone" defaultValue={p.secondaryPhone} />
       </div>
       <Field label="Email" name="email" type="email" defaultValue={p.email} />
-      <Field label="Street" name="street" defaultValue={p.street} />
+      <Field label="Address 1" name="address1" defaultValue={p.address1} />
+      <Field label="Address 2" name="address2" defaultValue={p.address2} />
       <div className="pf-grid3">
         <Field label="City" name="city" defaultValue={p.city} />
         <Field label="State" name="state" defaultValue={p.state} />
@@ -83,7 +90,7 @@ export default function PatientForm({ action, patient, submitLabel = "Save" }) {
       <h2 className="pf-h2">Intake</h2>
       <Field label="Referral source" name="referralSource" defaultValue={p.referralSource} />
       <div className="pf-field">
-        <label htmlFor="preferredLanguage">Preferred language</label>
+        <label htmlFor="preferredLanguage">Primary language</label>
         <select
           id="preferredLanguage"
           name="preferredLanguage"

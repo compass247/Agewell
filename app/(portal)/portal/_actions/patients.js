@@ -24,13 +24,15 @@ import {
 
 // Fields compared for the audit diff on update (sensitive ones auto-redacted).
 const AUDITED_FIELDS = [
+  "patientExternalId",
   "firstName",
   "lastName",
   "dob",
   "primaryPhone",
   "secondaryPhone",
   "email",
-  "street",
+  "address1",
+  "address2",
   "city",
   "state",
   "zip",
@@ -68,13 +70,15 @@ export async function createPatient(_prev, formData) {
     const [row] = await tx
       .insert(patients)
       .values({
+        patientExternalId: d.patientExternalId,
         firstName: d.firstName,
         lastName: d.lastName,
         dobEnc: encryptField(d.dob),
         primaryPhone: d.primaryPhone,
         secondaryPhone: d.secondaryPhone,
         email: d.email,
-        street: d.street,
+        address1: d.address1,
+        address2: d.address2,
         city: d.city,
         state: d.state,
         zip: d.zip,
@@ -144,6 +148,7 @@ export async function updatePatient(patientId, _prev, formData) {
       await tx
         .update(patients)
         .set({
+          patientExternalId: d.patientExternalId,
           firstName: d.firstName,
           lastName: d.lastName,
           dobEnc: encryptField(d.dob),

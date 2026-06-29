@@ -58,6 +58,7 @@ export default async function PatientsPage({ searchParams }) {
         <table className="pf-table">
           <thead>
             <tr>
+              <th>Patient ID</th>
               <th>Name</th>
               <th>DOB</th>
               <th>Phone</th>
@@ -70,11 +71,12 @@ export default async function PatientsPage({ searchParams }) {
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={7} className="pf-muted">No patients match.</td>
+                <td colSpan={8} className="pf-muted">No patients match.</td>
               </tr>
             ) : (
               rows.map((r) => (
                 <tr key={r.id}>
+                  <td>{r.patientExternalId || "—"}</td>
                   <td>
                     <Link href={`/portal/patients/${r.id}`}>
                       {r.lastName}, {r.firstName}

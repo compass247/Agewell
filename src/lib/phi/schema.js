@@ -44,6 +44,7 @@ export const auditActionEnum = pgEnum("audit_action", [
   "UPDATE",
   "DELETE",
   "EXPORT",
+  "IMPORT",
   "LOGIN",
   "LOGOUT",
   "LOGIN_FAILED",
@@ -81,6 +82,11 @@ export const patients = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
 
+    // External identifier from another system (e.g. EMR/Practice Fusion).
+    // Plaintext + indexed for search and import de-duplication. Optional;
+    // NOT a unique constraint (external IDs may be blank or non-unique).
+    patientExternalId: text("patient_external_id"),
+
     // Identity (name is plaintext + indexed for search).
     firstName: text("first_name").notNull(),
     lastName: text("last_name").notNull(),
@@ -90,7 +96,8 @@ export const patients = pgTable(
     primaryPhone: text("primary_phone").notNull(),
     secondaryPhone: text("secondary_phone"),
     email: text("email"),
-    street: text("street"),
+    address1: text("address1"),
+    address2: text("address2"),
     city: text("city"),
     state: text("state"),
     zip: text("zip"),
@@ -137,6 +144,7 @@ export const patients = pgTable(
     createdByIdx: index("patients_created_by_idx").on(t.createdBy),
     nameIdx: index("patients_name_idx").on(t.lastName, t.firstName),
     primaryPhoneIdx: index("patients_primary_phone_idx").on(t.primaryPhone),
+    externalIdIdx: index("patients_external_id_idx").on(t.patientExternalId),
     // Partial index: most queries are over not-deleted rows.
     activeIdx: index("patients_active_idx")
       .on(t.createdAt)

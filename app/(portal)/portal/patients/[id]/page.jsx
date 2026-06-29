@@ -71,12 +71,18 @@ export default async function PatientDetailPage({ params }) {
         <div>
           <div className="pf-card">
             <h2 className="pf-h2">Record</h2>
+            <Row label="Patient ID">{patient.patientExternalId}</Row>
             <Row label="Date of birth">{patient.dob}</Row>
             <Row label="Primary phone">{patient.primaryPhone}</Row>
             <Row label="Secondary phone">{patient.secondaryPhone}</Row>
             <Row label="Email">{patient.email}</Row>
             <Row label="Address">
-              {[patient.street, patient.city, patient.state, patient.zip].filter(Boolean).join(", ")}
+              {[
+                [patient.address1, patient.address2].filter(Boolean).join(", "),
+                [patient.city, patient.state, patient.zip].filter(Boolean).join(", "),
+              ]
+                .filter(Boolean)
+                .join(" · ")}
             </Row>
             <Row label="Medicare MBI">{patient.medicareMbi ? maskTail(patient.medicareMbi) : "—"}</Row>
             <Row label="Insurance plan">{patient.insurancePlan}</Row>
@@ -87,7 +93,7 @@ export default async function PatientDetailPage({ params }) {
                 .join(" · ")}
             </Row>
             <Row label="Referral source">{patient.referralSource}</Row>
-            <Row label="Preferred language">{patient.preferredLanguage}</Row>
+            <Row label="Primary language">{patient.preferredLanguage}</Row>
             <Row label="Notes">{patient.notes}</Row>
           </div>
 
