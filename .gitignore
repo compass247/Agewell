@@ -50,3 +50,4 @@ crash.log
 # Backend build artifacts
 backend/**/*.zip
 infra/build/
+sample-patients-import.xlsx
