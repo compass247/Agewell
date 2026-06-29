@@ -16,16 +16,31 @@
     "cms:down": "docker compose -f backend/cms/docker-compose.cms.yml down",
     "cms:snapshot:prod": "node backend/cms/schema-sync.mjs snapshot",
     "cms:apply:local": "node backend/cms/schema-sync.mjs apply",
-    "cms:seed:local": "node backend/cms/seed-local.mjs"
+    "cms:seed:local": "node backend/cms/seed-local.mjs",
+    "phi:db:up": "docker compose -f backend/phi/docker-compose.phi.yml --env-file backend/phi/.env up -d",
+    "phi:db:down": "docker compose -f backend/phi/docker-compose.phi.yml down",
+    "phi:db:reset": "docker compose -f backend/phi/docker-compose.phi.yml down -v",
+    "phi:db:generate": "drizzle-kit generate",
+    "phi:db:migrate": "node backend/phi/migrate.mjs",
+    "phi:db:seed": "node backend/phi/seed-local.mjs",
+    "phi:db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "next": "14.2.18",
+    "@node-rs/argon2": "^2.0.2",
+    "drizzle-orm": "^0.45.2",
+    "next": "14.2.35",
+    "next-auth": "5.0.0-beta.25",
     "next-intl": "^3.26.3",
+    "otplib": "^12.0.1",
+    "postgres": "^3.4.5",
+    "qrcode": "^1.5.4",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
+    "drizzle-kit": "^0.31.10",
     "eslint": "^8.57.1",
-    "eslint-config-next": "14.2.18"
+    "eslint-config-next": "14.2.35"
   }
 }
