@@ -1,13 +1,17 @@
 /* Zod validation for patient intake input. Shared by create/edit actions. */
 import { z } from "zod";
 
-const optional = (s) =>
+// Optional free-text field. Accepts string | null | undefined, trims, and
+// normalizes empty/absent to null. Idempotent: re-parsing its own output (null)
+// succeeds — important because import re-validates already-parsed rows.
+const optional = () =>
   z
-    .string()
-    .trim()
-    .max(200)
-    .optional()
-    .transform((v) => (v ? v : null));
+    .union([z.string(), z.null(), z.undefined()])
+    .transform((v) => {
+      if (v == null) return null;
+      const t = String(v).trim();
+      return t === "" ? null : t.slice(0, 200);
+    });
 
 export const PREFERRED_LANGUAGES = ["ENGLISH", "VIETNAMESE", "SPANISH", "OTHER"];
 export const PATIENT_STATUSES = [
@@ -29,11 +33,12 @@ export const patientInputSchema = z.object({
   primaryPhone: z.string().trim().min(7, "Primary phone is required").max(40),
   secondaryPhone: optional(z.string()),
   email: z
-    .string()
-    .trim()
-    .max(200)
-    .optional()
-    .transform((v) => (v ? v : null))
+    .union([z.string(), z.null(), z.undefined()])
+    .transform((v) => {
+      if (v == null) return null;
+      const t = String(v).trim();
+      return t === "" ? null : t;
+    })
     .refine((v) => v == null || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v), {
       message: "Invalid email",
     }),
@@ -51,11 +56,12 @@ export const patientInputSchema = z.object({
   referralSource: optional(z.string()),
   preferredLanguage: z.enum(PREFERRED_LANGUAGES).default("ENGLISH"),
   notes: z
-    .string()
-    .trim()
-    .max(5000)
-    .optional()
-    .transform((v) => (v ? v : null)),
+    .union([z.string(), z.null(), z.undefined()])
+    .transform((v) => {
+      if (v == null) return null;
+      const t = String(v).trim();
+      return t === "" ? null : t.slice(0, 5000);
+    }),
 });
 
 export const statusSchema = z.enum(PATIENT_STATUSES);
