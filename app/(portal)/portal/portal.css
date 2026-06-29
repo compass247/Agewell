@@ -1,0 +1,57 @@
+/* Minimal portal styling — plain CSS, no framework (matches repo convention). */
+.pf-shell { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+.pf-nav {
+  display: flex; align-items: center; gap: 20px;
+  background: #0f3d2e; color: #fff; padding: 12px 20px;
+}
+.pf-nav a { color: #cfe9dd; text-decoration: none; font-weight: 600; font-size: 14px; }
+.pf-nav a:hover { color: #fff; }
+.pf-nav .pf-spacer { flex: 1; }
+.pf-nav .pf-user { font-size: 13px; color: #cfe9dd; }
+
+.pf-card {
+  background: #fff; border: 1px solid #e2e8ee; border-radius: 10px;
+  padding: 24px; margin: 24px 0; box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.pf-h1 { font-size: 22px; margin: 24px 0 8px; }
+.pf-h2 { font-size: 16px; margin: 20px 0 8px; color: #334; }
+
+.pf-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+.pf-field label { font-size: 13px; font-weight: 600; color: #45525e; }
+.pf-field input, .pf-field select, .pf-field textarea {
+  padding: 9px 11px; border: 1px solid #cdd7e0; border-radius: 7px; font-size: 14px;
+  font-family: inherit;
+}
+.pf-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+.pf-grid3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0 16px; }
+
+.pf-btn {
+  display: inline-block; background: #26a146; color: #fff; border: 0;
+  padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 700;
+  cursor: pointer; text-decoration: none;
+}
+.pf-btn:hover { background: #1f8c3c; }
+.pf-btn--ghost { background: #eef2f6; color: #334; }
+.pf-btn--danger { background: #c43d3d; }
+.pf-btn--danger:hover { background: #a93232; }
+
+.pf-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.pf-table th, .pf-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eef2f6; }
+.pf-table th { color: #5a6b78; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+.pf-table tr:hover td { background: #f8fafc; }
+
+.pf-badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.pf-badge--NEW { background: #e3f0ff; color: #1d4ed8; }
+.pf-badge--REVIEWED_BY_CS { background: #fff3d6; color: #92670a; }
+.pf-badge--ENTERED_IN_EMR { background: #e7e0ff; color: #5b34c4; }
+.pf-badge--COMPLETE { background: #dcf5e3; color: #1d7a3a; }
+
+.pf-error { background: #fde8e8; color: #9b1c1c; padding: 10px 12px; border-radius: 7px; font-size: 14px; margin: 12px 0; }
+.pf-muted { color: #7a8893; font-size: 13px; }
+.pf-toolbar { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-bottom: 14px; }
+
+.pf-login-wrap { max-width: 380px; margin: 8vh auto; }
+.pf-audit { font-size: 13px; }
+.pf-audit li { margin-bottom: 8px; border-left: 3px solid #e2e8ee; padding-left: 10px; }
+.pf-note { background: #f8fafc; border: 1px solid #eef2f6; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; font-size: 14px; }
+.pf-note .pf-note-meta { color: #7a8893; font-size: 12px; margin-top: 4px; }

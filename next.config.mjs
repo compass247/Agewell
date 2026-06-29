@@ -10,6 +10,12 @@ const nextConfig = {
   output: "standalone",
   reactStrictMode: true,
 
+  // Native addons (argon2) and the postgres driver must run in Node, not be
+  // bundled by webpack. Keep them external on the server.
+  experimental: {
+    serverComponentsExternalPackages: ["@node-rs/argon2", "postgres"],
+  },
+
   images: {
     // Directus media is served from the CMS host (and/or S3/CloudFront later).
     // Allow the CMS origin so next/image can optimize remote uploads.
