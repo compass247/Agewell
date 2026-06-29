@@ -13,7 +13,7 @@ const nextConfig = {
   // Native addons (argon2) and the postgres driver must run in Node, not be
   // bundled by webpack. Keep them external on the server.
   experimental: {
-    serverComponentsExternalPackages: ["@node-rs/argon2", "postgres"],
+    serverComponentsExternalPackages: ["@node-rs/argon2", "postgres", "exceljs"],
   },
 
   images: {

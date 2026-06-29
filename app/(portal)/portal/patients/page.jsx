@@ -48,6 +48,7 @@ export default async function PatientsPage({ searchParams }) {
         <h1 className="pf-h1" style={{ margin: 0 }}>Patients</h1>
         <div style={{ display: "flex", gap: 10 }}>
           {canExport ? <ExportButton filters={{ search: filters.search, status: filters.status }} /> : null}
+          <Link className="pf-btn pf-btn--ghost" href="/portal/patients/import">Import</Link>
           <Link className="pf-btn" href="/portal/patients/new">+ New patient</Link>
         </div>
       </div>
