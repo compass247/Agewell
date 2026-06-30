@@ -38,7 +38,10 @@ resource "aws_kms_key" "phi" {
         Resource  = "*"
         Condition = {
           ArnLike = {
-            "kms:EncryptionContext:aws:logs:arn" = "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/ecs/${var.project}-portal*"
+            "kms:EncryptionContext:aws:logs:arn" = [
+              "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/ecs/${var.project}-portal*",
+              "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/vpc/${var.project}-phi*",
+            ]
           }
         }
       }
