@@ -141,8 +141,9 @@ variable "portal_subdomain" {
 }
 
 variable "portal_allowed_cidrs" {
-  description = "CIDRs allowed to reach the PHI portal ALB on 443 (admin/office /32s). REQUIRED — no default; set in terraform.tfvars. Empty = nobody can reach it."
+  description = "CIDRs allowed to reach the PHI portal ALB on 443 (admin/office /32s). ⚠️ Defaults to 0.0.0.0/0 (open) for initial testing — login + MFA still gate access, but TIGHTEN this to specific /32s in terraform.tfvars before real PHI use."
   type        = list(string)
+  default     = ["0.0.0.0/0"]
 }
 
 variable "phi_vpc_cidr" {

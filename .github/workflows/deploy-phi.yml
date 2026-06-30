@@ -14,23 +14,28 @@ name: Deploy PHI portal
 #              PHI_ECS_CLUSTER, PHI_PORTAL_SERVICE, PHI_MIGRATE_TASKDEF,
 #              PHI_PRIVATE_SUBNETS (comma-separated), PHI_TASK_SG
 
+# Manual-only for now (workflow_dispatch). The first `Deploy` (infra job) must
+# create the PHI ECS service + the deploy role, and you must set the repo secret
+# AWS_PHI_DEPLOY_ROLE_ARN + the PHI_* vars from Terraform outputs, BEFORE this
+# workflow can run. Once those exist, switch to the push trigger below (commented)
+# to deploy automatically on portal/PHI changes.
 on:
-  push:
-    branches: [main]
-    paths:
-      - "app/(portal)/**"
-      - "app/api/portal/**"
-      - "src/lib/phi/**"
-      - "auth.js"
-      - "auth.config.js"
-      - "middleware.js"
-      - "drizzle/**"
-      - "backend/phi/**"
-      - "Dockerfile"
-      - "Dockerfile.migrate"
-      - "infra/phi-*.tf"
-      - ".github/workflows/deploy-phi.yml"
   workflow_dispatch:
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - "app/(portal)/**"
+  #     - "app/api/portal/**"
+  #     - "src/lib/phi/**"
+  #     - "auth.js"
+  #     - "auth.config.js"
+  #     - "middleware.js"
+  #     - "drizzle/**"
+  #     - "backend/phi/**"
+  #     - "Dockerfile"
+  #     - "Dockerfile.migrate"
+  #     - "infra/phi-*.tf"
+  #     - ".github/workflows/deploy-phi.yml"
 
 concurrency:
   group: deploy-phi
