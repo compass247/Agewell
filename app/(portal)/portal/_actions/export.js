@@ -14,6 +14,7 @@ const HEADERS = [
   "lastName",
   "firstName",
   "dob",
+  "gender",
   "primaryPhone",
   "status",
   "referralSource",
@@ -43,6 +44,7 @@ export async function exportCsv(filters = {}) {
         r.lastName,
         r.firstName,
         r.dob, // decrypted for the authorized export
+        r.gender,
         r.primaryPhone,
         r.status,
         r.referralSource,

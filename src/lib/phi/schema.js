@@ -38,6 +38,8 @@ export const preferredLanguageEnum = pgEnum("preferred_language", [
   "OTHER",
 ]);
 
+export const genderEnum = pgEnum("gender", ["MALE", "FEMALE", "OTHER"]);
+
 export const auditActionEnum = pgEnum("audit_action", [
   "CREATE",
   "READ",
@@ -91,6 +93,7 @@ export const patients = pgTable(
     firstName: text("first_name").notNull(),
     lastName: text("last_name").notNull(),
     dobEnc: text("dob_enc").notNull(), // AES-GCM ciphertext (MM/DD/YYYY)
+    gender: genderEnum("gender"), // optional demographic
 
     // Contact.
     primaryPhone: text("primary_phone").notNull(),

@@ -21,7 +21,9 @@ export const COLUMN_MAP = {
   "dob": "dob",
   "dob mm dd yyyy": "dob",
   "date of birth": "dob",
+  "patient dob": "dob",
   "primary phone": "primaryPhone",
+  "phone": "primaryPhone",
   "secondary phone": "secondaryPhone",
   "email": "email",
   "address 1": "address1",
@@ -31,6 +33,8 @@ export const COLUMN_MAP = {
   "city": "city",
   "state": "state",
   "zip": "zip",
+  "zip code": "zip",
+  "gender": "gender",
   "medicare mbi": "medicareMbi",
   "insurance plan": "insurancePlan",
   "member id": "insuranceMemberId",
@@ -65,6 +69,7 @@ export const TEMPLATE_HEADERS = [
   "Emergency Phone",
   "Referral Source",
   "Primary Language",
+  "Gender",
   "Notes",
 ];
 
@@ -76,6 +81,17 @@ const LANGUAGE_ALIASES = {
   "tieng viet": "VIETNAMESE",
   spanish: "SPANISH",
   es: "SPANISH",
+  other: "OTHER",
+};
+
+const GENDER_ALIASES = {
+  m: "MALE",
+  male: "MALE",
+  nam: "MALE",
+  f: "FEMALE",
+  female: "FEMALE",
+  nu: "FEMALE", // "nữ" normalizes to "nu"
+  o: "OTHER",
   other: "OTHER",
 };
 
@@ -151,6 +167,10 @@ export async function parsePatientWorkbook(buffer, filename = "", existingIds = 
     if (raw.preferredLanguage) {
       raw.preferredLanguage = coerceLanguage(raw.preferredLanguage);
     }
+    // Accept friendly gender spellings ("M", "Male", "Nam") → enum, or null.
+    if (raw.gender !== undefined) {
+      raw.gender = coerceGender(raw.gender);
+    }
 
     const parsed = patientInputSchema.safeParse(raw);
     if (!parsed.success) {
@@ -198,6 +218,16 @@ export async function parsePatientWorkbook(buffer, filename = "", existingIds = 
 export function coerceLanguage(value) {
   const key = normalize(value);
   return LANGUAGE_ALIASES[key] || (value ? String(value).toUpperCase() : "ENGLISH");
+}
+
+/**
+ * Normalize a raw gender value to the MALE/FEMALE/OTHER enum, or null if blank.
+ * Unknown non-blank values fall back to OTHER so a row isn't rejected over gender.
+ */
+export function coerceGender(value) {
+  if (value == null || String(value).trim() === "") return null;
+  const key = normalize(value);
+  return GENDER_ALIASES[key] || "OTHER";
 }
 
 /** Build the downloadable CSV template (header row only). */

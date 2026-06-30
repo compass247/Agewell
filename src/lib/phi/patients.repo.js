@@ -77,6 +77,7 @@ export async function listPatients(opts = {}) {
       firstName: patients.firstName,
       lastName: patients.lastName,
       dobEnc: patients.dobEnc,
+      gender: patients.gender,
       primaryPhone: patients.primaryPhone,
       status: patients.status,
       referralSource: patients.referralSource,

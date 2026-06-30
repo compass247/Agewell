@@ -15,6 +15,13 @@
       "when": 1782725867067,
       "tag": "0001_add_patient_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782725867068,
+      "tag": "0002_add_gender",
+      "breakpoints": true
     }
   ]
 }

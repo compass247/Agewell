@@ -73,6 +73,7 @@ export default async function PatientDetailPage({ params }) {
             <h2 className="pf-h2">Record</h2>
             <Row label="Patient ID">{patient.patientExternalId}</Row>
             <Row label="Date of birth">{patient.dob}</Row>
+            <Row label="Gender">{patient.gender}</Row>
             <Row label="Primary phone">{patient.primaryPhone}</Row>
             <Row label="Secondary phone">{patient.secondaryPhone}</Row>
             <Row label="Email">{patient.email}</Row>
