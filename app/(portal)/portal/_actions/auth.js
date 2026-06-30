@@ -27,17 +27,24 @@ export async function loginAction(_prev, formData) {
   const email = String(formData.get("email") || "").toLowerCase();
   const password = String(formData.get("password") || "");
   try {
-    await signIn("credentials", { email, password, redirect: false });
+    // Let Auth.js set the session cookie AND redirect in one response. Calling
+    // auth() in the same action (with redirect:false) would read the OLD request
+    // cookies and see no session yet ("Login failed"). Redirect to /portal; the
+    // middleware routes a fresh mfa:pending session to /portal/mfa/setup|verify.
+    await signIn("credentials", {
+      email,
+      password,
+      redirectTo: "/portal",
+    });
   } catch (err) {
+    // signIn with redirectTo throws a NEXT_REDIRECT control-flow error on
+    // success — it must propagate, not be treated as a login failure.
+    if (err?.digest?.startsWith?.("NEXT_REDIRECT")) throw err;
     if (err instanceof AuthError) {
       return { error: "Invalid email or password." };
     }
     throw err;
   }
-  // Fresh session is mfa:pending → send to setup or verify.
-  const session = await auth();
-  if (!session?.user) return { error: "Login failed. Try again." };
-  redirect(session.user.mfaEnrolled ? "/portal/mfa/verify" : "/portal/mfa/setup");
 }
 
 /** Begin TOTP enrollment: generate + store an encrypted secret, return a QR. */
