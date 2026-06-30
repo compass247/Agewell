@@ -3,7 +3,8 @@
    Patient bulk-import server actions (Node).
 
    previewImport(formData): parse + validate an uploaded .xlsx/.csv → return the
-     valid/invalid/duplicate summary. Read-only (no DB writes, no audit).
+     will-import vs skipped summary (skipped = invalid OR duplicate Patient ID,
+     checked against the DB and within the file). Read-only (no writes, no audit).
    commitImport(rows): insert the confirmed valid rows in one transaction; one
      CREATE audit row per patient + one IMPORT summary row.
 
@@ -11,6 +12,7 @@
    file (DOB/MBI) is encrypted on insert exactly like manual entry. The file is
    parsed in memory and never written to disk or sent outside this DB.
    ============================================================ */
+import { isNotNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "../../../../src/lib/phi/db.js";
 import { patients } from "../../../../src/lib/phi/schema.js";
@@ -22,6 +24,16 @@ import { patientInputSchema } from "../../../../src/lib/phi/validation.js";
 import { parsePatientWorkbook } from "../../../../src/lib/phi/import.js";
 
 const MAX_ROWS = 2000;
+
+/** Set of Patient IDs (patient_external_id) currently in the DB, including
+    soft-deleted rows — an external ID stays "taken" even if hidden. */
+async function loadExistingExternalIds() {
+  const rows = await db
+    .select({ id: patients.patientExternalId })
+    .from(patients)
+    .where(isNotNull(patients.patientExternalId));
+  return new Set(rows.map((r) => r.id));
+}
 
 export async function previewImport(_prev, formData) {
   const actor = await requireSession();
@@ -39,7 +51,8 @@ export async function previewImport(_prev, formData) {
   let result;
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
-    result = await parsePatientWorkbook(buffer, name);
+    const existingIds = await loadExistingExternalIds();
+    result = await parsePatientWorkbook(buffer, name, existingIds);
   } catch (err) {
     return { error: `Could not read the file: ${err.message}` };
   }
@@ -55,12 +68,11 @@ export async function previewImport(_prev, formData) {
     ok: true,
     fileName: name,
     headers: result.headers,
-    // Only the valid rows' data is sent back for commit; invalid rows are shown
-    // with their errors but cannot be imported.
+    // Only the valid rows' data is sent back for commit; invalid rows (incl.
+    // duplicate Patient IDs) are shown with their reason but cannot be imported.
     valid: result.valid.map((v) => ({
       rowNumber: v.rowNumber,
       data: v.data,
-      duplicate: result.duplicates.has(v.rowNumber),
     })),
     invalid: result.invalid.map((iv) => ({
       rowNumber: iv.rowNumber,
@@ -86,9 +98,30 @@ export async function commitImport(payload) {
   }
   if (!clean.length) return { error: "No valid rows to import after re-validation." };
 
+  // Re-check duplicate Patient IDs server-side (defense in depth against a
+  // tampered payload or a concurrent import). Drop dups against the DB and
+  // within this batch; blank IDs are never dups.
+  const existingIds = await loadExistingExternalIds();
+  const batchIds = new Set();
+  const toInsert = [];
+  let skippedDuplicates = 0;
+  for (const d of clean) {
+    if (d.patientExternalId) {
+      if (existingIds.has(d.patientExternalId) || batchIds.has(d.patientExternalId)) {
+        skippedDuplicates += 1;
+        continue;
+      }
+      batchIds.add(d.patientExternalId);
+    }
+    toInsert.push(d);
+  }
+  if (!toInsert.length) {
+    return { error: "All rows were duplicate Patient IDs — nothing imported." };
+  }
+
   let imported = 0;
   await db.transaction(async (tx) => {
-    for (const d of clean) {
+    for (const d of toInsert) {
       const [row] = await tx
         .insert(patients)
         .values({
@@ -140,10 +173,15 @@ export async function commitImport(payload) {
       actorEmail: actor.email,
       action: "IMPORT",
       entity: "patient",
-      meta: { fileName, submitted: incoming.length, imported },
+      meta: {
+        fileName,
+        submitted: incoming.length,
+        imported,
+        skippedDuplicates,
+      },
     });
   });
 
   revalidatePath("/portal/patients");
-  return { ok: true, imported };
+  return { ok: true, imported, skippedDuplicates };
 }

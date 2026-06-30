@@ -100,10 +100,14 @@ function cellText(value) {
 }
 
 /**
- * Parse + validate. `filename` is used to pick the parser (.csv vs workbook).
- * Returns the preview structure described in the file header.
+ * Parse + validate. `filename` picks the parser (.csv vs workbook).
+ * `existingIds` is a Set of Patient IDs already in the DB — rows whose Patient
+ * ID collides with the DB, or with an earlier row in the same file, are treated
+ * as INVALID (skipped), not imported. Rows with a blank Patient ID are never
+ * counted as duplicates.
+ * Returns { headers, valid: [{rowNumber, data}], invalid: [{rowNumber, errors}] }.
  */
-export async function parsePatientWorkbook(buffer, filename = "") {
+export async function parsePatientWorkbook(buffer, filename = "", existingIds = new Set()) {
   const wb = new ExcelJS.Workbook();
   const isCsv = /\.csv$/i.test(filename);
   if (isCsv) {
@@ -129,8 +133,7 @@ export async function parsePatientWorkbook(buffer, filename = "") {
 
   const valid = [];
   const invalid = [];
-  const seenExternalIds = new Map(); // externalId -> first rowNumber
-  const duplicates = new Set();
+  const seenExternalIds = new Set(); // Patient IDs seen earlier in THIS file
 
   const lastRow = ws.rowCount;
   for (let r = 2; r <= lastRow; r++) {
@@ -159,24 +162,33 @@ export async function parsePatientWorkbook(buffer, filename = "") {
       continue;
     }
 
-    // Normalize language aliases that zod's enum would otherwise reject is done
-    // pre-parse below; here data is already canonical.
     const data = parsed.data;
 
-    // In-file duplicate detection on Patient ID.
+    // Duplicate Patient ID → skip (do not import). Blank ID is never a dup.
     if (data.patientExternalId) {
-      const prev = seenExternalIds.get(data.patientExternalId);
-      if (prev) {
-        duplicates.add(r);
-      } else {
-        seenExternalIds.set(data.patientExternalId, r);
+      if (existingIds.has(data.patientExternalId)) {
+        invalid.push({
+          rowNumber: r,
+          errors: [`patientExternalId: already exists in the system (${data.patientExternalId})`],
+          raw,
+        });
+        continue;
       }
+      if (seenExternalIds.has(data.patientExternalId)) {
+        invalid.push({
+          rowNumber: r,
+          errors: [`patientExternalId: duplicated earlier in this file (${data.patientExternalId})`],
+          raw,
+        });
+        continue;
+      }
+      seenExternalIds.add(data.patientExternalId);
     }
 
     valid.push({ rowNumber: r, data });
   }
 
-  return { headers, valid, invalid, duplicates };
+  return { headers, valid, invalid };
 }
 
 /**

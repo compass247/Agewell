@@ -39,7 +39,7 @@ export default function ImportForm() {
     if (res?.error) {
       setError(res.error);
     } else {
-      setDone(res.imported);
+      setDone(res);
       setPreview(null);
     }
   }
@@ -65,7 +65,11 @@ export default function ImportForm() {
       {error ? <div className="pf-error">{error}</div> : null}
       {done != null ? (
         <div className="pf-error" style={{ background: "#dcf5e3", color: "#1d7a3a" }}>
-          ✓ Imported {done} patient{done === 1 ? "" : "s"}.{" "}
+          ✓ Imported {done.imported} patient{done.imported === 1 ? "" : "s"}
+          {done.skippedDuplicates
+            ? ` · skipped ${done.skippedDuplicates} duplicate Patient ID${done.skippedDuplicates === 1 ? "" : "s"}`
+            : ""}
+          .{" "}
           <a href="/portal/patients">View list</a>.
         </div>
       ) : null}
@@ -73,11 +77,9 @@ export default function ImportForm() {
       {preview ? (
         <div style={{ marginTop: 16 }}>
           <p>
-            <strong>{preview.valid.length}</strong> valid ·{" "}
-            <strong>{preview.invalid.length}</strong> invalid
-            {preview.valid.some((v) => v.duplicate)
-              ? " · some duplicate Patient IDs flagged"
-              : ""}
+            <strong>{preview.valid.length}</strong> will import ·{" "}
+            <strong>{preview.invalid.length}</strong> skipped (invalid or
+            duplicate Patient ID)
           </p>
 
           {preview.valid.length ? (
@@ -91,7 +93,6 @@ export default function ImportForm() {
                     <th>Name</th>
                     <th>DOB</th>
                     <th>Phone</th>
-                    <th />
                   </tr>
                 </thead>
                 <tbody>
@@ -104,11 +105,6 @@ export default function ImportForm() {
                       </td>
                       <td>{v.data.dob}</td>
                       <td>{v.data.primaryPhone}</td>
-                      <td>
-                        {v.duplicate ? (
-                          <span className="pf-badge pf-badge--NEW">dup ID</span>
-                        ) : null}
-                      </td>
                     </tr>
                   ))}
                 </tbody>
