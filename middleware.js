@@ -1,19 +1,41 @@
-import createMiddleware from "next-intl/middleware";
-import { routing } from "./src/i18n/routing.js";
+/* ============================================================
+   Composed middleware: PHI portal auth vs. marketing i18n.
 
-// Locale middleware: redirects "/" to "/vi" (or "/en" by Accept-Language),
-// and ensures every page is served under a locale prefix. This replaces the
-// old client-only localStorage language toggle as the source of truth.
-export default createMiddleware(routing);
+   Next.js allows only one middleware entrypoint, so the two concerns are
+   branched by path here:
+     /portal/*  +  /api/portal/*   -> Auth.js gate (auth.config.js authorized())
+     everything else               -> next-intl createMiddleware(routing)
+
+   The Auth.js gate uses the EDGE-SAFE auth.config.js (no DB/crypto imports), so
+   middleware stays edge-compatible. Coarse gating only — every server action
+   re-checks (defense in depth).
+   ============================================================ */
+import createIntlMiddleware from "next-intl/middleware";
+import NextAuth from "next-auth";
+import { routing } from "./src/i18n/routing.js";
+import { authConfig } from "./auth.config.js";
+
+const intlMiddleware = createIntlMiddleware(routing);
+const { auth: authMiddleware } = NextAuth(authConfig);
+
+export default function middleware(request) {
+  const { pathname } = request.nextUrl;
+  if (pathname.startsWith("/portal") || pathname.startsWith("/api/portal")) {
+    return authMiddleware(request);
+  }
+  return intlMiddleware(request);
+}
 
 export const config = {
-  // Match "/" explicitly, all locale-prefixed paths, and everything else
-  // except API routes, Next internals, and files with an extension.
   matcher: [
+    // Portal (auth gate)
+    "/portal/:path*",
+    // Marketing i18n
     "/",
     "/(vi|en)/:path*",
-    // Exclude api, healthz, Next internals, and static assets so the ALB
-    // health check hits /healthz directly (no locale redirect).
-    "/((?!api|healthz|_next|_vercel|assets|.*\\..*).*)",
+    // Everything except API, healthz, Next internals, static assets, and the
+    // portal namespace (handled above). Portal is added to the negative
+    // lookahead so next-intl never rewrites portal URLs.
+    "/((?!api|healthz|portal|_next|_vercel|assets|.*\\..*).*)",
   ],
 };

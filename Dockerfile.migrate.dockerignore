@@ -1,0 +1,25 @@
+# Build context for the migrate image. We need backend/phi/migrate.mjs and
+# drizzle/ (the main .dockerignore excludes backend/). Keep everything else out.
+node_modules
+dist
+.git
+.github
+.next
+BD_Requirements
+infra
+public
+src
+app
+.env
+.env.*
+*.md
+npm-debug.log*
+sample-patients-import.xlsx
+backend/cms
+backend/lead-handler
+backend/lead-sync
+backend/docker-compose.local.yml
+backend/phi/docker-compose.phi.yml
+backend/phi/.env
+backend/phi/.env.example
+backend/phi/seed-local.mjs

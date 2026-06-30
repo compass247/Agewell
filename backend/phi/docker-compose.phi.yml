@@ -1,0 +1,41 @@
+# Local PHI stack — dedicated Postgres for the patient intake portal.
+#
+# This database is ISOLATED from everything else: it is NOT the CMS Postgres
+# (agewell-cms-db) and shares no container, volume, or port with it. Patient
+# PHI lives only here and is never written to Directus, DynamoDB, or SES.
+#
+# Start:  npm run phi:db:up      (docker compose ... up -d)
+# Stop:   npm run phi:db:down    (keeps data)
+# Reset:  npm run phi:db:reset   (down -v — WIPES the volume; dev only)
+# Admin:  connect any psql client to localhost:5433 (user/db: phi)
+#
+# Copy backend/phi/.env.example -> backend/phi/.env before first run.
+#
+# ⚠️ LOCAL DEV ONLY. Use synthetic data exclusively — never load real patient
+# data onto a developer machine. See backend/phi/README.md.
+services:
+  phi-db:
+    # Pin the major version — match the CMS Postgres (16) and the future prod
+    # RDS/engine version so local and prod never drift on a surprise upgrade.
+    image: postgres:16-alpine
+    container_name: agewell-phi-db
+    environment:
+      POSTGRES_USER: phi
+      POSTGRES_PASSWORD: ${PHI_DB_PASSWORD:-phi}
+      POSTGRES_DB: phi
+    ports:
+      # Distinct host port (5433) so it never collides with a local Postgres
+      # on 5432 or the CMS Postgres. The Next.js app connects here directly.
+      - "5433:5432"
+    volumes:
+      # Persistent, named volume — patient records survive restarts. NEVER run
+      # `down -v` against real data. Distinct name from the CMS volume.
+      - phi-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U phi -d phi"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  phi-db-data:

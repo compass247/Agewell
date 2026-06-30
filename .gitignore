@@ -2,6 +2,7 @@
 node_modules/
 backend/lead-handler/node_modules/
 backend/lead-sync/node_modules/
+backend/phi/node_modules/
 
 # Build output
 dist/
@@ -49,3 +50,4 @@ crash.log
 # Backend build artifacts
 backend/**/*.zip
 infra/build/
+sample-patients-import.xlsx

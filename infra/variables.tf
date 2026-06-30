@@ -128,3 +128,80 @@ variable "cms_key_name" {
   type        = string
   default     = ""
 }
+
+/* ------------------------------------------------------------
+   PHI patient-intake portal — ISOLATED HIPAA stack.
+   A separate VPC + RDS + KMS + ALB, untouching the marketing infra.
+   Stores PHI; only enter real data after the control verification passes.
+   ------------------------------------------------------------ */
+variable "portal_subdomain" {
+  description = "Hostname for the PHI portal (separate ALB, IP-restricted)."
+  type        = string
+  default     = "portal.compassagewell.com"
+}
+
+variable "portal_allowed_cidrs" {
+  description = "CIDRs allowed to reach the PHI portal ALB on 443 (admin/office /32s). ⚠️ Defaults to 0.0.0.0/0 (open) for initial testing — login + MFA still gate access, but TIGHTEN this to specific /32s in terraform.tfvars before real PHI use."
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
+variable "phi_vpc_cidr" {
+  description = "CIDR for the isolated PHI VPC."
+  type        = string
+  default     = "10.20.0.0/16"
+}
+
+variable "phi_db_instance_class" {
+  description = "RDS instance class for the PHI Postgres."
+  type        = string
+  default     = "db.t4g.micro"
+}
+
+variable "phi_multi_az" {
+  description = "Run the PHI RDS Multi-AZ (HA). Doubles instance cost; set false to save in early stages."
+  type        = bool
+  default     = true
+}
+
+variable "phi_db_username" {
+  description = "Master username for the PHI Postgres."
+  type        = string
+  default     = "phi"
+}
+
+variable "phi_desired_count" {
+  description = "Number of Fargate tasks for the portal service."
+  type        = number
+  default     = 1
+}
+
+variable "phi_task_cpu" {
+  description = "Fargate CPU units for the portal task."
+  type        = number
+  default     = 256
+}
+
+variable "phi_task_memory" {
+  description = "Fargate memory (MiB) for the portal task."
+  type        = number
+  default     = 512
+}
+
+variable "phi_session_idle_minutes" {
+  description = "Idle session timeout (minutes) for the portal (HIPAA auto-logoff)."
+  type        = number
+  default     = 15
+}
+
+variable "phi_log_retention_days" {
+  description = "CloudWatch retention for PHI log groups. HIPAA audit policy is 6 years — keep recent logs hot here and archive long-term separately."
+  type        = number
+  default     = 365
+}
+
+variable "create_cloudtrail" {
+  description = "Create an account-level multi-region CloudTrail. Set true ONLY if no existing account/org trail (check `aws cloudtrail describe-trails` first)."
+  type        = bool
+  default     = false
+}

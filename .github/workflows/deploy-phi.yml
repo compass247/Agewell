@@ -1,0 +1,144 @@
+name: Deploy PHI portal
+
+# Deploys the isolated PHI patient-intake portal: build the app + migrate images,
+# run the DB migration as a one-off ECS task in the private subnets, then update
+# the agewell-portal service. Uses a SEPARATE least-privilege OIDC role so PHI
+# deploys are a distinct principal in CloudTrail.
+#
+# Infra (infra/phi-*.tf) is applied by the existing `Deploy` workflow's `infra`
+# job (same Terraform module). This workflow only handles image + migrate + service.
+#
+# Required repo settings:
+#   Secrets:   AWS_PHI_DEPLOY_ROLE_ARN  (output phi_github_deploy_role_arn)
+#   Variables: AWS_REGION, ECR_REPOSITORY,
+#              PHI_ECS_CLUSTER, PHI_PORTAL_SERVICE, PHI_MIGRATE_TASKDEF,
+#              PHI_PRIVATE_SUBNETS (comma-separated), PHI_TASK_SG
+
+# Manual-only for now (workflow_dispatch). The first `Deploy` (infra job) must
+# create the PHI ECS service + the deploy role, and you must set the repo secret
+# AWS_PHI_DEPLOY_ROLE_ARN + the PHI_* vars from Terraform outputs, BEFORE this
+# workflow can run. Once those exist, switch to the push trigger below (commented)
+# to deploy automatically on portal/PHI changes.
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - "app/(portal)/**"
+  #     - "app/api/portal/**"
+  #     - "src/lib/phi/**"
+  #     - "auth.js"
+  #     - "auth.config.js"
+  #     - "middleware.js"
+  #     - "drizzle/**"
+  #     - "backend/phi/**"
+  #     - "Dockerfile"
+  #     - "Dockerfile.migrate"
+  #     - "infra/phi-*.tf"
+  #     - ".github/workflows/deploy-phi.yml"
+
+concurrency:
+  group: deploy-phi
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-phi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC, PHI role)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_PHI_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # ---------------- Build & push both images ----------------
+      - name: Build & push portal + migrate images
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPO: ${{ vars.ECR_REPOSITORY }}
+          SHA: ${{ github.sha }}
+        run: |
+          PORTAL_IMAGE="$REGISTRY/$REPO:phi-$SHA"
+          MIGRATE_IMAGE="$REGISTRY/$REPO:migrate-$SHA"
+          # Portal: the same app image (no PHI secrets at build time; they're
+          # injected at runtime from Secrets Manager).
+          docker build -t "$PORTAL_IMAGE" .
+          # Migrate: small image carrying migrate.mjs + drizzle/ + deps.
+          docker build -f Dockerfile.migrate -t "$MIGRATE_IMAGE" .
+          docker push "$PORTAL_IMAGE"
+          docker push "$MIGRATE_IMAGE"
+          echo "PORTAL_IMAGE=$PORTAL_IMAGE" >> "$GITHUB_ENV"
+          echo "MIGRATE_IMAGE=$MIGRATE_IMAGE" >> "$GITHUB_ENV"
+
+      # ---------------- Run migrations (one-off Fargate task) ----------------
+      - name: Run DB migration task
+        run: |
+          # Render a new migrate taskdef revision with the freshly built image.
+          aws ecs describe-task-definition \
+            --task-definition "${{ vars.PHI_MIGRATE_TASKDEF }}" \
+            --query taskDefinition > migratedef.json
+          jq --arg IMG "$MIGRATE_IMAGE" '
+            .containerDefinitions[0].image = $IMG
+            | del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
+                  .compatibilities, .registeredAt, .registeredBy)
+          ' migratedef.json > new-migratedef.json
+          MIG_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://new-migratedef.json \
+            --query taskDefinition.taskDefinitionArn --output text)
+
+          SUBNETS=$(echo "${{ vars.PHI_PRIVATE_SUBNETS }}" | tr ',' ' ')
+          SUBNET_JSON=$(printf '"%s",' $SUBNETS | sed 's/,$//')
+
+          TASK_ARN=$(aws ecs run-task \
+            --cluster "${{ vars.PHI_ECS_CLUSTER }}" \
+            --task-definition "$MIG_ARN" \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_JSON],securityGroups=[${{ vars.PHI_TASK_SG }}],assignPublicIp=DISABLED}" \
+            --query 'tasks[0].taskArn' --output text)
+          echo "Migration task: $TASK_ARN"
+
+          aws ecs wait tasks-stopped \
+            --cluster "${{ vars.PHI_ECS_CLUSTER }}" --tasks "$TASK_ARN"
+
+          EXIT=$(aws ecs describe-tasks \
+            --cluster "${{ vars.PHI_ECS_CLUSTER }}" --tasks "$TASK_ARN" \
+            --query 'tasks[0].containers[0].exitCode' --output text)
+          echo "Migration exit code: $EXIT"
+          if [ "$EXIT" != "0" ]; then
+            echo "::error::Migration failed (exit $EXIT). Not deploying."
+            exit 1
+          fi
+
+      # ---------------- Deploy the portal service ----------------
+      - name: Render & deploy portal task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "${{ vars.PHI_PORTAL_SERVICE }}" \
+            --query taskDefinition > portaldef.json
+          jq --arg IMG "$PORTAL_IMAGE" '
+            .containerDefinitions[0].image = $IMG
+            | del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
+                  .compatibilities, .registeredAt, .registeredBy)
+          ' portaldef.json > new-portaldef.json
+          NEW_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://new-portaldef.json \
+            --query taskDefinition.taskDefinitionArn --output text)
+
+          aws ecs update-service \
+            --cluster "${{ vars.PHI_ECS_CLUSTER }}" \
+            --service "${{ vars.PHI_PORTAL_SERVICE }}" \
+            --task-definition "$NEW_ARN" \
+            --force-new-deployment
+          aws ecs wait services-stable \
+            --cluster "${{ vars.PHI_ECS_CLUSTER }}" \
+            --services "${{ vars.PHI_PORTAL_SERVICE }}"
