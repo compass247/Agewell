@@ -80,8 +80,16 @@ export const authConfig = {
 
       if (!isLoggedIn) return isAuthScreen;
 
-      // Logged in but MFA not completed → only MFA screens allowed.
-      if (!mfaOk) return isAuthScreen;
+      // Logged in but MFA not completed → force the right MFA screen.
+      if (!mfaOk) {
+        const target = auth.user.mfaEnrolled
+          ? "/portal/mfa/verify"
+          : "/portal/mfa/setup";
+        // Already on the correct MFA screen → allow it to render.
+        if (pathname.startsWith(target)) return true;
+        // The login page is the post-signIn landing; bounce it to MFA too.
+        return Response.redirect(new URL(target, request.nextUrl));
+      }
 
       // Logged in + MFA ok: keep them out of auth screens.
       if (isAuthScreen) {

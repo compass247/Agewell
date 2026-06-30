@@ -12,8 +12,11 @@ COPY package.json package-lock.json* ./
 RUN npm ci --omit=dev
 
 # The migrator reads DATABASE_URL_PHI from the env (injected from Secrets Manager
-# by the ECS task) and applies the committed SQL in drizzle/.
+# by the ECS task) and applies the committed SQL in drizzle/. The bootstrap-admin
+# script (also run as a one-off task, with a command override) creates the first
+# ADMIN user; it uses @node-rs/argon2, present in the prod deps installed above.
 COPY backend/phi/migrate.mjs ./backend/phi/migrate.mjs
+COPY backend/phi/bootstrap-admin.mjs ./backend/phi/bootstrap-admin.mjs
 COPY drizzle ./drizzle
 
 CMD ["node", "backend/phi/migrate.mjs"]

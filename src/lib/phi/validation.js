@@ -14,6 +14,7 @@ const optional = () =>
     });
 
 export const PREFERRED_LANGUAGES = ["ENGLISH", "VIETNAMESE", "SPANISH", "OTHER"];
+export const GENDERS = ["MALE", "FEMALE", "OTHER"];
 export const PATIENT_STATUSES = [
   "NEW",
   "REVIEWED_BY_CS",
@@ -55,6 +56,11 @@ export const patientInputSchema = z.object({
   emergencyPhone: optional(z.string()),
   referralSource: optional(z.string()),
   preferredLanguage: z.enum(PREFERRED_LANGUAGES).default("ENGLISH"),
+  // Optional enum: accept a GENDERS value, or null/empty -> null. Idempotent so
+  // re-validating the schema's own output (null) during import still succeeds.
+  gender: z
+    .union([z.enum(GENDERS), z.null(), z.undefined(), z.literal("")])
+    .transform((v) => (v ? v : null)),
   notes: z
     .union([z.string(), z.null(), z.undefined()])
     .transform((v) => {

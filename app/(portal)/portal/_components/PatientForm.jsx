@@ -9,6 +9,12 @@ const LANGS = [
   ["OTHER", "Other"],
 ];
 
+const GENDERS = [
+  ["MALE", "Male"],
+  ["FEMALE", "Female"],
+  ["OTHER", "Other"],
+];
+
 function Field({ label, name, defaultValue, type = "text", required, ...rest }) {
   return (
     <div className="pf-field">
@@ -57,6 +63,17 @@ export default function PatientForm({ action, patient, submitLabel = "Save" }) {
           required
           placeholder="MM/DD/YYYY"
         />
+      </div>
+      <div className="pf-field">
+        <label htmlFor="gender">Gender</label>
+        <select id="gender" name="gender" defaultValue={p.gender || ""}>
+          <option value="">— Not specified —</option>
+          {GENDERS.map(([v, label]) => (
+            <option key={v} value={v}>
+              {label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <h2 className="pf-h2">Contact</h2>

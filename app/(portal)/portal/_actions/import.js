@@ -145,6 +145,7 @@ export async function commitImport(payload) {
           emergencyPhone: d.emergencyPhone,
           referralSource: d.referralSource,
           preferredLanguage: d.preferredLanguage,
+          gender: d.gender,
           notes: d.notes,
           status: "NEW",
           createdBy: actor.id,
