@@ -103,10 +103,23 @@ function normalize(s) {
     .trim();
 }
 
+// Format an Excel/JS Date as MM/DD/YYYY using UTC parts (Excel stores dates as
+// UTC midnight; using local parts could shift the day across timezones).
+function formatExcelDate(d) {
+  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  const yyyy = d.getUTCFullYear();
+  return `${mm}/${dd}/${yyyy}`;
+}
+
 function cellText(value) {
   if (value == null) return "";
+  // Excel date cells come through as JS Date objects → MM/DD/YYYY.
+  if (value instanceof Date) return formatExcelDate(value);
   // ExcelJS rich/hyperlink/formula cells expose .text / .result.
   if (typeof value === "object") {
+    // A formula/result cell can itself hold a Date.
+    if (value.result instanceof Date) return formatExcelDate(value.result);
     if (value.text != null) return String(value.text).trim();
     if (value.result != null) return String(value.result).trim();
     if (value.richText) return value.richText.map((r) => r.text).join("").trim();
