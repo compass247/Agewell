@@ -1,0 +1,19 @@
+# ---------- PHI database migration image ----------
+# The Next.js standalone runtime image does NOT include backend/phi/migrate.mjs
+# or the drizzle/ SQL (the tracer only keeps what the app imports). This small
+# image carries the migrator + committed migrations + their runtime deps
+# (postgres, drizzle-orm) so it can apply the schema to the private RDS via an
+# ECS run-task. Idempotent (Drizzle journal).
+FROM node:20-alpine
+WORKDIR /app
+
+# Production deps include `postgres` and `drizzle-orm` (used by migrate.mjs).
+COPY package.json package-lock.json* ./
+RUN npm ci --omit=dev
+
+# The migrator reads DATABASE_URL_PHI from the env (injected from Secrets Manager
+# by the ECS task) and applies the committed SQL in drizzle/.
+COPY backend/phi/migrate.mjs ./backend/phi/migrate.mjs
+COPY drizzle ./drizzle
+
+CMD ["node", "backend/phi/migrate.mjs"]
