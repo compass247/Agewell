@@ -5,6 +5,11 @@
    a PHI connection, so we hard-guard against it. Import this only from server
    actions, RSC data fetches, route handlers, and scripts — never from
    middleware or "use client" code.
+
+   The connection is created LAZILY on first use, NOT at import time. `next build`
+   imports route modules to collect metadata with no DATABASE_URL_PHI present;
+   throwing at import time would break the build. We only require the env when a
+   query actually runs (at request time, where the secret is injected).
    ============================================================ */
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -15,26 +20,41 @@ if (process.env.NEXT_RUNTIME === "edge") {
   throw new Error("src/lib/phi/db.js must not be imported in the edge runtime.");
 }
 
-const url = process.env.DATABASE_URL_PHI;
-if (!url) {
-  throw new Error(
-    "DATABASE_URL_PHI is not set. Add it to .env.local (see backend/phi/README.md)."
-  );
-}
-
-// Reuse a single connection pool across hot reloads in dev.
 const globalForPhi = globalThis;
-const client =
-  globalForPhi.__phiSql ||
-  postgres(url, {
-    max: 10,
-    prepare: true,
-    // Never log query parameters — they can contain PHI.
-    onnotice: () => {},
-  });
-if (process.env.NODE_ENV !== "production") {
-  globalForPhi.__phiSql = client;
+
+function createDb() {
+  const url = process.env.DATABASE_URL_PHI;
+  if (!url) {
+    throw new Error(
+      "DATABASE_URL_PHI is not set. Add it to .env.local (see backend/phi/README.md)."
+    );
+  }
+  const client =
+    globalForPhi.__phiSql ||
+    postgres(url, {
+      max: 10,
+      prepare: true,
+      // Never log query parameters — they can contain PHI.
+      onnotice: () => {},
+    });
+  if (process.env.NODE_ENV !== "production") {
+    globalForPhi.__phiSql = client;
+  }
+  return drizzle(client, { schema });
 }
 
-export const db = drizzle(client, { schema });
+// Lazy singleton: the real drizzle instance is built on first property access,
+// so importing this module never needs a live DB / the env var.
+let _db = null;
+export const db = new Proxy(
+  {},
+  {
+    get(_target, prop) {
+      if (!_db) _db = createDb();
+      const value = _db[prop];
+      return typeof value === "function" ? value.bind(_db) : value;
+    },
+  }
+);
+
 export { schema };
