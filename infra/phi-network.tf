@@ -93,7 +93,7 @@ resource "aws_db_subnet_group" "phi" {
 # ALB: 443/80 from the admin allowlist ONLY (no 0.0.0.0/0).
 resource "aws_security_group" "phi_alb" {
   name        = "${var.project}-phi-alb"
-  description = "PHI portal ALB — ingress 443/80 from allowlisted CIDRs only"
+  description = "PHI portal ALB - ingress 443/80 from allowlisted CIDRs only"
   vpc_id      = aws_vpc.phi.id
 
   ingress {
@@ -125,7 +125,7 @@ resource "aws_security_group" "phi_alb" {
 # Fargate tasks: 3000 from the ALB SG only.
 resource "aws_security_group" "phi_task" {
   name        = "${var.project}-phi-task"
-  description = "PHI portal tasks — ingress 3000 from the PHI ALB only"
+  description = "PHI portal tasks - ingress 3000 from the PHI ALB only"
   vpc_id      = aws_vpc.phi.id
 
   ingress {
@@ -149,7 +149,7 @@ resource "aws_security_group" "phi_task" {
 # RDS: 5432 from the task SG only. No other ingress.
 resource "aws_security_group" "phi_rds" {
   name        = "${var.project}-phi-rds"
-  description = "PHI RDS — ingress 5432 from the portal tasks only"
+  description = "PHI RDS - ingress 5432 from the portal tasks only"
   vpc_id      = aws_vpc.phi.id
 
   ingress {
