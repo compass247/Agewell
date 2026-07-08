@@ -102,11 +102,13 @@ export async function getPage(slug, lang) {
 export async function getHomepage(lang) {
   const code = LANG_TO_CODE[lang] || LANG_TO_CODE.vi;
   try {
-    // no-store: the homepage is dynamic (force-dynamic), so always read fresh.
+    // Read at build time (static export): the homepage is rendered statically,
+    // so this fetch runs once per build. A Directus publish triggers a rebuild
+    // via the Pages Deploy Hook, which re-reads the latest content.
     const data = await cms(
       `/items/homepage?fields=translations.*` +
         `&deep[translations][_filter][languages_code][_eq]=${code}`,
-      { noStore: true }
+      { tags: ["homepage"] }
     );
     const tr = data?.translations?.[0];
     return tr || null;

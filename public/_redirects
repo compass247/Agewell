@@ -1,0 +1,5 @@
+# Cloudflare Pages redirects.
+# The stashed next-intl middleware used to redirect "/" → "/vi". On the static
+# Pages build there is no middleware, so do it here. 302 (not 301) so the
+# default locale can change later without poisoning browser caches.
+/    /vi/    302
