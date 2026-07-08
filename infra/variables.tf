@@ -94,9 +94,15 @@ variable "github_repo" {
    service is untouched until the Phase 5 cutover.
    ------------------------------------------------------------ */
 variable "cms_subdomain" {
-  description = "Subdomain for the Directus admin (host-based routing on the existing ALB)."
+  description = "Subdomain for the Directus admin. Served via Cloudflare Tunnel (see cms_tunnel_id)."
   type        = string
   default     = "cms.compassagewell.com"
+}
+
+variable "cms_tunnel_id" {
+  description = "Cloudflare Tunnel UUID for the CMS (agewell-cms). The cms DNS record CNAMEs to <id>.cfargotunnel.com. Get it from Zero Trust → Tunnels."
+  type        = string
+  default     = "d9395bc5-3df5-4f08-b386-86c7075a6cb0"
 }
 
 variable "cms_instance_type" {

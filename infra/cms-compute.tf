@@ -266,9 +266,12 @@ locals {
     name      = "cloudflared"
     image     = "cloudflare/cloudflared:2024.10.0"
     essential = false
-    cpu       = 128
-    memory    = 128
-    command   = ["tunnel", "--no-autoupdate", "run"]
+    cpu       = 64
+    # cloudflared is tiny; 96 MB keeps the task comfortably under the t4g.small
+    # host's ~1846 MB (postgres 512 + directus 1024 + this = 1632).
+    memory            = 96
+    memoryReservation = 64
+    command           = ["tunnel", "--no-autoupdate", "run"]
     links     = ["directus"]
     dependsOn = [{ containerName = "directus", condition = "START" }]
     secrets = [

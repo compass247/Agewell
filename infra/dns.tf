@@ -11,14 +11,16 @@
    in Stage 3, after which this goes too).
    ============================================================ */
 
-# CMS (Directus admin) — CNAME to the same ALB. DNS-only so the ALB's ACM
-# cert (which now includes the cms SAN) terminates TLS.
+# CMS (Directus admin) — CNAME to the Cloudflare Tunnel (agewell-cms), proxied.
+# The cloudflared sidecar in the CMS ECS task (cms-compute.tf) connects the
+# tunnel and routes this hostname to directus:8055, so the CMS no longer needs
+# the ALB. var.cms_tunnel_id is the tunnel's UUID.
 resource "cloudflare_record" "cms" {
   zone_id         = var.cloudflare_zone_id
   name            = var.cms_subdomain
   type            = "CNAME"
-  content         = aws_lb.web.dns_name
-  proxied         = false
-  ttl             = 300
+  content         = "${var.cms_tunnel_id}.cfargotunnel.com"
+  proxied         = true
+  ttl             = 1
   allow_overwrite = true
 }
