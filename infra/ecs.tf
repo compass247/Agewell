@@ -12,9 +12,12 @@ locals {
 resource "aws_ecs_cluster" "main" {
   name = var.project
 
+  # Container Insights disabled to cut per-cluster CloudWatch metric charges.
+  # (This cluster keeps running the CMS EC2 task after the web Fargate service
+  # is removed; the awslogs driver still ships CMS + web logs.)
   setting {
     name  = "containerInsights"
-    value = "enabled"
+    value = "disabled"
   }
 }
 

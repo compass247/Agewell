@@ -7,9 +7,12 @@
 resource "aws_ecs_cluster" "phi" {
   name = "${var.project}-phi"
 
+  # Container Insights disabled — it publishes per-cluster custom CloudWatch
+  # metrics (billed) that a single-service portal doesn't need. The awslogs
+  # driver still ships container logs for audit.
   setting {
     name  = "containerInsights"
-    value = "enabled"
+    value = "disabled"
   }
 
   tags = { Scope = "phi" }

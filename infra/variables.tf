@@ -39,6 +39,12 @@ variable "cloudflare_proxied" {
   default     = false
 }
 
+variable "alb_subnet_ids" {
+  description = "Exactly the subnets (2 AZs) the web ALB attaches to. Each ALB node carries a billed public IPv4, so pin to 2 rather than all default-VPC subnets. Empty = auto-pick the first 2 default subnets. Set explicitly in terraform.tfvars to match live state."
+  type        = list(string)
+  default     = []
+}
+
 variable "container_image" {
   description = "Full ECR image URI:tag for the web container. CI overrides this per deploy; default lets the ECS service start before the first image push."
   type        = string
@@ -159,9 +165,9 @@ variable "phi_db_instance_class" {
 }
 
 variable "phi_multi_az" {
-  description = "Run the PHI RDS Multi-AZ (HA). Doubles instance cost; set false to save in early stages."
+  description = "Run the PHI RDS Multi-AZ (HA). Doubles instance cost. Default false — single-AZ is enough in the pre-launch stage (still has 30-day backups); flip true when real patient load needs zero-downtime AZ failover."
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "phi_db_username" {
@@ -195,9 +201,9 @@ variable "phi_session_idle_minutes" {
 }
 
 variable "phi_log_retention_days" {
-  description = "CloudWatch retention for PHI log groups. HIPAA audit policy is 6 years — keep recent logs hot here and archive long-term separately."
+  description = "CloudWatch retention (days) for PHI log groups. Kept hot here; HIPAA's 6-year audit requirement is met by archiving to S3 (Glacier) long-term, which is far cheaper than long CloudWatch retention. 90 days hot is enough for operational review."
   type        = number
-  default     = 365
+  default     = 90
 }
 
 variable "create_cloudtrail" {

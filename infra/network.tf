@@ -13,6 +13,16 @@ data "aws_subnets" "default" {
   }
 }
 
+# The ALB is pinned to exactly two subnets/AZs (var.alb_subnet_ids) rather than
+# every default-VPC subnet. An ALB spins up one node per subnet, and each node
+# now carries a billed public IPv4 (~$3.6/mo). Spreading across all 6 default
+# AZs cost ~4 extra IPv4 + node-hours for no benefit on a low-traffic site — two
+# AZs is the ELB minimum and enough. (This ALB is removed entirely once the
+# marketing site moves to Cloudflare Pages; the pin protects the interim bill.)
+locals {
+  alb_subnet_ids = length(var.alb_subnet_ids) > 0 ? var.alb_subnet_ids : slice(tolist(data.aws_subnets.default.ids), 0, 2)
+}
+
 # Security group for the ALB — public HTTP/HTTPS in.
 resource "aws_security_group" "alb" {
   name        = "${var.project}-alb"

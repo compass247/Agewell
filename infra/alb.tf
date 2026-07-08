@@ -7,7 +7,9 @@ resource "aws_lb" "web" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
-  subnets            = data.aws_subnets.default.ids
+  # Two AZs only (see local.alb_subnet_ids in network.tf) — one billed public
+  # IPv4 per node, so all-6-default-AZs wasted ~4 IPv4 + node-hours.
+  subnets = local.alb_subnet_ids
 }
 
 resource "aws_lb_target_group" "web" {
