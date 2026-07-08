@@ -44,14 +44,49 @@ temporarily re-add the NAT for phase 1, or apply endpoints on a first run and
 network on a second — `terraform apply -target=aws_vpc_endpoint.phi_interface
 -target=aws_vpc_endpoint.phi_s3` first, then a full apply.)
 
-## Still TODO (need Cloudflare, done in later stages)
+## Marketing progress (done outside Terraform)
 
-- **Web ALB + web Fargate removal** — only after Cloudflare Pages serves the
-  marketing site and apex/www DNS is cut over. Then delete `alb.tf`, the web
-  service/taskdef in `ecs.tf`, `acm.tf`, and the apex/www records in `dns.tf`.
-- **PHI ALB → Cloudflare Tunnel** — replace `phi-alb.tf` + `phi-dns.tf` with a
-  `cloudflared` sidecar; then the PHI public subnets + IGW can go too.
-- **Container Insights off** + **log retention 365 → 90** — cheap CloudWatch wins.
-- **RDS → Aurora Serverless v2 (scale-to-zero)** — deferred; needs a data
-  migration (dump inside the VPC → restore into the cluster → swap
-  DATABASE_URL_PHI in Secrets Manager). Biggest care, smallest saving; last.
+- ✅ Cloudflare Pages live at agewell-b3s.pages.dev (build `npm run build:static`,
+  output `out`, branch feat/cost-static-marketing). All routes + CMS content +
+  lead form verified.
+- ✅ Deploy Hook created + tested (POST → 200 success). Directus Flows repointed
+  at it (backend/cms/repoint-flows-to-deployhook.mjs) so BD publish → Pages
+  rebuild. This REPLACES the /api/revalidate mechanism.
+
+## ⚠️ ORDER CONSTRAINT: CMS Tunnel BEFORE web ALB removal
+
+The web ALB is **shared**: `cms.compassagewell.com` reaches Directus via a
+host-routing rule on it, and `aws_security_group.cms_host` only admits port 8055
+**from the ALB security group** (cms-network.tf). So the web ALB CANNOT be
+removed until the CMS has its own ingress. Correct sequence:
+
+1. **CMS → Cloudflare Tunnel (Stage 3).** Add a `cloudflared` container on the
+   CMS EC2 host, create a named tunnel for `cms.compassagewell.com`, verify the
+   CMS admin loads through the tunnel. Keep the ALB rule as a fallback until
+   verified. Then the CMS no longer depends on the ALB.
+2. **Cutover apex/www DNS → Pages (Stage 4).** Add apex + www as Pages custom
+   domains (Cloudflare makes proxied records to *.pages.dev). Remove
+   `cloudflare_record.apex` + `.www` from dns.tf so a later apply doesn't reclaim
+   them (they use allow_overwrite). Keep the ALB alive as fallback.
+3. **Remove web ALB + web Fargate (Stage 5).** Only now: delete `alb.tf`
+   entirely (web + cms target groups, listeners, listener rule), the web
+   service/taskdef/log-group/exec-role in `ecs.tf`, `acm.tf` (ALB cert), the
+   `alb` + `ecs` SGs in network.tf, and the cms `cloudflare_record` + the
+   ALB-from SG ingress in cms-network.tf (replaced by the tunnel). `plan` must
+   destroy ONLY the ALB/web stack — NOT the CMS EC2, EBS, or DynamoDB.
+
+## Still TODO (later stages)
+
+- **PHI ALB → Cloudflare Tunnel + Access (Stage 6b)** — replace `phi-alb.tf` +
+  `phi-dns.tf` with a `cloudflared` sidecar in the portal task; add a Cloudflare
+  Access policy (email/SSO) in front, replacing the ALB IP-allowlist
+  (portal_allowed_cidrs, currently 0.0.0.0/0 = open). Then the PHI public
+  subnets + IGW can go too. Do the NAT→endpoints 2-phase apply (above) around
+  the same time.
+- **RDS → Aurora Serverless v2 (scale-to-zero) (Stage 6c)** — deferred; needs a
+  data migration: `pg_dump` from INSIDE the PHI VPC (RDS is private — run an ECS
+  task or bastion), create the Aurora cluster (min_capacity 0 ACU, PG 16.4–16.10
+  — RDS is 16.13, compatible), restore, then swap DATABASE_URL_PHI in Secrets
+  Manager (app uses drizzle+postgres-js, no code change). Verify the portal
+  (login → enter patient → read back) before deleting the old RDS. Biggest care,
+  smallest saving (~$9/mo → ~$1-3/mo); do it LAST.
