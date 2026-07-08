@@ -68,6 +68,20 @@ removed until the CMS has its own ingress. Correct sequence:
    domains (Cloudflare makes proxied records to *.pages.dev). Remove
    `cloudflare_record.apex` + `.www` from dns.tf so a later apply doesn't reclaim
    them (they use allow_overwrite). Keep the ALB alive as fallback.
+
+   **Exact cutover procedure:**
+   a. In Pages → Custom domains → add `compassagewell.com` + `www.compassagewell.com`
+      → Activate. Cloudflare rewrites the DNS records to point at *.pages.dev.
+   b. Verify: `curl -sI https://compassagewell.com/` shows a `cf-ray` header (served
+      by Cloudflare/Pages) and NOT an AWS/ALB origin; the page still returns 200
+      and shows the real content.
+   c. dns.tf already has apex/www removed (this commit). Drop them from STATE so a
+      later `terraform apply` won't try to recreate/delete the Pages-owned records:
+        cd infra
+        terraform state rm cloudflare_record.apex cloudflare_record.www
+      (Requires the Cloudflare + AWS creds the normal apply uses. Run once. If the
+      addresses differ, `terraform state list | grep cloudflare_record` to find them.)
+   d. A `terraform plan` afterwards must show NO create/delete for apex/www.
 3. **Remove web ALB + web Fargate (Stage 5).** Only now: delete `alb.tf`
    entirely (web + cms target groups, listeners, listener rule), the web
    service/taskdef/log-group/exec-role in `ecs.tf`, `acm.tf` (ALB cert), the

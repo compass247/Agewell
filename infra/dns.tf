@@ -1,30 +1,15 @@
 /* ============================================================
-   Cloudflare DNS for the site — apex + www point at the ALB.
-   DNS-only (grey cloud) by default so the ALB's ACM cert
-   terminates TLS without a Cloudflare proxy in front.
+   Cloudflare DNS for the site.
 
-   Note: ALBs have no static IP, so we use CNAMEs. Cloudflare
-   flattens the apex CNAME automatically.
+   apex + www are NO LONGER managed here — the marketing site moved to
+   Cloudflare Pages, which owns those records as Pages custom domains (proxied
+   to *.pages.dev). The old `cloudflare_record.apex` / `.www` (CNAME → ALB) were
+   removed from Terraform AND from state (`terraform state rm`) at cutover so a
+   later apply can't reclaim them and point the domain back at the ALB.
+
+   Only the CMS record remains here (until the CMS moves to a Cloudflare Tunnel
+   in Stage 3, after which this goes too).
    ============================================================ */
-resource "cloudflare_record" "apex" {
-  zone_id         = var.cloudflare_zone_id
-  name            = var.domain
-  type            = "CNAME"
-  content         = aws_lb.web.dns_name
-  proxied         = var.cloudflare_proxied
-  ttl             = var.cloudflare_proxied ? 1 : 300
-  allow_overwrite = true
-}
-
-resource "cloudflare_record" "www" {
-  zone_id         = var.cloudflare_zone_id
-  name            = "www.${var.domain}"
-  type            = "CNAME"
-  content         = aws_lb.web.dns_name
-  proxied         = var.cloudflare_proxied
-  ttl             = var.cloudflare_proxied ? 1 : 300
-  allow_overwrite = true
-}
 
 # CMS (Directus admin) — CNAME to the same ALB. DNS-only so the ALB's ACM
 # cert (which now includes the cms SAN) terminates TLS.
