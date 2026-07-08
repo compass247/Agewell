@@ -60,10 +60,22 @@ host-routing rule on it, and `aws_security_group.cms_host` only admits port 8055
 **from the ALB security group** (cms-network.tf). So the web ALB CANNOT be
 removed until the CMS has its own ingress. Correct sequence:
 
-1. **CMS → Cloudflare Tunnel (Stage 3).** Add a `cloudflared` container on the
-   CMS EC2 host, create a named tunnel for `cms.compassagewell.com`, verify the
-   CMS admin loads through the tunnel. Keep the ALB rule as a fallback until
-   verified. Then the CMS no longer depends on the ALB.
+1. **CMS → Cloudflare Tunnel (Stage 3).** A `cloudflared` sidecar is added to
+   the CMS ECS task (cms-compute.tf, `local.cms_cloudflared_container`), gated on
+   `var.cms_tunnel_token` (empty = sidecar omitted, CMS stays on the ALB).
+   Procedure:
+   a. Zero Trust → Networks → Tunnels → Create → Cloudflared → name `agewell-cms`.
+      Copy the token (the long `eyJ...` after `--token`).
+   b. Public Hostname on that tunnel: `cms.compassagewell.com` → Type HTTP →
+      URL `http://directus:8055` (the sidecar links to the directus container).
+   c. `TF_VAR_cms_tunnel_token=<token> terraform apply` — puts the token in the
+      CMS secret and adds the sidecar. Force a new CMS deployment; watch the
+      cloudflared log stream connect.
+   d. Verify `https://cms.compassagewell.com` loads the Directus admin THROUGH
+      the tunnel (the DNS record for cms will be the tunnel's *.cfargotunnel.com;
+      Cloudflare adds it automatically when you set the Public Hostname).
+   e. Keep the ALB cms rule as fallback until verified. Then the CMS no longer
+      depends on the ALB, and Stage 5 can remove it.
 2. **Cutover apex/www DNS → Pages (Stage 4).** Add apex + www as Pages custom
    domains (Cloudflare makes proxied records to *.pages.dev). Remove
    `cloudflare_record.apex` + `.www` from dns.tf so a later apply doesn't reclaim

@@ -45,10 +45,22 @@ variable "directus_sync_token" {
   sensitive   = true
 }
 
+# Cloudflare Tunnel token for the CMS (remotely-managed tunnel). The cloudflared
+# sidecar (cms-compute.tf) uses this to connect and route cms.compassagewell.com
+# → directus:8055, so the CMS no longer needs the shared ALB. Create the tunnel
+# in the Zero Trust dashboard, then set TF_VAR_cms_tunnel_token. Empty = the
+# sidecar is omitted (CMS still reachable via the ALB) — set it to cut over.
+variable "cms_tunnel_token" {
+  description = "Cloudflare Tunnel token for the CMS cloudflared sidecar. Set via TF_VAR_cms_tunnel_token."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
 # One Secrets Manager secret holding all CMS credentials as a JSON document.
 resource "aws_secretsmanager_secret" "cms" {
   name        = "${var.project}-cms"
-  description = "Directus CMS credentials (DB password, keys, admin bootstrap, revalidate secret)."
+  description = "Directus CMS credentials (DB password, keys, admin bootstrap, revalidate secret, tunnel token)."
 }
 
 resource "aws_secretsmanager_secret_version" "cms" {
@@ -59,5 +71,6 @@ resource "aws_secretsmanager_secret_version" "cms" {
     SECRET            = random_password.directus_secret.result
     ADMIN_PASSWORD    = random_password.cms_admin.result
     REVALIDATE_SECRET = random_password.revalidate.result
+    TUNNEL_TOKEN      = var.cms_tunnel_token
   })
 }
