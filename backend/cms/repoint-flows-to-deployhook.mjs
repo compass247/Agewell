@@ -64,6 +64,44 @@ function isRevalidateOp(op) {
   return url.includes("/api/revalidate");
 }
 
+// Every content collection whose edits should rebuild the static site, with the
+// event scope that makes sense for it. homepage is a Directus singleton (only
+// updated), so items.update alone; the rest can be created/deleted too.
+const WANT_FLOWS = [
+  { name: "Revalidate homepage", collection: "homepage", scope: ["items.update"] },
+  { name: "Revalidate posts", collection: "posts", scope: ["items.create", "items.update", "items.delete"] },
+  { name: "Revalidate pages", collection: "pages", scope: ["items.create", "items.update", "items.delete"] },
+  { name: "Revalidate team_members", collection: "team_members", scope: ["items.create", "items.update", "items.delete"] },
+];
+
+// Create a Flow whose single webhook operation POSTs the deploy hook.
+async function createDeployFlow({ name, collection, scope }) {
+  const flow = await api("/flows", "POST", {
+    name,
+    icon: "bolt",
+    status: "active",
+    trigger: "event",
+    accountability: "all",
+    options: { type: "action", scope, collections: [collection] },
+  });
+  if (flow.status >= 400) throw new Error(`create flow '${name}' → ${flow.status}: ${JSON.stringify(flow.body)}`);
+  const flowId = flow.body.data.id;
+
+  const op = await api("/operations", "POST", {
+    flow: flowId,
+    key: "deploy",
+    name: "Deploy",
+    type: "request",
+    position_x: 19,
+    position_y: 1,
+    options: { url: DEPLOY_HOOK_URL, method: "POST", headers: [], body: "" },
+  });
+  if (op.status >= 400) throw new Error(`create op for '${name}' → ${op.status}: ${JSON.stringify(op.body)}`);
+
+  await api(`/flows/${flowId}`, "PATCH", { operation: op.body.data.id });
+  console.log(`+ created '${name}' → deploy hook (${collection}, ${scope.join("/")})`);
+}
+
 async function main() {
   if (!DEPLOY_HOOK_URL) throw new Error("DEPLOY_HOOK_URL is required.");
   if (!/^https:\/\/api\.cloudflare\.com\/.+\/deploy_hooks\/.+/.test(DEPLOY_HOOK_URL)) {
@@ -73,7 +111,7 @@ async function main() {
   await login();
 
   // Pull every flow + its operations so we can find revalidate webhooks.
-  const flows = await api("/flows?fields=id,name,status,operations.id,operations.type,operations.options&limit=-1");
+  const flows = await api("/flows?fields=id,name,status,options,operations.id,operations.type,operations.options&limit=-1");
   if (flows.status >= 400) throw new Error(`list flows → ${flows.status}: ${JSON.stringify(flows.body)}`);
 
   const list = flows.body?.data || [];
@@ -92,13 +130,7 @@ async function main() {
     }
 
     // Repoint: plain POST to the deploy hook, drop the JSON body/secret.
-    const newOptions = {
-      ...op.options,
-      url: DEPLOY_HOOK_URL,
-      method: "POST",
-      headers: [],
-      body: "",
-    };
+    const newOptions = { ...op.options, url: DEPLOY_HOOK_URL, method: "POST", headers: [], body: "" };
     const r = await api(`/operations/${op.id}`, "PATCH", { options: newOptions });
     if (r.status >= 400) {
       console.log(`! '${flow.name}': failed to repoint (${r.status}: ${JSON.stringify(r.body)})`);
@@ -108,16 +140,21 @@ async function main() {
     }
   }
 
-  if (!changed && !alreadyOk) {
-    console.log(
-      "\nNo revalidate Flows found. If BD content edits should trigger a rebuild, create a Flow:\n" +
-        "  Trigger: Event Hook → items.create/update/delete on posts, pages, homepage, team_members\n" +
-        "  Operation: Webhook → POST " + DEPLOY_HOOK_URL
-    );
-  } else {
-    console.log(`\n✓ Done. Repointed ${changed}, already-ok ${alreadyOk}.`);
-    console.log("  Test: edit any published item in Directus → a new Pages build should start within seconds.");
+  // Ensure a Flow exists for every content collection (create the missing ones,
+  // e.g. homepage). Match by the collection the Flow triggers on, not its name.
+  const covered = new Set();
+  for (const flow of list) {
+    for (const c of flow.options?.collections || []) covered.add(c);
   }
+  let created = 0;
+  for (const want of WANT_FLOWS) {
+    if (covered.has(want.collection)) continue;
+    await createDeployFlow(want);
+    created++;
+  }
+
+  console.log(`\n✓ Done. Repointed ${changed}, already-ok ${alreadyOk}, created ${created}.`);
+  console.log("  Test: edit any published item in Directus → a new Pages build should start within seconds.");
 }
 
 main().catch((e) => {
