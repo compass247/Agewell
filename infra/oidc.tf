@@ -133,10 +133,12 @@ resource "aws_iam_role_policy" "github_deploy" {
         Resource = aws_lambda_function.lead.arn
       },
       {
-        Sid      = "PassRoles"
-        Effect   = "Allow"
-        Action   = ["iam:PassRole"]
-        Resource = [aws_iam_role.task_execution.arn]
+        Sid    = "PassRoles"
+        Effect = "Allow"
+        Action = ["iam:PassRole"]
+        # The web task-execution role is gone (web moved to Pages). CI can still
+        # pass the CMS task-execution role when re-registering the CMS task def.
+        Resource = [aws_iam_role.cms_task_execution.arn]
       }
     ]
   })

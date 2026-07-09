@@ -272,8 +272,8 @@ locals {
     memory            = 96
     memoryReservation = 64
     command           = ["tunnel", "--no-autoupdate", "run"]
-    links     = ["directus"]
-    dependsOn = [{ containerName = "directus", condition = "START" }]
+    links             = ["directus"]
+    dependsOn         = [{ containerName = "directus", condition = "START" }]
     secrets = [
       { name = "TUNNEL_TOKEN", valueFrom = "${aws_secretsmanager_secret.cms.arn}:TUNNEL_TOKEN::" }
     ]
@@ -397,14 +397,11 @@ resource "aws_ecs_service" "cms" {
   deployment_minimum_healthy_percent = 0
   deployment_maximum_percent         = 100
 
-  load_balancer {
-    target_group_arn = aws_lb_target_group.cms.arn
-    container_name   = "directus"
-    container_port   = 8055
-  }
+  # No load_balancer block: Directus is reached through the Cloudflare Tunnel
+  # (cloudflared sidecar → directus:8055), not the ALB. The ALB is removed in
+  # Stage 5.
 
   depends_on = [
-    aws_lb_listener.https,
     aws_ecs_cluster_capacity_providers.main,
   ]
 }

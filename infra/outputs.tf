@@ -1,21 +1,13 @@
-output "alb_dns_name" {
-  description = "ALB DNS name (apex/www CNAME target)."
-  value       = aws_lb.web.dns_name
-}
+# alb_dns_name + ecs_service removed with the web ALB / web Fargate service.
 
 output "ecr_repository_url" {
-  description = "ECR repo URL for the web image."
+  description = "ECR repo URL for the web image (still used by the PHI portal + migrate task)."
   value       = aws_ecr_repository.web.repository_url
 }
 
 output "ecs_cluster" {
-  description = "ECS cluster name."
+  description = "ECS cluster name (runs the CMS)."
   value       = aws_ecs_cluster.main.name
-}
-
-output "ecs_service" {
-  description = "ECS service name."
-  value       = aws_ecs_service.web.name
 }
 
 output "lead_lambda_name" {
