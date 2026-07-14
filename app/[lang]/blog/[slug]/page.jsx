@@ -1,9 +1,24 @@
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { getContent } from "../../../../src/content.js";
-import { getPost } from "../../../../src/cms.js";
+import { getPost, getPosts } from "../../../../src/cms.js";
 import { SITE_URL, OG_LOCALE, languageAlternates } from "../../../../src/seo.js";
 import BlogChrome from "../../../../src/components/BlogChrome.jsx";
+
+// Enumerate every published post slug (per language) at build time so static
+// export can emit each article page. getPosts returns [] on CMS failure, so a
+// build with the CMS unreachable emits zero article pages but does not fail
+// (the blog index then shows "No articles yet"). A post published after a build
+// appears on the next rebuild, which a Directus publish triggers via the Pages
+// Deploy Hook.
+export async function generateStaticParams() {
+  const params = [];
+  for (const lang of ["vi", "en"]) {
+    const posts = await getPosts(lang);
+    for (const p of posts) params.push({ lang, slug: p.slug });
+  }
+  return params;
+}
 
 export async function generateMetadata({ params }) {
   const { lang, slug } = await params;

@@ -32,22 +32,13 @@ resource "aws_subnet" "phi_private" {
   tags              = { Name = "${var.project}-phi-private-${count.index}", Scope = "phi", Tier = "private" }
 }
 
-# --- Internet gateway + NAT (single NAT to control cost) ---
+# --- Internet gateway (public subnets only; ALB/Tunnel egress) ---
+# NAT gateway removed: the private tasks reach ECR/Secrets/KMS/Logs through VPC
+# interface + S3 gateway endpoints (phi-endpoints.tf) instead of NAT egress —
+# fully private and ~$25/mo cheaper. The public subnets still route to the IGW.
 resource "aws_internet_gateway" "phi" {
   vpc_id = aws_vpc.phi.id
   tags   = { Name = "${var.project}-phi", Scope = "phi" }
-}
-
-resource "aws_eip" "phi_nat" {
-  domain = "vpc"
-  tags   = { Name = "${var.project}-phi-nat", Scope = "phi" }
-}
-
-resource "aws_nat_gateway" "phi" {
-  allocation_id = aws_eip.phi_nat.id
-  subnet_id     = aws_subnet.phi_public[0].id
-  tags          = { Name = "${var.project}-phi", Scope = "phi" }
-  depends_on    = [aws_internet_gateway.phi]
 }
 
 # --- Route tables ---
@@ -66,13 +57,13 @@ resource "aws_route_table_association" "phi_public" {
   route_table_id = aws_route_table.phi_public.id
 }
 
+# Private route table: no 0.0.0.0/0 route — the private subnets have NO internet
+# path. Egress to AWS APIs goes through the VPC endpoints (interface endpoints
+# via private DNS; S3 via the gateway endpoint attached to this table). This is
+# the intended HIPAA posture: PHI tasks cannot reach the internet at all.
 resource "aws_route_table" "phi_private" {
   vpc_id = aws_vpc.phi.id
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.phi.id
-  }
-  tags = { Name = "${var.project}-phi-private", Scope = "phi" }
+  tags   = { Name = "${var.project}-phi-private", Scope = "phi" }
 }
 
 resource "aws_route_table_association" "phi_private" {

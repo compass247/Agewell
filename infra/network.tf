@@ -13,54 +13,17 @@ data "aws_subnets" "default" {
   }
 }
 
-# Security group for the ALB — public HTTP/HTTPS in.
-resource "aws_security_group" "alb" {
-  name        = "${var.project}-alb"
-  description = "ALB ingress 80/443"
-  vpc_id      = data.aws_vpc.default.id
-
-  ingress {
-    description = "HTTP"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "HTTPS"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+# The ALB is pinned to exactly two subnets/AZs (var.alb_subnet_ids) rather than
+# every default-VPC subnet. An ALB spins up one node per subnet, and each node
+# now carries a billed public IPv4 (~$3.6/mo). Spreading across all 6 default
+# AZs cost ~4 extra IPv4 + node-hours for no benefit on a low-traffic site — two
+# AZs is the ELB minimum and enough. (This ALB is removed entirely once the
+# marketing site moves to Cloudflare Pages; the pin protects the interim bill.)
+locals {
+  alb_subnet_ids = length(var.alb_subnet_ids) > 0 ? var.alb_subnet_ids : slice(tolist(data.aws_subnets.default.ids), 0, 2)
 }
 
-# Security group for the ECS tasks — only the ALB may reach the Next.js port.
-resource "aws_security_group" "ecs" {
-  name        = "${var.project}-ecs"
-  description = "ECS task ingress from ALB only"
-  vpc_id      = data.aws_vpc.default.id
-
-  ingress {
-    description     = "From ALB"
-    from_port       = 3000 # Next.js server (was nginx :80 pre-cutover)
-    to_port         = 3000
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
+# The ALB security group and the web ECS task security group were removed with
+# the web ALB + web Fargate service (cost migration → Cloudflare Pages). The CMS
+# host SG lives in cms-network.tf. The VPC/subnet data sources above are still
+# used by the CMS EC2 instance.

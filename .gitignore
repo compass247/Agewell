@@ -51,3 +51,9 @@ crash.log
 backend/**/*.zip
 infra/build/
 sample-patients-import.xlsx
+
+# Static-export temporary stash (scripts/static-stash.mjs)
+.static-stash/
+
+# Static export output (Cloudflare Pages artifact)
+/out/

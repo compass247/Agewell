@@ -256,7 +256,38 @@ resource "aws_cloudwatch_log_group" "cms" {
   retention_in_days = 30
 }
 
-# ---------------- Task definition (Postgres + Directus) ----------------
+# ---------------- Task definition (Postgres + Directus + optional tunnel) ----------------
+locals {
+  # cloudflared sidecar — added only when a tunnel token is configured. Routes
+  # cms.compassagewell.com → directus:8055 (container link) so the CMS no longer
+  # needs the shared ALB. Remotely-managed tunnel: all routing is on the Zero
+  # Trust dashboard; the container just needs the token.
+  cms_cloudflared_container = var.cms_tunnel_token != "" ? [{
+    name      = "cloudflared"
+    image     = "cloudflare/cloudflared:2024.10.0"
+    essential = false
+    cpu       = 64
+    # cloudflared is tiny; 96 MB keeps the task comfortably under the t4g.small
+    # host's ~1846 MB (postgres 512 + directus 1024 + this = 1632).
+    memory            = 96
+    memoryReservation = 64
+    command           = ["tunnel", "--no-autoupdate", "run"]
+    links             = ["directus"]
+    dependsOn         = [{ containerName = "directus", condition = "START" }]
+    secrets = [
+      { name = "TUNNEL_TOKEN", valueFrom = "${aws_secretsmanager_secret.cms.arn}:TUNNEL_TOKEN::" }
+    ]
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        "awslogs-group"         = aws_cloudwatch_log_group.cms.name
+        "awslogs-region"        = var.aws_region
+        "awslogs-stream-prefix" = "cloudflared"
+      }
+    }
+  }] : []
+}
+
 resource "aws_ecs_task_definition" "cms" {
   family             = "${var.project}-cms"
   network_mode       = "bridge"
@@ -271,7 +302,7 @@ resource "aws_ecs_task_definition" "cms" {
     host_path = "/mnt/cms-data/postgres"
   }
 
-  container_definitions = jsonencode([
+  container_definitions = jsonencode(concat([
     {
       name      = "postgres"
       image     = var.postgres_image
@@ -347,7 +378,7 @@ resource "aws_ecs_task_definition" "cms" {
         }
       }
     }
-  ])
+  ], local.cms_cloudflared_container))
 }
 
 # ---------------- ECS service ----------------
@@ -366,14 +397,11 @@ resource "aws_ecs_service" "cms" {
   deployment_minimum_healthy_percent = 0
   deployment_maximum_percent         = 100
 
-  load_balancer {
-    target_group_arn = aws_lb_target_group.cms.arn
-    container_name   = "directus"
-    container_port   = 8055
-  }
+  # No load_balancer block: Directus is reached through the Cloudflare Tunnel
+  # (cloudflared sidecar → directus:8055), not the ALB. The ALB is removed in
+  # Stage 5.
 
   depends_on = [
-    aws_lb_listener.https,
     aws_ecs_cluster_capacity_providers.main,
   ]
 }
