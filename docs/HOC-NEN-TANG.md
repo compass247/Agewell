@@ -6,6 +6,20 @@
 > Mục tiêu không phải để bạn nhớ lệnh, mà để bạn **hiểu nguyên lý**, tự ra quyết định, và quản lý
 > dự án trong tương lai mà không phụ thuộc vào ai.
 
+> ⚠️ **CẬP NHẬT KIẾN TRÚC (2026-07).** Tài liệu này dạy nguyên lý qua ví dụ dự án AgeWell.
+> **Phần nguyên lý (Internet, Git, Docker, cloud, CI/CD, DNS…) vẫn đúng 100%.** Nhưng kiến
+> trúc cụ thể của dự án đã tiến hóa so với các ví dụ ban đầu:
+> - **Frontend**: từ *Vite + React SPA* → **Next.js 14 (App Router) + next-intl**. Không còn
+>   `src/App.jsx`/`dist/`/`npm run preview`/cổng 5173; giờ là `app/[lang]/`, `npm run dev`
+>   (cổng 3000), `npm run build`/`build:static`.
+> - **Phục vụ web (marketing)**: từ *nginx trên ECS Fargate + ALB* → **Cloudflare Pages**
+>   (static export). ALB + web Fargate đã gỡ. ECS/Fargate giờ chỉ còn phục vụ **portal PHI**.
+> - **Thêm**: **CMS Directus** (qua Cloudflare Tunnel) để BD tự sửa nội dung.
+>
+> Khi đọc các ví dụ "trong AgeWell dùng Vite/nginx/ECS cho web" bên dưới, hãy hiểu đó là
+> **giai đoạn đầu** — xem [CLAUDE.md](../CLAUDE.md) / [README.md](../README.md) cho hiện trạng.
+> Các chương đã được chú thích lại ở những chỗ neo vào kiến trúc cũ.
+
 ## Cách đọc tài liệu này
 
 - Đọc **tuần tự** từ Chương 0. Mỗi chương xây trên chương trước.
@@ -95,17 +109,17 @@ mặt bằng → gắn biển hiệu → khai trương → vận hành. Website 
 ```
 1. THIẾT KẾ      Claude.ai tạo bản mẫu giao diện (prototype)
         │
-2. CODE          Port prototype sang dự án Vite + React thật (src/)
+2. CODE          Port prototype sang dự án Next.js thật (app/ + src/)
         │
 3. GIT           Lưu mã nguồn, lịch sử thay đổi (GitHub)
         │
-4. ĐÓNG GÓI      Docker đóng website thành "container" chạy được ở mọi nơi
+4. BUILD         Static export (out/) cho marketing; Docker cho portal PHI
         │
-5. HẠ TẦNG       Terraform dựng máy chủ + mạng + database trên AWS
+5. HẠ TẦNG       Terraform dựng API + portal + CMS + DNS (AWS + Cloudflare)
         │
 6. DATABASE      DynamoDB lưu lead; Lambda xử lý form
         │
-7. CI/CD         GitHub Actions tự động build → đẩy lên AWS mỗi khi có thay đổi
+7. CI/CD         Push main → Cloudflare Pages (marketing) + GitHub Actions (AWS)
         │
 8. DNS + HTTPS   Cloudflare trỏ domain về máy chủ; ACM cấp khoá bảo mật
         │
@@ -125,46 +139,47 @@ ngày càng rõ.
         │  gõ compassagewell.com
         ▼
    ┌─────────────────┐
-   │  CLOUDFLARE DNS │  "compassagewell.com ở đâu?" → trả về địa chỉ máy chủ
-   └─────────────────┘
-        │
-        ▼  HTTPS (mã hoá, ổ khoá xanh)
-   ┌──────────────────────────────── AWS (đám mây Amazon) ───────────────────┐
-   │                                                                          │
-   │   ┌──────────┐      ┌────────────────┐                                   │
-   │   │   ALB    │─────▶│  ECS Fargate   │   ← website tĩnh (nginx phục vụ    │
-   │   │ (cổng    │      │  (container)   │     các file HTML/CSS/JS đã build) │
-   │   │  vào +   │      └────────────────┘                                   │
-   │   │  ổ khoá) │                                                           │
-   │   └──────────┘                                                           │
-   │                                                                          │
-   │   Khi khách bấm "Gửi đăng ký" trên form:                                 │
-   │        │  POST api.compassagewell.com/api/lead                           │
-   │        ▼                                                                  │
+   │   CLOUDFLARE    │  DNS ("ở đâu?") + phục vụ web tĩnh + Tunnel cho CMS
+   └────────┬────────┘
+            │  HTTPS
+   ┌────────▼─────────────────────┐
+   │   CLOUDFLARE PAGES           │  ← website MARKETING: các file HTML/CSS/JS đã build
+   │   (static export `out/`)     │     (Next.js build sẵn; CDN toàn cầu, không cần server)
+   └──────────────────────────────┘
+            │
+            │  Khi khách bấm "Gửi đăng ký" trên form:
+            │  POST api.compassagewell.com/api/lead
+   ┌────────▼──────────── AWS (đám mây Amazon) ──────────────────────────────┐
    │   ┌──────────────┐    ┌──────────┐    ┌──────────────┐   ┌────────┐      │
    │   │ API Gateway  │───▶│  Lambda  │───▶│  DynamoDB    │   │  SES   │      │
    │   │ (cửa API)    │    │ (xử lý)  │    │ (lưu lead)   │   │(email) │      │
    │   └──────────────┘    └──────────┘────────────────────▶─└────────┘      │
    │                                                                          │
-   │   ECR (kho chứa image Docker)   •   S3 (lưu trạng thái Terraform)        │
+   │   ┌────────────────┐   ← PHI portal (Next.js server) chạy trên Fargate;  │
+   │   │  ECS Fargate   │     Directus CMS + Postgres cô lập cũng ở AWS.       │
+   │   └────────────────┘     S3 lưu trạng thái Terraform.                     │
    └──────────────────────────────────────────────────────────────────────────┘
-        ▲
-        │  mỗi khi merge code vào nhánh main
-   ┌──────────────────┐
-   │  GITHUB ACTIONS  │  tự động: build → đẩy image lên ECR → cập nhật ECS + Lambda
-   │  (CI/CD)         │  và terraform apply (cập nhật hạ tầng)
-   └──────────────────┘
+        ▲                                    ▲
+        │ merge code vào main                │ BD publish nội dung trong Directus
+   ┌──────────────────┐              ┌──────────────────────┐
+   │  GITHUB ACTIONS  │ terraform    │  PAGES DEPLOY HOOK    │ rebuild marketing
+   │  (deploy.yml)    │ apply+Fargate│  (từ Directus)        │ (~1–2 phút)
+   └──────────────────┘ +Lambda      └──────────────────────┘
+        │
+        └─► Cloudflare Pages tự build lại marketing từ main (npm run build:static)
 ```
 
 ## 🔬 Đào sâu: hai loại "đường đi" trong hệ thống
 
 Để ý có **hai luồng** khác nhau trong sơ đồ:
 
-1. **Luồng xem website** (đọc): khách → DNS → ALB → ECS → trả về trang web. Đây là phần **tĩnh** —
-   chỉ hiển thị, không thay đổi dữ liệu. Nhanh, rẻ, đơn giản.
+1. **Luồng xem website** (đọc): khách → Cloudflare (DNS) → **Cloudflare Pages** → trả về trang
+   web đã build sẵn. Đây là phần **tĩnh** — chỉ hiển thị, không thay đổi dữ liệu. Nhanh, rẻ
+   (CDN, không cần server chạy 24/7). *(Trước đây luồng này đi qua ALB → ECS nginx trên AWS;
+   đã chuyển sang Cloudflare Pages để rẻ hơn.)*
 
 2. **Luồng gửi form** (ghi): khách bấm gửi → API Gateway → Lambda → ghi vào DynamoDB + gửi email.
-   Đây là phần **động** — có xử lý logic và thay đổi dữ liệu.
+   Đây là phần **động** — có xử lý logic và thay đổi dữ liệu. Vẫn nằm trên AWS.
 
 Vì sao tách hai luồng? Vì **phần lớn website chỉ là hiển thị** (đọc) — không cần máy chủ mạnh, chỉ
 cần phục vụ file. Chỉ có một hành động nhỏ (gửi form) mới cần xử lý động. Tách ra giúp: phần tĩnh
@@ -454,14 +469,16 @@ những khối LEGO tái sử dụng được.
 
 Trong AgeWell, mỗi phần của trang là một component:
 ```
-src/sections/sections-a.jsx   → Header, Hero, Problem, Services, CareLoop
-src/sections/sections-b.jsx   → UspTeam, Eligibility, SignupForm, Footer, ContactBar
-src/components/icons.jsx       → các icon (component Icon dùng lại nhiều nơi)
-src/App.jsx                    → lắp tất cả lại thành trang hoàn chỉnh
+src/sections/sections-a.jsx     → Header, Hero, Problem, Services, CareLoop
+src/sections/sections-b.jsx     → UspTeam, Eligibility, SignupForm, Footer, ContactBar
+src/sections/service-detail.jsx → các section trang dịch vụ (CCM/MTM/E&M)
+src/components/icons.jsx         → các icon (component Icon dùng lại nhiều nơi)
+src/components/HomePageClient.jsx → lắp tất cả section trang chủ lại
+app/[lang]/page.jsx              → route trang chủ (server) gọi HomePageClient
 ```
 
-Mở `src/App.jsx`, bạn sẽ thấy nó chỉ là danh sách các component ghép lại — đọc gần như tiếng Anh
-thường:
+Mở `src/components/HomePageClient.jsx`, bạn sẽ thấy nó chỉ là danh sách các component ghép lại —
+đọc gần như tiếng Anh thường:
 ```jsx
 <Hero t={C} />
 <Problem t={C} />
@@ -470,25 +487,30 @@ thường:
 Đây là **JSX** — cách React cho phép viết HTML lồng trong JavaScript. `t={C}` là cách "truyền dữ
 liệu" (nội dung ngôn ngữ) vào component — gọi là **props** (thuộc tính).
 
-## ⚙️ Vite — công cụ build
+> 📌 *(Trước đây file lắp ráp này là `src/App.jsx` thời Vite. Sau khi chuyển sang **Next.js**,
+> mỗi URL là một file trong `app/[lang]/` — trang chủ là `app/[lang]/page.jsx`, gọi tới
+> `HomePageClient.jsx`.)*
+
+## ⚙️ Build tool — biến code React thành file trình duyệt chạy được
 
 Trình duyệt hiểu HTML/CSS/JS thuần, nhưng **không hiểu trực tiếp** JSX và cách viết React hiện đại.
-Cần một bước "biên dịch + đóng gói" để chuyển code React thành các file HTML/CSS/JS thuần mà trình
-duyệt chạy được. Công cụ làm việc đó là **Vite**.
+Cần một bước "biên dịch + đóng gói" để chuyển code React thành các file HTML/CSS/JS thuần. Công cụ
+làm việc đó gọi chung là **build tool**. Dự án dùng **Next.js** (framework React có sẵn build tool).
 
 ```
-   CODE NGUỒN (bạn viết)              BUILD (Vite)            KẾT QUẢ (trình duyệt chạy)
-   src/*.jsx (React/JSX)    ───────────────────────▶    dist/
-   src/styles.css                  npm run build            index.html
-                                                            assets/index-xxxx.js   (đã gộp + nén)
-                                                            assets/index-xxxx.css
+   CODE NGUỒN (bạn viết)              BUILD (Next.js)         KẾT QUẢ (trình duyệt chạy)
+   app/[lang]/*.jsx (React/JSX) ──────────────────────▶  out/  (static export)
+   src/*.jsx, src/styles.css        npm run build:static    out/vi/index.html
+                                                            out/_next/static/...  (đã gộp + nén)
 ```
 
-- `npm run dev` → chạy server phát triển, xem thử ngay, tự cập nhật khi sửa (Chương này + Chương 5).
-- `npm run build` → tạo thư mục `dist/` chứa file tối ưu để đưa lên production.
+- `npm run dev` → chạy server phát triển (`http://localhost:3000`), tự cập nhật khi sửa.
+- `npm run build` → build "standalone" (dùng cho image portal PHI trên Fargate).
+- `npm run build:static` → **static export** ra thư mục `out/` — chính là thứ **Cloudflare Pages**
+  đưa lên production.
 
-> Bạn đã thấy output thật của `npm run build`: nó báo `dist/index.html`, `dist/assets/index-xxxx.js
-> 179 kB (gzip 58 kB)`. Con số gzip là kích thước sau khi nén — nhỏ hơn nhiều, tải nhanh hơn.
+> Không còn `dist/` hay `npm run preview` (đó là thời Vite). Bản build tĩnh giờ nằm ở `out/`;
+> cache build trung gian ở `.next/`.
 
 ## 📁 Trong dự án: vì sao phải "port" prototype?
 
@@ -499,8 +521,10 @@ hợp cho production**:
 - Không tối ưu (không nén, không gộp file).
 - Phụ thuộc mạng (tải thư viện từ CDN ngoài).
 
-Vì vậy bước đầu của dự án là **port** (chuyển) prototype sang một dự án Vite thật (`src/`): cùng giao
-diện, cùng nội dung, nhưng giờ được build đúng cách → nhanh, gọn, sẵn sàng cho hàng nghìn người dùng.
+Vì vậy bước đầu của dự án là **port** (chuyển) prototype sang một dự án build thật — nay là
+**Next.js** (`app/` + `src/`): cùng giao diện, cùng nội dung, nhưng được build đúng cách → nhanh,
+gọn, sẵn sàng cho hàng nghìn người dùng. *(Giai đoạn đầu port sang Vite; sau nâng lên Next.js để
+có routing đa trang + i18n + tích hợp CMS.)*
 
 ## 🔬 Đào sâu: "npm" và package.json là gì?
 
@@ -524,8 +548,8 @@ diện, cùng nội dung, nhưng giờ được build đúng cách → nhanh, g�
 
 1. HTML, CSS, JS mỗi cái lo việc gì (theo ẩn dụ xương/da/cơ)?
 2. Component trong React là gì? Kể 2 component trong dự án bạn.
-3. Vì sao cần Vite? `npm run build` tạo ra cái gì, ở đâu?
-4. Vì sao prototype Claude.ai phải port sang Vite thay vì dùng trực tiếp?
+3. Vì sao cần build tool? `npm run build:static` tạo ra cái gì, ở đâu?
+4. Vì sao prototype Claude.ai phải port sang Next.js thay vì chạy trực tiếp trong trình duyệt?
 
 ---
 
@@ -684,37 +708,39 @@ của API. Ta không hard-code (ghi chết) nó vào code, mà dùng **biến m�
 Ẩn dụ: cùng một lá đơn, nhưng "địa chỉ gửi về" điền khác nhau tuỳ bạn đang ở văn phòng hay ở nhà.
 
 Trong AgeWell:
-- `VITE_API_BASE` — địa chỉ backend API.
-  - Khi chạy **local**: để trống → form gọi qua proxy tới backend local.
+- `NEXT_PUBLIC_API_BASE` — địa chỉ backend API.
+  - Khi chạy **local**: trỏ backend local (hoặc để trống = same-origin).
   - Khi **build production**: đặt `https://api.compassagewell.com` → form gọi API thật.
+- Ngoài ra: `NEXT_PUBLIC_CMS_BASE` (Directus), `NEXT_PUBLIC_SITE_URL` (URL site cho SEO/sitemap).
 - File `.env.example` ghi mẫu các biến; `.env.local` chứa giá trị thật cho máy bạn (gitignored).
 
 ```
    CODE (src/api.js)
-   fetch(`${VITE_API_BASE}/api/lead`)   ← VITE_API_BASE được "điền" lúc build
+   fetch(`${NEXT_PUBLIC_API_BASE}/api/lead`)   ← được "điền" lúc build
         │
-   ┌────┴─────────────────────┐
-   │ local:  ""  → /api/lead   │ (proxy về backend local :8787)
-   │ prod:   https://api...     │ (API thật trên AWS)
-   └──────────────────────────┘
+   ┌────┴───────────────────────────┐
+   │ local:  backend local :8787     │
+   │ prod:   https://api.compass...   │ (API thật trên AWS)
+   └────────────────────────────────┘
 ```
 
 ## 📁 Trong dự án: vì sao form local từng báo lỗi
 
 Bạn đã gặp tình huống thật: form chạy được trên live nhưng local báo "Gửi không thành công". Lý do
 chính là biến môi trường + chỗ gửi:
-- Live: `VITE_API_BASE` = API thật → gửi được.
+- Live: `NEXT_PUBLIC_API_BASE` = API thật → gửi được.
 - Local (lúc đầu): không có backend chạy → không có chỗ gửi.
 
 Sau đó bạn dựng **full local stack** (backend + database chạy trên máy) và đặt `.env.local` để form
 local gọi đúng backend local. Đó chính là "tách cấu hình theo môi trường" trong thực tế.
 
-## 🔬 Đào sâu: vì sao biến `VITE_` đặc biệt?
+## 🔬 Đào sâu: vì sao biến `NEXT_PUBLIC_` đặc biệt?
 
-Vite chỉ "nhúng" vào code frontend những biến môi trường bắt đầu bằng `VITE_`. Đây là **biện pháp an
-toàn**: frontend chạy trên máy khách → mọi thứ nhúng vào đó công khai. Nếu lỡ nhúng một mật khẩu
-database vào frontend → cả thế giới đọc được. Quy ước `VITE_` buộc bạn cố ý chọn cái gì được công
-khai. Mật khẩu/bí mật thật chỉ nằm ở **backend** và **GitHub Secrets** (Chương 12), không bao giờ ở frontend.
+Next.js chỉ "nhúng" vào code frontend những biến môi trường bắt đầu bằng `NEXT_PUBLIC_`. Đây là
+**biện pháp an toàn**: frontend chạy trên máy khách → mọi thứ nhúng vào đó công khai. Nếu lỡ nhúng
+một mật khẩu database vào frontend → cả thế giới đọc được. Quy ước `NEXT_PUBLIC_` buộc bạn cố ý chọn
+cái gì được công khai (giống hệt quy ước `VITE_` thời Vite — chỉ khác tên prefix). Mật khẩu/bí mật
+thật chỉ nằm ở **backend** và **GitHub Secrets** (Chương 12), không bao giờ ở frontend.
 
 ## ⚠️ Cạm bẫy
 
@@ -728,8 +754,8 @@ khai. Mật khẩu/bí mật thật chỉ nằm ở **backend** và **GitHub Sec
 ## ✅ Tự kiểm tra
 
 1. Vì sao tách nội dung ra `content-data.js` thay vì viết thẳng chữ trong component?
-2. Biến môi trường giải quyết vấn đề gì? Cho ví dụ `VITE_API_BASE` ở local vs production.
-3. Vì sao Vite chỉ nhúng biến bắt đầu bằng `VITE_`? Điều này liên quan gì tới bảo mật?
+2. Biến môi trường giải quyết vấn đề gì? Cho ví dụ `NEXT_PUBLIC_API_BASE` ở local vs production.
+3. Vì sao Next.js chỉ nhúng biến bắt đầu bằng `NEXT_PUBLIC_`? Điều này liên quan gì tới bảo mật?
 4. Khi form chạy ở live mà lỗi ở local, nguyên nhân gốc thường là gì?
 
 ---
@@ -767,9 +793,9 @@ AWS có hàng trăm dịch vụ. Dự án bạn dùng một nhóm nhỏ. Đây l
 
 | Dịch vụ | Là gì | Ẩn dụ | Trong dự án |
 |---|---|---|---|
-| **ECS Fargate** | Chạy container (website) | Đội nhân viên phục vụ | Chạy nginx phục vụ trang tĩnh |
-| **ECR** | Kho chứa image Docker | Nhà kho chứa "hộp" đóng gói | Lưu image website mỗi lần build |
-| **ALB** | Cân bằng tải + cổng vào | Quầy lễ tân phân khách | Nhận HTTPS, chuyển vào ECS |
+| **Cloudflare Pages** | Host web tĩnh (CDN) | Bảng tin dán sẵn khắp nơi | Phục vụ **marketing** (thay ECS/ALB cũ) |
+| **ECS Fargate** | Chạy container | Đội nhân viên phục vụ | Chạy **PHI portal** (Next server) — *không còn phục vụ marketing* |
+| **ECR** | Kho chứa image Docker | Nhà kho chứa "hộp" đóng gói | Lưu image portal mỗi lần build |
 | **Lambda** | Chạy hàm khi có sự kiện | Nhân viên gọi-mới-tới làm | Xử lý form lead |
 | **API Gateway** | Cổng cho API | Tổng đài tiếp nhận cuộc gọi | Nhận POST /api/lead |
 | **DynamoDB** | Database NoSQL | Kho hồ sơ | Lưu danh sách lead |
@@ -861,13 +887,17 @@ Hai khái niệm dễ nhầm:
 (nhiều giai đoạn) — một mẹo quan trọng:
 
 ```
-Giai đoạn 1 (build):   dùng Node → chạy `npm run build` → ra thư mục dist/
-Giai đoạn 2 (serve):   dùng nginx → copy dist/ vào → phục vụ file tĩnh
+Giai đoạn 1 (build):   dùng Node → chạy `npm run build` → ra bản build tối ưu
+Giai đoạn 2 (chạy):    image gọn chỉ chứa kết quả build + Node runtime → chạy app
 ```
 
-Vì sao 2 giai đoạn? Vì công cụ *build* (Node, npm, mã nguồn) rất nặng nhưng **chỉ cần lúc build**. Sản
-phẩm cuối chỉ cần các file tĩnh + nginx. Multi-stage cho phép **vứt bỏ** mọi thứ của giai đoạn 1, chỉ
-giữ kết quả → image cuối nhỏ gọn, nhanh, an toàn (ít thứ thừa = ít lỗ hổng).
+Vì sao 2 giai đoạn? Vì công cụ *build* (Node đầy đủ, npm, mã nguồn) rất nặng nhưng **chỉ cần lúc
+build**. Multi-stage cho phép **vứt bỏ** mọi thứ của giai đoạn 1, chỉ giữ kết quả → image cuối nhỏ
+gọn, nhanh, an toàn (ít thứ thừa = ít lỗ hổng).
+
+> 📌 *(Trước đây image này phục vụ **marketing**: giai đoạn 2 dùng **nginx** phục vụ `dist/` tĩnh.
+> Nay marketing đã chuyển sang **Cloudflare Pages** — không còn container. Image Docker hiện tại là
+> **PHI portal** (Next.js standalone, cổng 3000), nên giai đoạn 2 chạy Node server thay vì nginx.)*
 
 > Mở file `Dockerfile` ở gốc repo, bạn thấy đúng 2 khối `FROM node...` và `FROM nginx...`.
 
@@ -938,7 +968,8 @@ Hình dung một cửa hàng đông khách:
 
 **ECS** (Elastic Container Service) là dịch vụ AWS để **chạy và quản lý container**. Các tầng:
 
-- **Task**: một container đang chạy (một "nhân viên"). Trong AgeWell: một bản nginx phục vụ web.
+- **Task**: một container đang chạy (một "nhân viên"). Trong AgeWell: một bản **PHI portal**
+  (Next.js server) — *trước đây từng là nginx phục vụ marketing, nay marketing đã sang Cloudflare Pages.*
 - **Task Definition**: bản mô tả cách chạy task — dùng image nào, bao nhiêu CPU/RAM, cổng nào. Như
   "bản mô tả công việc" của nhân viên.
 - **Service**: đảm bảo luôn có đúng số task chạy (vd `desiredCount = 1`). Task chết → service tự khởi
@@ -1479,8 +1510,10 @@ DNS có nhiều loại "bản ghi". Hai loại bạn dùng:
 Đây là một chi tiết kỹ thuật thực tế bạn đã gặp. **ALB không có IP cố định** — AWS có thể đổi IP của
 nó bất cứ lúc nào. Nếu bạn dùng A record trỏ tới một IP, hôm sau IP đổi → website chết.
 
-Giải pháp: dùng **CNAME** trỏ tới *tên* của ALB (`agewell-alb-xxx.elb.amazonaws.com`). Tên này cố
-định; AWS lo việc tên đó luôn trỏ đúng IP hiện tại. Bạn "chỉ tên, không chỉ số".
+Giải pháp: dùng **CNAME** trỏ tới *tên* của dịch vụ (vd một ALB `agewell-alb-xxx.elb.amazonaws.com`,
+hay `<project>.pages.dev` của Cloudflare Pages). Tên này cố định; nhà cung cấp lo việc tên đó luôn
+trỏ đúng IP hiện tại. Bạn "chỉ tên, không chỉ số". *(Nguyên tắc này áp dụng cho mọi host; AgeWell nay
+trỏ apex/www vào Cloudflare Pages thay vì ALB.)*
 
 ```
    compassagewell.com ──CNAME──▶ agewell-alb-xxx.elb.amazonaws.com ──▶ (IP thật, AWS tự quản)
@@ -1509,19 +1542,21 @@ cần cấu hình thêm để chứng chỉ khớp (đã ghi chú trong tài li�
 
 ## 📁 Trong dự án: DNS của bạn
 
-Trong `infra/dns.tf` và `infra/backend.tf`, Terraform tạo các bản ghi Cloudflare:
-- `compassagewell.com` + `www` → CNAME tới ALB (xem website).
-- `api.compassagewell.com` → CNAME tới API Gateway (gửi form).
-- Vài bản ghi validation cho ACM (tự động, tạm thời).
+Các bản ghi Cloudflare hiện tại:
+- `compassagewell.com` + `www` → **Cloudflare Pages** (do project Pages quản, không phải CNAME→ALB).
+- `api.compassagewell.com` → API Gateway (gửi form) — trong `infra/` (Terraform).
+- `cms.compassagewell.com` → **Cloudflare Tunnel** tới Directus (CMS).
 
-Zone ID của bạn: `15d3366808d02cb9a99b043c8e245a10` (định danh "vùng" domain trên Cloudflare).
+> 📌 *(Trước đây apex/www là CNAME → ALB trên AWS. Sau khi chuyển marketing sang Cloudflare Pages,
+> ALB đã gỡ và domain trỏ thẳng vào Pages.)*
 
 ## 🔬 Đào sâu: vì sao tách `api.` thành subdomain riêng?
 
-Website (`compassagewell.com`) chạy trên ALB→ECS, còn API (`api.compassagewell.com`) chạy trên API
-Gateway→Lambda — **hai hệ thống khác nhau**. Tách thành subdomain riêng cho phép mỗi cái trỏ tới đúng
-nơi, độc lập. Frontend gọi `api.compassagewell.com` để gửi form, trong khi người dùng xem web ở domain
-chính. Sạch sẽ và dễ quản.
+Website (`compassagewell.com`) phục vụ bởi **Cloudflare Pages**, còn API (`api.compassagewell.com`)
+chạy trên API Gateway→Lambda (AWS), và CMS (`cms.compassagewell.com`) qua Cloudflare Tunnel —
+**các hệ thống khác nhau**. Tách thành subdomain riêng cho phép mỗi cái trỏ tới đúng nơi, độc lập.
+Frontend gọi `api.compassagewell.com` để gửi form, trong khi người dùng xem web ở domain chính.
+Sạch sẽ và dễ quản.
 
 ## ⚠️ Cạm bẫy
 
@@ -1624,7 +1659,7 @@ nhiều dev), thêm staging đầy đủ — kiến trúc đã sẵn sàng cho v
 ## ⚙️ "Local = bản sao live" — vì sao quan trọng
 
 Một trụ cột của GitOps là: cái bạn test ở local phải **giống** cái chạy thật. Dự án bạn đạt điều này:
-- Cùng code frontend (Vite), cùng code backend (`index.mjs` chạy cả 2 nơi).
+- Cùng code frontend (Next.js), cùng code backend (`index.mjs` chạy cả 2 nơi).
 - Database local (DynamoDB Local) tạo từ **cùng một schema** với production.
 - Cùng cách đóng gói (Docker).
 
@@ -1759,7 +1794,12 @@ của một người quản lý kỹ thuật.
 | **React** | Thư viện xây giao diện bằng component |
 | **Component** | Thành phần giao diện tái sử dụng (khối LEGO) |
 | **JSX** | Cú pháp viết HTML lồng trong JavaScript (React) |
-| **Vite** | Công cụ build frontend (biên dịch + đóng gói) |
+| **Next.js** | Framework React (App Router) — build + routing + i18n; dự án dùng cái này |
+| **next-intl** | Thư viện đa ngôn ngữ cho Next.js (URL `/vi` `/en`) |
+| **Static export** | Build ra file tĩnh (`out/`) để host trên CDN (Cloudflare Pages) |
+| **Cloudflare Pages** | Dịch vụ host web tĩnh (CDN) — phục vụ marketing |
+| **Directus** | CMS mã nguồn mở — nơi BD sửa nội dung (blog/homepage/team) |
+| **Vite** | Công cụ build frontend đời đầu của dự án (đã thay bằng Next.js) |
 | **npm** | Trình quản lý thư viện JavaScript |
 | **Git** | Hệ thống quản lý phiên bản mã nguồn |
 | **GitHub** | Nền tảng lưu repo Git trên mạng |
@@ -1826,12 +1866,13 @@ Các lệnh hay dùng, kèm giải thích. (Tra cứu nhanh — chi tiết xem [
 
 ## Frontend (chạy ở gốc repo)
 ```bash
-npm install        # cài thư viện (lần đầu / sau khi đổi package.json)
-npm run dev        # chạy server dev → http://localhost:5173 (tự reload khi sửa)
-npm run build      # build production → thư mục dist/
-npm run preview    # xem thử bản build (giống production)
-npm run lint       # kiểm lỗi code (CI bắt buộc xanh)
+npm install          # cài thư viện (lần đầu / sau khi đổi package.json)
+npm run dev          # chạy server dev → http://localhost:3000 (tự reload khi sửa)
+npm run build        # standalone Next build (dùng cho image portal PHI)
+npm run build:static # static export → thư mục out/ (bản Cloudflare Pages phục vụ)
+npm run lint         # kiểm lỗi code (CI bắt buộc xanh)
 ```
+> Không còn `npm run preview`/`dist/`/cổng 5173 (đó là thời Vite).
 
 ## Full local stack (test form như live)
 ```bash

@@ -1,55 +1,62 @@
-# Playbook: Triển khai website từ đầu (Design → Git → AWS ECS → Domain → Launch)
+# Playbook: Triển khai website (Design → Next.js → Cloudflare Pages + AWS → Domain → Launch)
 
-Tài liệu này mô tả **toàn bộ quy trình** đã dùng để launch website Compass AgeWell, viết
-lại theo dạng có thể **lặp lại cho dự án tương tự**: từ một bản thiết kế prototype (Claude.ai
-hoặc bất kỳ React prototype nào) → biến thành web production → tự động deploy lên AWS ECS
-Fargate → trỏ domain qua Cloudflare → HTTPS → live.
+Tài liệu này mô tả **toàn bộ quy trình** vận hành website Compass AgeWell hiện tại, viết theo
+dạng có thể **lặp lại cho dự án tương tự**: từ một bản thiết kế prototype (Claude.ai hoặc bất
+kỳ React/Next prototype nào) → biến thành web production Next.js → deploy marketing lên
+**Cloudflare Pages** (static export) + backend/portal/CMS lên **AWS** → trỏ domain qua
+Cloudflare → HTTPS → live.
 
 > **Đối tượng**: người setup hạ tầng (DevOps / tech lead). Cần quyền AWS + Cloudflare.
 > Sau khi setup xong một lần, dev chỉ cần `git push` (xem [DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md)).
+
+> **Lịch sử**: dự án khởi đầu là Vite SPA phục vụ bằng nginx trên ECS Fargate + ALB. Sau đợt
+> tối ưu chi phí, marketing đã chuyển sang **Cloudflare Pages** (static export ~miễn phí,
+> gỡ ALB + web Fargate). Playbook này mô tả trạng thái **hiện tại**.
 
 ---
 
 ## 0. Kiến trúc tổng quan
 
 ```
-                                    ┌─────────────────────────────────────┐
-   Cloudflare DNS                   │              AWS (us-east-1)         │
-   compassagewell.com  ──CNAME──►   │   ┌────────┐    ┌──────────────┐     │
-   www                              │   │  ALB   │───►│ ECS Fargate  │     │
-                                    │   │ :443   │    │ nginx static │     │
-                                    │   │ (ACM)  │    │ (Vite dist)  │     │
-                                    │   └────────┘    └──────────────┘     │
-                                    │        ▲              ▲ image        │
-   api.compassagewell.com ─CNAME─►  │   ┌──────────┐    ┌───────┐          │
-                                    │   │ API GW   │───►│Lambda │──► DynamoDB
-                                    │   │ /api/lead│    │ lead  │──► SES    │
-                                    │   └──────────┘    └───────┘          │
-                                    │   ECR (image registry)               │
-                                    └─────────────────────────────────────┘
-        ▲ git push main
-   GitHub Actions (OIDC) ──build──► ECR ──rolling deploy──► ECS + Lambda
+   Cloudflare
+   ┌─────────────────────────────────────────────────────────────┐
+   │  compassagewell.com / www  ─────►  Cloudflare PAGES          │
+   │      (static export `out/`, build: npm run build:static)     │
+   │                                                              │
+   │  cms.compassagewell.com  ──Tunnel──►  Directus (CMS)         │
+   └───────────────┬──────────────────────────┬──────────────────┘
+                   │ /api                      │ (portal, PHI)
+                   ▼                           ▼
+   ┌───────────────────────────┐   ┌──────────────────────────────┐
+   │  AWS: API GW → Lambda      │   │  AWS: ECS Fargate            │
+   │  → DynamoDB (+ SES)        │   │  (Next standalone: PHI portal)│
+   │  api.compassagewell.com    │   │  + isolated PHI Postgres      │
+   └───────────────────────────┘   └──────────────────────────────┘
+
+   git push main
+     ├─► Cloudflare Pages: build:static → deploy marketing
+     └─► GitHub Actions (deploy.yml): terraform apply → Fargate/Lambda
+   Directus publish ─► Pages Deploy Hook ─► rebuild marketing (~1–2 min)
 ```
 
 **Các quyết định kiến trúc** (và lý do):
 | Hạng mục | Lựa chọn | Lý do |
 |---|---|---|
-| Build frontend | Vite + React 18 | Build tĩnh, nhẹ, SEO tốt, không cần Node runtime |
-| Serving | nginx static / ECS Fargate + ALB | Rẻ, đơn giản, hợp site 1 trang tĩnh |
+| Framework | Next.js 14 App Router + next-intl | SSG + SEO + i18n URL-based (`/vi` `/en`); dễ thêm route/CMS |
+| Serving marketing | **Cloudflare Pages** (static export) | Gần như miễn phí, CDN toàn cầu, không cần ALB/container |
+| CMS | Directus self-host (Cloudflare Tunnel) | BD tự sửa nội dung; overlay lên static, fail-soft |
+| Portal PHI | AWS Fargate (Next standalone) | Cần server runtime + Postgres cô lập cho dữ liệu PHI |
 | Backend form | API Gateway + Lambda + DynamoDB | Serverless, scale-to-zero, gần như miễn phí ở traffic thấp |
 | IaC | Terraform | Quản cả AWS + Cloudflare, version control, tái lập |
-| DNS/HTTPS | Cloudflare (DNS-only) + ACM trên ALB | ALB tự terminate TLS, đơn giản |
 
 ---
 
 ## 1. Chuẩn bị công cụ (máy local)
 
-Cài các công cụ sau (Windows dùng `winget`):
-
 ```powershell
-winget install OpenJS.NodeJS.LTS          # Node 20+ (build frontend)
-winget install Docker.DockerDesktop        # build/test container local
-winget install Hashicorp.Terraform         # dựng hạ tầng
+winget install OpenJS.NodeJS.LTS          # Node 20+ (build)
+winget install Docker.DockerDesktop        # CMS/DB local, build portal image
+winget install Hashicorp.Terraform         # dựng hạ tầng AWS
 winget install Amazon.AWSCLI               # gọi AWS
 winget install GitHub.cli                  # set secrets, theo dõi CI
 ```
@@ -62,69 +69,76 @@ winget install GitHub.cli                  # set secrets, theo dõi CI
 ## 2. Chuẩn bị tài khoản & quyền (làm thủ công, cần con người)
 
 ### 2a. AWS — tạo IAM user + access key
-1. Đăng nhập AWS Console → dịch vụ **IAM**
-2. **Users → Create user** (vd `agewell-admin`), KHÔNG cần console access
-3. **Attach policies directly → AdministratorAccess** (thu hẹp quyền sau khi xong)
-4. Vào user → **Security credentials → Create access key → CLI** → tải `.csv`
-5. Trong terminal local: `aws configure` → nhập Access Key / Secret / region `us-east-1` / format `json`
-6. Verify: `aws sts get-caller-identity` (phải ra Account + Arn)
+1. AWS Console → **IAM** → **Users → Create user** (vd `agewell-admin`)
+2. **Attach policies → AdministratorAccess** (thu hẹp sau khi xong)
+3. **Security credentials → Create access key → CLI** → tải `.csv`
+4. `aws configure` → nhập key/secret/region `us-east-1`/format `json`
+5. Verify: `aws sts get-caller-identity`
 
-### 2b. Cloudflare — Zone ID + API token
-1. dash.cloudflare.com → chọn domain → tab **Overview** → copy **Zone ID** (cột phải)
-2. **My Profile → API Tokens → Create Token → template "Edit zone DNS"**
-3. Zone Resources: `Include → Specific zone → <domain>` → Create → **copy token** (chỉ hiện 1 lần)
+### 2b. Cloudflare — Zone ID, API token, và project Pages
+1. dash.cloudflare.com → chọn domain → **Overview** → copy **Zone ID**
+2. **My Profile → API Tokens → Create Token** ("Edit zone DNS" + quyền Pages nếu cần) → copy token
+3. **Workers & Pages → Create → Pages → Connect to Git** → chọn repo `compass247/Agewell`:
+   - **Production branch**: `main`
+   - **Build command**: `npm run build:static`
+   - **Build output directory**: `out`
+   - **Environment variables**: `NEXT_PUBLIC_API_BASE`, `NEXT_PUBLIC_CMS_BASE`,
+     `NEXT_PUBLIC_SITE_URL` (Next inline biến `NEXT_PUBLIC_*` lúc build — thiếu là sai)
+   - (Tuỳ chọn) **Deploy hook** cho branch `main` → dán URL vào Directus Flow để publish=live.
 
 ### 2c. SES — verify email gửi lead (tùy chọn)
 ```powershell
 aws ses verify-email-identity --email-address "you@example.com" --region us-east-1
 ```
-→ mở mail, bấm link xác nhận. SES mặc định **sandbox** (chỉ gửi tới email đã verify); muốn
-gửi tới bất kỳ ai cần xin thoát sandbox trong AWS Console.
+→ mở mail, bấm link. SES mặc định **sandbox** (chỉ gửi tới email đã verify); xin thoát sandbox
+để gửi cho bất kỳ ai.
 
 ---
 
-## 3. Port prototype → Vite + React (nếu bắt đầu từ prototype)
+## 3. Port prototype → Next.js (nếu bắt đầu từ prototype)
 
 Nếu có prototype kiểu Claude.ai (JSX biên dịch trình duyệt, không build step):
 
-1. **Scaffold** project Vite ở root:
-   - `package.json` (react, react-dom pin đúng version prototype; vite, @vitejs/plugin-react)
-   - `vite.config.js` (plugin react + proxy `/api` cho dev)
-   - `index.html` (giữ meta SEO/OG/Twitter/canonical)
+1. **Scaffold** Next.js App Router: `package.json` (next, react, next-intl), `next.config.mjs`
+   (`output: "export"` khi `BUILD_TARGET=static`), `app/layout.jsx` + `app/[lang]/layout.jsx`.
 2. **Chuyển module pattern**: prototype thường dùng IIFE + `window.X = ...`. Đổi sang
-   `import`/`export` ESM chuẩn. Mỗi file export component thay vì gắn lên `window`.
-3. **Tổ chức** `src/`: `main.jsx` (entry), `App.jsx`, `content-data.js`, `components/`, `sections/`, `styles.css`, `api.js`.
+   `import`/`export` ESM. Component tương tác cần `"use client"`.
+3. **Tổ chức**: routes trong `app/[lang]/` (`page.jsx`, `blog/`, `team/`, `services/[slug]/`);
+   nội dung song ngữ trong `src/content-data.js` + `src/service-content.js`; section trong
+   `src/sections/`; helper/chrome trong `src/components/`; i18n trong `src/i18n/`.
 4. **Bỏ phần chỉ dùng cho prototype** (vd tweaks-panel), hardcode giá trị đã chốt.
-5. **Assets** → `public/assets/`, tham chiếu `/assets/...`. Thêm `robots.txt`, `sitemap.xml`.
-6. **Form** → gọi `src/api.js` POST `/api/lead`, thêm validation + honeypot chống bot.
+5. **Assets** → `public/assets/`, tham chiếu `/assets/...`. SEO qua `src/seo.js` +
+   `generateMetadata` (Next Metadata API), sitemap động `app/sitemap.js`.
+6. **Form** → `src/api.js` POST `/api/lead` (base = `NEXT_PUBLIC_API_BASE`), validation + honeypot.
 7. **Verify local**:
    ```powershell
    npm install
-   npm run build      # phải sạch, ra dist/
-   npm run lint       # phải xanh
-   npm run preview    # mở thử, kiểm các section + responsive + form
+   npm run build          # standalone build — phải sạch
+   npm run lint           # phải xanh
+   npm run build:static   # static export → ra out/ (đúng bản Cloudflare Pages chạy)
    ```
 
 ---
 
-## 4. Container hoá (Dockerfile + nginx)
+## 4. Static export cho Cloudflare Pages
 
-- **`Dockerfile`** multi-stage: stage 1 `node:20-alpine` build → stage 2 `nginx:alpine` serve `dist/`.
-  Nhận `ARG VITE_API_BASE` để bake API URL lúc build.
-- **`nginx.conf`**: SPA fallback (`try_files ... /index.html`), endpoint `/healthz` trả 200,
-  gzip, security headers, cache dài cho `/assets/`, no-cache cho `index.html`.
-- **`.dockerignore`**: loại `node_modules`, `dist`, `.git`, `BD_Requirements`, `infra`, `backend`.
-- **Test local** (validate đúng image ECS sẽ chạy):
-  ```powershell
-  docker build -t web:test .
-  docker run -d --name web-test -p 8099:80 web:test
-  curl http://localhost:8099/healthz     # phải 200
-  docker rm -f web-test
-  ```
+Marketing **không cần container**. Cloudflare Pages chạy `npm run build:static`:
+- `scripts/build-static.mjs` đặt `BUILD_TARGET=static` rồi gọi `next build` → `output: "export"`
+  → ra thư mục `out/`.
+- `scripts/static-stash.mjs` tạm **dời** các surface server-only (PHI portal `app/(portal)`,
+  `app/api/*`, `middleware.js`, `auth*.js`, `app/healthz`) ra khỏi cây build (vì
+  `output: "export"` không biên dịch được middleware/route handler), rồi khôi phục sau — kể cả
+  khi build lỗi.
+- `public/_redirects` xử lý redirect ở tầng Pages (vd `/` → `/vi/`).
+
+> **Lưu ý dynamic route + export**: route như `blog/[slug]` phải có `generateStaticParams`. Nếu
+> nguồn (CMS) rỗng lúc build, `output: "export"` sẽ báo lỗi "missing generateStaticParams" →
+> đã xử lý bằng `export const dynamicParams = false` + trả 1 slug fallback (page gọi
+> `notFound()`) để build không gãy.
 
 ---
 
-## 5. Backend lead form (serverless)
+## 5. Backend lead form (serverless — AWS)
 
 `backend/lead-handler/`:
 - `package.json` (`@aws-sdk/client-dynamodb`, `lib-dynamodb`, `client-sesv2`)
@@ -133,25 +147,26 @@ Nếu có prototype kiểu Claude.ai (JSX biên dịch trình duyệt, không bu
 
 ---
 
-## 6. Hạ tầng Terraform (`infra/`)
+## 6. Hạ tầng Terraform (`infra/`) — API + portal + CMS + DNS
 
-Cấu trúc file (tách theo nhóm cho dễ đọc):
+Terraform quản phần **AWS + Cloudflare DNS** (KHÔNG quản Cloudflare Pages — cái đó cấu hình ở
+dashboard, bước 2b). Cấu trúc file (tách theo nhóm):
 | File | Nội dung |
 |---|---|
 | `versions.tf` | providers (aws, cloudflare, archive, tls) + backend S3 |
 | `variables.tf` | biến đầu vào (region, domain, email, github_repo...) |
-| `network.tf` | default VPC + subnets + security groups |
-| `acm.tf` | ACM cert (apex+www) validate qua Cloudflare DNS |
-| `alb.tf` | ALB + target group + listeners (80→443 redirect) |
-| `ecr.tf` | ECR repo + lifecycle (giữ 10 image) |
-| `ecs.tf` | cluster + task def + service + IAM execution role + logs |
+| `network.tf` | VPC + subnets + security groups |
+| `acm.tf` | ACM cert (cho api.* / portal nếu cần) validate qua Cloudflare DNS |
 | `backend.tf` | DynamoDB + Lambda + API Gateway + custom domain api.* |
-| `dns.tf` | Cloudflare CNAME apex/www → ALB |
+| `cms-*.tf` | Directus (compute + network + Cloudflare Tunnel) |
+| (portal) | ECS/Fargate cho PHI portal + Postgres cô lập |
+| `dns.tf` | Cloudflare DNS: api → API GW, cms → Tunnel (apex/www quản bởi Pages) |
 | `oidc.tf` | GitHub OIDC provider + deploy role |
 | `outputs.tf` | xuất ARN/URL cần cho GitHub config |
 
+> Marketing **không còn** `alb.tf` / web `ecs.tf` / apex-CNAME→ALB — đã gỡ khi chuyển sang Pages.
+
 ### 6a. Bootstrap state (làm 1 lần)
-State của Terraform không tự quản chính nó được, nên tạo bằng tay trước:
 ```powershell
 $ACCOUNT = (aws sts get-caller-identity --query Account --output text)
 $BUCKET = "agewell-tfstate-$ACCOUNT"
@@ -162,9 +177,9 @@ aws dynamodb create-table --table-name agewell-tf-lock --attribute-definitions A
 ```
 
 ### 6b. Cấu hình + apply
-1. Copy `infra/terraform.tfvars.example` → `infra/terraform.tfvars`, điền region/domain/email (file này **gitignored**).
+1. Copy `infra/terraform.tfvars.example` → `infra/terraform.tfvars` (gitignored).
 2. Cài deps Lambda: `cd backend/lead-handler; npm install --omit=dev; cd ../..`
-3. Đặt biến môi trường Cloudflare (KHÔNG ghi vào file):
+3. Đặt biến Cloudflare (KHÔNG ghi vào file):
    ```powershell
    $env:TF_VAR_cloudflare_api_token = "<token>"
    $env:TF_VAR_cloudflare_zone_id   = "<zone-id>"
@@ -173,82 +188,77 @@ aws dynamodb create-table --table-name agewell-tf-lock --attribute-definitions A
    ```powershell
    cd infra
    terraform init -backend-config="bucket=$BUCKET" -backend-config="region=us-east-1" -backend-config="dynamodb_table=agewell-tf-lock"
-   terraform plan -out tf.plan        # REVIEW kỹ: "X to add, 0 to destroy"
-   terraform apply tf.plan            # gõ yes
+   terraform plan -out tf.plan        # REVIEW kỹ số resource add/destroy
+   terraform apply tf.plan
    ```
-   > Bước `aws_acm_certificate_validation` chờ DNS validate, **2–5 phút** là bình thường.
-5. **Lưu lại Outputs** (`terraform output`) — cần cho bước 7.
-
-> ⚠️ Lần apply đầu, ECS chạy image placeholder `:bootstrap` → task chưa healthy. Bình thường,
-> sẽ khỏe sau khi CI push image thật (bước 8).
+5. **Lưu Outputs** (`terraform output`) — cần cho bước 7.
 
 ---
 
 ## 7. Cấu hình GitHub (secrets + variables)
 
-Dùng `gh` CLI (lấy giá trị từ `terraform output`):
 ```powershell
 $REPO = "compass247/Agewell"
 # Secrets
 gh secret set AWS_DEPLOY_ROLE_ARN --repo $REPO --body "<github_deploy_role_arn>"
 gh secret set TF_STATE_BUCKET     --repo $REPO --body "agewell-tfstate-<account>"
+gh secret set CLOUDFLARE_API_TOKEN --repo $REPO --body "<token>"
 # Variables
 gh variable set AWS_REGION         --repo $REPO --body "us-east-1"
-gh variable set ECR_REPOSITORY     --repo $REPO --body "agewell-web"
-gh variable set ECS_CLUSTER        --repo $REPO --body "agewell"
-gh variable set ECS_SERVICE        --repo $REPO --body "agewell-web"
-gh variable set LEAD_LAMBDA_NAME   --repo $REPO --body "agewell-lead-handler"
 gh variable set API_BASE           --repo $REPO --body "https://api.compassagewell.com"
+gh variable set CMS_BASE           --repo $REPO --body "https://cms.compassagewell.com"
+gh variable set SITE_URL           --repo $REPO --body "https://compassagewell.com"
 gh variable set CLOUDFLARE_ZONE_ID --repo $REPO --body "<zone-id>"
+# (+ các biến ECR/ECS mà image portal dùng)
 ```
-> `CLOUDFLARE_API_TOKEN` chỉ cần nếu chạy `infra.yml` trên cloud. Nếu apply Terraform local thì bỏ qua.
 
 ---
 
 ## 8. Deploy lần đầu + verify
 
-```powershell
-gh workflow run deploy.yml --repo compass247/Agewell --ref main
-gh run watch <run-id> --repo compass247/Agewell --exit-status
-```
-Pipeline: build image → push ECR → render task def → ECS rolling deploy → update Lambda.
+- **Marketing**: Cloudflare Pages tự build khi push `main` (hoặc bấm "Retry deployment" trên
+  dashboard). Nếu bản build ở "Preview", **Promote to production** và đảm bảo Production branch = `main`.
+- **Backend/portal/CMS (AWS)**:
+  ```powershell
+  gh workflow run deploy.yml --repo compass247/Agewell --ref main
+  gh run watch <run-id> --repo compass247/Agewell --exit-status
+  ```
 
 ### Verify production
 ```powershell
-# ECS healthy
-aws ecs describe-services --cluster agewell --services agewell-web --region us-east-1 --query 'services[0].{running:runningCount,desired:desiredCount}'
-# Site
-curl -s -o /dev/null -w "%{http_code}" https://compassagewell.com/         # 200
-curl -s -o /dev/null -w "%{http_code}" https://compassagewell.com/healthz  # 200
+# Marketing (static, trailing slash)
+curl -s -o /dev/null -w "%{http_code}" -L https://compassagewell.com/vi/                 # 200
+curl -s -o /dev/null -w "%{http_code}" -L https://compassagewell.com/vi/services/ccm     # 200
 # Form API
 curl -X POST https://api.compassagewell.com/api/lead -H "Content-Type: application/json" -d '{"name":"Test","phone":"408-555-1234","lang":"vi","source":"smoke"}'
 # → {"ok":true,...}; kiểm DynamoDB: aws dynamodb scan --table-name agewell-leads --region us-east-1 --query Count
 ```
-
 Sau đó **xóa lead test** khỏi DynamoDB nếu cần.
 
 ---
 
 ## 9. Checklist launch
 
-- [ ] `https://<domain>` trả 200, SSL hợp lệ, không cảnh báo trình duyệt
-- [ ] `www` + HTTP→HTTPS redirect hoạt động
-- [ ] Các section render đúng trên mobile + desktop, toggle ngôn ngữ OK
+- [ ] `https://<domain>/vi/` trả 200, SSL hợp lệ; Production branch của Pages = `main`
+- [ ] `www` + HTTP→HTTPS redirect hoạt động; `/` → `/vi/` redirect
+- [ ] Các trang render đúng mobile + desktop, toggle VI/EN OK
 - [ ] Form submit thật → lưu DynamoDB (+ email nếu đã verify SES)
-- [ ] OG/Twitter card hiển thị đúng khi share (Zalo/Facebook)
-- [ ] `robots.txt` + `sitemap.xml` truy cập được
-- [ ] CI/CD: push thử commit nhỏ → deploy tự động xanh
+- [ ] OG/Twitter card đúng khi share (Zalo/Facebook)
+- [ ] `sitemap.xml` + `robots.txt` truy cập được
+- [ ] Directus publish → Pages Deploy Hook rebuild → nội dung lên live
+- [ ] CI/CD: push commit nhỏ → Pages deploy + `deploy.yml` xanh
 
 ---
 
-## 10. Gỡ bỏ toàn bộ (nếu cần huỷ dự án)
+## 10. Gỡ bỏ (nếu cần huỷ dự án)
 
 ```powershell
 cd infra
-terraform destroy            # xoá 39 resource AWS + DNS Cloudflare
-# Xoá state bucket + lock table thủ công (chúng nằm ngoài Terraform)
+terraform destroy            # xoá resource AWS + DNS Cloudflare do Terraform quản
+# Xoá state bucket + lock table thủ công (nằm ngoài Terraform):
 aws s3 rb s3://agewell-tfstate-<account> --force
 aws dynamodb delete-table --table-name agewell-tf-lock --region us-east-1
+# Xoá project Cloudflare Pages thủ công trên dashboard.
 ```
 
 ---
@@ -257,12 +267,11 @@ aws dynamodb delete-table --table-name agewell-tf-lock --region us-east-1
 
 | Dịch vụ | Chi phí/tháng (ước) |
 |---|---|
-| ALB | ~16–20 USD (chi phí cố định chính) |
-| ECS Fargate (1 task, 0.25 vCPU/0.5GB) | ~9 USD |
-| Lambda + DynamoDB + API Gateway | gần như miễn phí ở traffic thấp |
+| **Cloudflare Pages** (marketing) | ~0 (gói free/CDN) |
+| Lambda + DynamoDB + API Gateway (form) | gần như miễn phí ở traffic thấp |
 | SES | 0 (vài nghìn email đầu miễn phí) |
-| ECR storage | < 1 USD |
-| **Tổng** | **~25–30 USD/tháng** |
+| Directus CMS (EC2/Fargate nhỏ) | ~10–15 USD |
+| PHI portal Fargate + Postgres | ~15–25 USD (khi bật) |
 
-Muốn rẻ hơn nữa: cân nhắc thay ALB+ECS bằng S3+CloudFront (static hosting) — nhưng mất khả
-năng chạy container.
+> So với kiến trúc v1 (ALB ~16–20 + web Fargate ~9 chỉ để phục vụ trang tĩnh), việc chuyển
+> marketing sang Cloudflare Pages tiết kiệm ~$25/tháng — lý do chính của đợt cost-cutting.

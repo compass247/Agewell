@@ -10,9 +10,9 @@
    This keeps ALL code on one branch (main) — the portal still builds normally
    for the Fargate image (BUILD_TARGET unset); only the Pages build hides it.
 
-   Used by scripts/prebuild-static.mjs (stash) and postbuild-static.mjs
-   (unstash). See package.json → build:static. postbuild runs even on build
-   failure so the repo is never left with files stashed away.
+   Used by scripts/build-static.mjs, which calls stash() before `next build`
+   and unstash() in a finally block (see `npm run build:static`). The unstash
+   runs even on build failure so the repo is never left with files stashed away.
    ============================================================ */
 import { existsSync, mkdirSync, renameSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
