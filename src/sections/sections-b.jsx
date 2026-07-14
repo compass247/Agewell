@@ -7,7 +7,7 @@ import { useState, useRef } from "react";
 import { Icon } from "../components/icons.jsx";
 import { AGEWELL_COLORS, Reveal, SectionHead, Placeholder, scrollToId } from "../components/shared.jsx";
 import { LangToggle } from "../components/LangToggle.jsx";
-import { NavItem } from "./sections-a.jsx";
+import { NavItem, flattenNav } from "./sections-a.jsx";
 import { submitLead } from "../api.js";
 
 const C = () => AGEWELL_COLORS;
@@ -63,7 +63,8 @@ export function UspTeam({ t }) {
 }
 
 /* ---------------- FAQ item ---------------- */
-function FaqItem({ q, a, defaultOpen }) {
+// Exported so the service-detail pages can reuse the same accordion.
+export function FaqItem({ q, a, defaultOpen }) {
   const [open, setOpen] = useState(!!defaultOpen);
   const inner = useRef(null);
   return (
@@ -300,7 +301,7 @@ export function Footer({ t, lang }) {
           <div className="footer-col">
             <h4>{fo.navTitle}</h4>
             <ul>
-              {t.nav.map((n) => (
+              {flattenNav(t.nav).map((n) => (
                 <li key={n.id}><NavItem n={n} /></li>
               ))}
             </ul>

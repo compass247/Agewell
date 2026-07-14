@@ -1,0 +1,41 @@
+/* Compass AgeWell — Typography tokens
+ * Single typeface: Be Vietnam Pro.
+ * Audience is 65+, often bilingual EN/VI — type scale runs LARGE with generous
+ * line-height for readability. Base body is 18px, not 16px.
+ */
+
+:root {
+  --font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: var(--font-family);
+  --font-body: var(--font-family);
+
+  /* ---- Weights ---- */
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+
+  /* ---- Type scale (px) — accessible, large-first ---- */
+  --text-display: 56px;   /* hero headlines */
+  --text-h1: 44px;
+  --text-h2: 34px;
+  --text-h3: 26px;
+  --text-h4: 21px;
+  --text-lg: 20px;        /* lead / intro paragraphs */
+  --text-base: 18px;      /* body default */
+  --text-sm: 16px;
+  --text-xs: 14px;        /* captions, labels — minimum, used sparingly */
+
+  /* ---- Line heights ---- */
+  --leading-tight: 1.1;   /* display + headlines */
+  --leading-snug: 1.3;    /* sub-heads */
+  --leading-normal: 1.55; /* body — roomy for older readers */
+  --leading-relaxed: 1.7;
+
+  /* ---- Letter spacing ---- */
+  --tracking-display: -0.02em;  /* ExtraBold headlines (H1 tracking -10) */
+  --tracking-tight: -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;      /* eyebrows / overlines, uppercased */
+}

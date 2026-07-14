@@ -5,19 +5,30 @@ import { getPost, getPosts } from "../../../../src/cms.js";
 import { SITE_URL, OG_LOCALE, languageAlternates } from "../../../../src/seo.js";
 import BlogChrome from "../../../../src/components/BlogChrome.jsx";
 
+// Only pre-rendered slugs are served; any other slug 404s (via notFound below)
+// instead of being rendered on demand — required for `output: "export"`.
+export const dynamicParams = false;
+
 // Enumerate every published post slug (per language) at build time so static
-// export can emit each article page. getPosts returns [] on CMS failure, so a
-// build with the CMS unreachable emits zero article pages but does not fail
-// (the blog index then shows "No articles yet"). A post published after a build
-// appears on the next rebuild, which a Directus publish triggers via the Pages
-// Deploy Hook.
+// export can emit each article page.
+//
+// `output: "export"` rejects a dynamic route whose generateStaticParams()
+// returns an EMPTY array ("Page ... is missing generateStaticParams()"). That
+// happens when the CMS is unreachable at build time (getPosts fails soft to
+// []). To keep the export build from failing in that case we emit a single
+// throwaway slug — its page calls notFound(), so it 404s and is never a real,
+// indexable article. In normal builds the CMS returns posts and this fallback
+// is unused. New posts appear on the next rebuild (Directus publish → Pages
+// Deploy Hook).
+const EMPTY_FALLBACK = [{ lang: "vi", slug: "__none__" }];
+
 export async function generateStaticParams() {
   const params = [];
   for (const lang of ["vi", "en"]) {
     const posts = await getPosts(lang);
     for (const p of posts) params.push({ lang, slug: p.slug });
   }
-  return params;
+  return params.length ? params : EMPTY_FALLBACK;
 }
 
 export async function generateMetadata({ params }) {
