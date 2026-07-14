@@ -7,7 +7,11 @@ export const AGEWELL_CONTENT = {
   vi: {
     dir: "vi",
     nav: [
-      { id: "dichvu",  label: "Dịch vụ" },
+      { id: "dichvu",  label: "Dịch vụ", href: "/#dichvu", children: [
+        { id: "ccm", label: "Quản lý bệnh mãn tính", type: "route", href: "/services/ccm" },
+        { id: "mtm", label: "Rà soát thuốc",          type: "route", href: "/services/mtm" },
+        { id: "em",  label: "Khám bệnh từ xa",        type: "route", href: "/services/em" },
+      ] },
       { id: "team",    label: "Đội ngũ y tế", type: "route", href: "/team" },
       { id: "dieukien", label: "Câu hỏi thường gặp" },
       { id: "dangky",  label: "Liên hệ" },
@@ -154,7 +158,11 @@ export const AGEWELL_CONTENT = {
   en: {
     dir: "en",
     nav: [
-      { id: "dichvu",  label: "Services" },
+      { id: "dichvu",  label: "Services", href: "/#dichvu", children: [
+        { id: "ccm", label: "Chronic Care Management", type: "route", href: "/services/ccm" },
+        { id: "mtm", label: "Medication Review",       type: "route", href: "/services/mtm" },
+        { id: "em",  label: "Telehealth",              type: "route", href: "/services/em" },
+      ] },
       { id: "team",    label: "Medical Team", type: "route", href: "/team" },
       { id: "dieukien", label: "FAQ" },
       { id: "dangky",  label: "Contact" },

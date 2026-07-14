@@ -3,7 +3,7 @@
    COMPASS AGEWELL — Sections A
    Header · MobileAnchor · Hero · Problem · Services · CareLoop
    ============================================================ */
-import { Fragment, useState, useEffect } from "react";
+import { Fragment, useState, useEffect, useRef } from "react";
 import { Icon } from "../components/icons.jsx";
 import { AGEWELL_COLORS, Reveal, SectionHead, scrollToId } from "../components/shared.jsx";
 import { LangToggle } from "../components/LangToggle.jsx";
@@ -12,14 +12,18 @@ import { Link, usePathname } from "../i18n/navigation.js";
 const C = () => AGEWELL_COLORS;
 
 /* ---------------- Nav item ----------------
-   One menu entry, shared by Header / MobileAnchor / Footer. Handles three
+   One menu entry, shared by Header / MobileAnchor / Footer. Handles four
    link kinds so the same `t.nav` array drives every nav:
+   - has `children` (Services): a hover/focus dropdown (see NavDropdown).
    - type "route" (Blog, Team): a locale-aware <Link> to another page.
    - anchor on the homepage: smooth-scroll to the in-page section.
-   - anchor while on a sub-page (blog/team): navigate back to "/#id" instead
-     of silently doing nothing (the old behaviour, since the section is absent). */
+   - anchor while on a sub-page (blog/team/services): navigate back to "/#id"
+     instead of silently doing nothing (the section is absent off the homepage). */
 export function NavItem({ n }) {
   const pathname = usePathname(); // locale-stripped, e.g. "/" or "/blog"
+  if (n.children?.length) {
+    return <NavDropdown n={n} />;
+  }
   if (n.type === "route") {
     return <Link href={n.href}>{n.label}</Link>;
   }
@@ -29,6 +33,69 @@ export function NavItem({ n }) {
     );
   }
   return <Link href={`/#${n.id}`}>{n.label}</Link>;
+}
+
+/* ---------------- Nav dropdown (desktop header) ----------------
+   Parent link (e.g. "Dịch vụ") plus a submenu of child NavItems. Opens on
+   hover AND keyboard focus-within; Escape or outside-click closes it. The
+   parent still links to its own target (`/#dichvu`, the homepage services
+   section) so clicking it works even without opening the menu. */
+export function NavDropdown({ n }) {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  // Parent behaves like a normal anchor NavItem (scroll on home, link elsewhere).
+  const onParentClick = (e) => {
+    if (pathname === "/") { e.preventDefault(); scrollToId(n.id); }
+    setOpen(false);
+  };
+
+  return (
+    <div
+      className={"nav-dd" + (open ? " open" : "")}
+      ref={ref}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={(e) => { if (!ref.current?.contains(e.relatedTarget)) setOpen(false); }}
+    >
+      <div className="nav-dd-trigger">
+        {pathname === "/"
+          ? <a href={"#" + n.id} onClick={onParentClick}>{n.label}</a>
+          : <Link href={n.href || `/#${n.id}`} onClick={() => setOpen(false)}>{n.label}</Link>}
+        <button
+          type="button"
+          className="nav-dd-toggle"
+          aria-haspopup="true"
+          aria-expanded={open}
+          aria-label={n.label}
+          onClick={() => setOpen((o) => !o)}
+        >
+          <Icon name="chevron" size={16} />
+        </button>
+      </div>
+      <ul className="nav-dd-menu" role="menu">
+        {n.children.map((c) => (
+          <li key={c.id} role="none">
+            <Link role="menuitem" href={c.href} onClick={() => setOpen(false)}>{c.label}</Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 /* ---------------- Header ---------------- */
@@ -57,6 +124,22 @@ export function Header({ t, lang }) {
   );
 }
 
+/* Flatten a nav array for surfaces that can't host a dropdown (the mobile
+   scroll strip, the footer link list): a parent with `children` is replaced by
+   its children as top-level items. Parents that are also real links keep their
+   own entry too. */
+export function flattenNav(nav) {
+  const out = [];
+  for (const n of nav) {
+    if (n.children?.length) {
+      for (const c of n.children) out.push(c);
+    } else {
+      out.push(n);
+    }
+  }
+  return out;
+}
+
 /* ---------------- Mobile anchor strip ---------------- */
 export function MobileAnchor({ t }) {
   const [show, setShow] = useState(false);
@@ -69,7 +152,7 @@ export function MobileAnchor({ t }) {
   return (
     <div className={"mobile-anchor" + (show ? "" : " hidden")} aria-hidden={!show}>
       <ul>
-        {t.nav.map((n) => (
+        {flattenNav(t.nav).map((n) => (
           <li key={n.id}><NavItem n={n} /></li>
         ))}
       </ul>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/compass-agewell-design-system-ce0e6d88-db82-4ff0-afd0-9d03d833f6a7/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/compass-agewell-design-system-ce0e6d88-db82-4ff0-afd0-9d03d833f6a7/tokens/colors.css">
+<link rel="stylesheet" href="_ds/compass-agewell-design-system-ce0e6d88-db82-4ff0-afd0-9d03d833f6a7/tokens/typography.css">
+<link rel="stylesheet" href="_ds/compass-agewell-design-system-ce0e6d88-db82-4ff0-afd0-9d03d833f6a7/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/compass-agewell-design-system-ce0e6d88-db82-4ff0-afd0-9d03d833f6a7/tokens/base.css">
+<link rel="stylesheet" href="_ds/compass-agewell-design-system-ce0e6d88-db82-4ff0-afd0-9d03d833f6a7/styles.css">
+<script src="_ds/compass-agewell-design-system-ce0e6d88-db82-4ff0-afd0-9d03d833f6a7/_ds_bundle.js"></script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--cream); }
+</style>
+</helmet>
+<div ref="{{ rootRef }}" style="background: var(--cream); color: var(--text-body); min-height: 100vh;">
+
+  <div id="top" style="max-width: 1200px; margin: 0 auto; padding: 16px 32px 0;">
+    <nav style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted);">
+      <a href="#" style="color: var(--green-700); font-weight: 500;" data-i18n="bcHome">Trang chủ</a>
+      <span aria-hidden="true">›</span>
+      <a href="#" style="color: var(--green-700); font-weight: 500;" data-i18n="bcServices">Dịch vụ</a>
+      <span aria-hidden="true">›</span>
+      <span style="color: var(--text-muted);" data-i18n="bcCurrent">Quản lý và rà soát thuốc</span>
+    </nav>
+  </div>
+
+  <section style="max-width: 1200px; margin: 0 auto; padding: 40px 32px 56px;">
+    <div data-reveal style="opacity: 1; transition: opacity .6s ease, transform .6s ease; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items: center;">
+      <div>
+        <span class="eyebrow" data-i18n="heroEyebrow">Quản lý và Rà soát Thuốc · MTM</span>
+        <h1 style="font-size: 52px; line-height: 1.14; margin: 14px 0 18px; color: var(--green-700); letter-spacing: -0.02em;"><span style="display: block; white-space: nowrap;" data-i18n="heroH1a">Mỗi viên thuốc đúng,</span><span style="display: block; white-space: nowrap;" data-i18n="heroH1b">mỗi ngày an tâm</span></h1>
+        <p style="font-size: 20px; line-height: 1.6; max-width: 520px; margin: 0 0 28px; color: var(--text-body);" data-i18n="heroSub">Chương trình Quản lý và Rà soát Thuốc (MTM) giúp anh chị được dược sĩ kiểm tra toàn bộ đơn thuốc, tránh tương tác nguy hiểm và tối ưu hiệu quả điều trị.</p>
+        <div style="display: flex; align-items: center; gap: 18px; flex-wrap: wrap;">
+          <x-import component-from-global-scope="CompassAgeWellDesignSystem_ce0e6d.Button" size="lg" hint-size="auto,56px">
+            <span data-i18n="heroCta">Đăng ký tư vấn ngay</span>
+          </x-import>
+          <a href="tel:8559999911" style="display: inline-flex; align-items: center; gap: 10px; color: var(--text-strong); font-weight: 600; font-size: 18px;">
+            <span style="width: 44px; height: 44px; border-radius: 50%; background: var(--green-50); border: 1px solid var(--green-200); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </span>
+            <span><span style="display: block; font-size: 13px; font-weight: 400; color: var(--text-muted);" data-i18n="heroOr">Hoặc gọi hotline</span>855-999-9911</span>
+          </a>
+        </div>
+        <div style="display: flex; gap: 22px; margin-top: 30px; flex-wrap: wrap;">
+          <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: var(--text-body);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green-500)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="heroChip1">Qua điện thoại, tại nhà</span></span>
+          <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: var(--text-body);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green-500)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="heroChip2">Dược sĩ nói tiếng Việt</span></span>
+          <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: var(--text-body);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green-500)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="heroChip3">Nằm trong quyền lợi được hỗ trợ bởi Medicare Part D</span></span>
+        </div>
+      </div>
+      <div style="position: relative;">
+        <div style="position: absolute; inset: -44px -50px auto auto; width: 320px; height: 320px; background: var(--green-100); border-radius: 50%; filter: blur(10px); z-index: 0;"></div>
+        <img src="assets/hero-pharmacist.png" alt="Dược sĩ Compass AgeWell tư vấn cho người cao tuổi qua điện thoại" style="position: relative; z-index: 1; display: block; width: 100%; height: 460px; object-fit: cover; border-radius: 20px; box-shadow: var(--shadow-lg);">
+        <x-import component-from-global-scope="CompassAgeWellDesignSystem_ce0e6d.Card" hint-size="auto,auto" style="position: absolute; left: -22px; right: -22px; bottom: -26px; z-index: 2; padding: 16px 22px; box-shadow: var(--shadow-lg);">
+          <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 12px;">
+            <span style="flex: none; width: 40px; height: 40px; border-radius: 11px; background: var(--green-50); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5-7-7a4.95 4.95 0 1 1 7-7l7 7a4.95 4.95 0 1 1-7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+            </span>
+            <div style="font-size: 14px; font-weight: 600; color: var(--text-strong); line-height: 1.4;" data-i18n="heroCardSub">Rà soát tổng quát mỗi năm, rà soát thuốc lưu ý mỗi quý</div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px 22px; padding-top: 12px; border-top: 1px solid var(--border-subtle);">
+            <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-strong);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green-500)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="heroCardItem1">Rà soát mọi loại thuốc đang uống</span></span>
+            <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-strong);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green-500)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="heroCardItem2">Phát hiện tương tác nguy hiểm</span></span>
+            <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-strong);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green-500)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span data-i18n="heroCardItem3">Bản tóm tắt rõ ràng bằng tiếng Việt</span></span>
+          </div>
+        </x-import>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-what" style="background: var(--white); border-top: 1px solid var(--border-subtle);">
+    <div data-reveal style="max-width: 1200px; margin: 0 auto; padding: 76px 32px;">
+      <div style="max-width: 720px; margin-bottom: 44px;">
+        <span class="eyebrow" data-i18n="s2Eyebrow">Giới thiệu dịch vụ</span>
+        <h2 style="font-size: 34px; margin: 12px 0 0; color: var(--text-strong); letter-spacing: -0.01em;" data-i18n="s2H2">Quản lý và Rà soát Thuốc là gì?</h2>
+      </div>
+      <p style="font-size: 21px; line-height: 1.55; color: var(--text-strong); font-weight: 500; margin: 0 0 38px;" data-i18n="s2Lead">Anh chị có đang uống 5, 6 loại thuốc mỗi ngày không? Thuốc huyết áp, thuốc tiểu đường, thuốc tim mạch, rồi thêm mấy viên bác sĩ mới kê gần đây. Uống nhiều thuốc cùng lúc khiến anh chị lo lắng: "Uống thế này có sao không? Có thuốc nào kỵ nhau không? Có cần uống hết tất cả không?"</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: stretch;">
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          <div style="flex: 1; background: var(--green-50); border: 1px solid var(--green-100); border-radius: 20px; padding: 40px 34px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+            <span style="position: relative; width: 100px; height: 100px; border-radius: 50%; background: var(--white); border: 1px solid var(--green-200); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600); box-shadow: var(--shadow-sm); margin-bottom: 24px;">
+              <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5-7-7a4.95 4.95 0 1 1 7-7l7 7a4.95 4.95 0 1 1-7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+              <span style="position: absolute; right: -10px; bottom: -8px; width: 46px; height: 46px; border-radius: 50%; background: var(--white); border: 1px solid var(--green-200); display: inline-flex; align-items: center; justify-content: center; color: var(--green-500); box-shadow: var(--shadow-sm);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
+            </span>
+            <p style="margin: 0; font-size: 18px; font-weight: 500; color: var(--green-800); line-height: 1.55;" data-i18n="s2Body">Quản lý và Rà soát Thuốc (Medication Therapy Management) là dịch vụ giúp anh chị có một dược sĩ chuyên môn xem xét lại toàn bộ đơn thuốc.</p>
+          </div>
+          <div style="display: flex; gap: 14px; align-items: flex-start; background: var(--blue-50); border: 1px solid var(--blue-100); border-radius: 14px; padding: 16px 18px;">
+            <span style="flex: none; color: var(--blue-500); margin-top: 1px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg></span>
+            <p style="margin: 0; font-size: 16px; line-height: 1.55; color: var(--blue-900);" data-i18n="s2Close2">MTM là quyền lợi bổ sung từ Medicare Part D. Anh chị đang dùng CCM vẫn có thể tham gia MTM song song nếu đủ điều kiện.</p>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; gap: 14px; align-items: flex-start;"><span style="flex: none; margin-top: 2px; width: 26px; height: 26px; border-radius: 50%; background: var(--green-100); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 18px; color: var(--text-body); line-height: 1.5;" data-i18n="s2b1">Rà soát từng loại thuốc anh chị đang uống — kể cả thuốc kê đơn, thuốc không kê đơn và thực phẩm chức năng</span></div>
+            <div style="display: flex; gap: 14px; align-items: flex-start;"><span style="flex: none; margin-top: 2px; width: 26px; height: 26px; border-radius: 50%; background: var(--green-100); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 18px; color: var(--text-body); line-height: 1.5;" data-i18n="s2b2">Phát hiện những tương tác thuốc nguy hiểm mà anh chị không biết</span></div>
+            <div style="display: flex; gap: 14px; align-items: flex-start;"><span style="flex: none; margin-top: 2px; width: 26px; height: 26px; border-radius: 50%; background: var(--green-100); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 18px; color: var(--text-body); line-height: 1.5;" data-i18n="s2b3">Tư vấn cách uống đúng giờ, đúng liều để thuốc phát huy hiệu quả tốt nhất</span></div>
+            <div style="display: flex; gap: 14px; align-items: flex-start;"><span style="flex: none; margin-top: 2px; width: 26px; height: 26px; border-radius: 50%; background: var(--green-100); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 18px; color: var(--text-body); line-height: 1.5;" data-i18n="s2b4">Đề xuất với bác sĩ nếu có thuốc không cần thiết hoặc cần thay đổi liều lượng</span></div>
+            <div style="display: flex; gap: 14px; align-items: flex-start;"><span style="flex: none; margin-top: 2px; width: 26px; height: 26px; border-radius: 50%; background: var(--green-100); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 18px; color: var(--text-body); line-height: 1.5;" data-i18n="s2b5">Theo dõi định kỳ mỗi quý, đảm bảo anh chị luôn dùng thuốc an toàn</span></div>
+          </div>
+          <p style="font-size: 18px; color: var(--text-body); line-height: 1.6; margin: 26px 0 0;" data-i18n="s2Close1">Dược sĩ của Compass AgeWell sẽ tư vấn bằng tiếng Việt cho anh chị qua điện thoại, anh chị không cần đi xa đến phòng khám hay nhà thuốc.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-who" style="background: #ECF3E0;">
+    <div data-reveal style="max-width: 1200px; margin: 0 auto; padding: 76px 32px;">
+      <div style="max-width: 720px; margin-bottom: 44px;">
+        <span class="eyebrow" data-i18n="s3Eyebrow">Đối tượng áp dụng</span>
+        <h2 style="font-size: 34px; margin: 12px 0 0; color: var(--text-strong); letter-spacing: -0.01em;" data-i18n="s3H2">Dịch vụ này phù hợp cho ai?</h2>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start;">
+        <x-import component-from-global-scope="CompassAgeWellDesignSystem_ce0e6d.Card" hint-size="100%,auto" style="padding: 32px; border-color: var(--green-200);">
+          <h3 style="font-size: 22px; color: var(--green-700); margin: 0 0 22px;" data-i18n="s3CardTitle">Bạn phù hợp nếu:</h3>
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; gap: 14px; align-items: flex-start;"><span style="flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--green-500); display: inline-flex; align-items: center; justify-content: center; color: #fff;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 18px; color: var(--text-strong); line-height: 1.45; font-weight: 500;" data-i18n="s3e1">Từ 65 tuổi trở lên</span></div>
+            <div style="display: flex; gap: 14px; align-items: flex-start;"><span style="flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--green-500); display: inline-flex; align-items: center; justify-content: center; color: #fff;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 18px; color: var(--text-strong); line-height: 1.45; font-weight: 500;" data-i18n="s3e2">Có Medicare Part D (bảo hiểm thuốc)</span></div>
+            <div style="display: flex; gap: 14px; align-items: flex-start;"><span style="flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--green-500); display: inline-flex; align-items: center; justify-content: center; color: #fff;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 18px; color: var(--text-strong); line-height: 1.45; font-weight: 500;" data-i18n="s3e3">Đang uống từ 5 loại thuốc trở lên được Part D chi trả</span></div>
+            <div style="display: flex; gap: 14px; align-items: flex-start;"><span style="flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--green-500); display: inline-flex; align-items: center; justify-content: center; color: #fff;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 18px; color: var(--text-strong); line-height: 1.45; font-weight: 500;" data-i18n="s3e4">Có ít nhất 2 bệnh mạn tính được CMS công nhận</span></div>
+            <div style="display: flex; gap: 14px; align-items: flex-start;"><span style="flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--green-500); display: inline-flex; align-items: center; justify-content: center; color: #fff;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 18px; color: var(--text-strong); line-height: 1.45; font-weight: 500;" data-i18n="s3e5">Chi phí thuốc hàng năm ≥ $1,623 (ngưỡng CMS 2025)</span></div>
+          </div>
+        </x-import>
+        <x-import component-from-global-scope="CompassAgeWellDesignSystem_ce0e6d.Card" hint-size="100%,auto" style="padding: 32px;">
+          <h3 style="font-size: 22px; color: var(--text-strong); margin: 0 0 22px;" data-i18n="s3SitTitle">Những tình huống MTM đặc biệt hữu ích</h3>
+          <div style="display: flex; flex-direction: column; gap: 18px;">
+            <div style="display: flex; gap: 14px; align-items: flex-start;"><span style="flex: none; width: 42px; height: 42px; border-radius: 12px; background: var(--green-50); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"/></svg></span><span style="font-size: 17px; color: var(--text-body); line-height: 1.5;" data-i18n="s3s1">Anh chị vừa xuất viện, đơn thuốc thay đổi nhiều so với trước</span></div>
+            <div style="display: flex; gap: 14px; align-items: flex-start;"><span style="flex: none; width: 42px; height: 42px; border-radius: 12px; background: var(--green-50); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span style="font-size: 17px; color: var(--text-body); line-height: 1.5;" data-i18n="s3s2">Anh chị khám nhiều bác sĩ chuyên khoa khác nhau, mỗi người kê một ít thuốc</span></div>
+            <div style="display: flex; gap: 14px; align-items: flex-start;"><span style="flex: none; width: 42px; height: 42px; border-radius: 12px; background: var(--green-50); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span><span style="font-size: 17px; color: var(--text-body); line-height: 1.5;" data-i18n="s3s3">Anh chị cảm thấy mệt, chóng mặt, buồn nôn mà không rõ nguyên nhân, có thể do tương tác thuốc</span></div>
+            <div style="display: flex; gap: 14px; align-items: flex-start;"><span style="flex: none; width: 42px; height: 42px; border-radius: 12px; background: var(--green-50); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></span><span style="font-size: 17px; color: var(--text-body); line-height: 1.5;" data-i18n="s3s4">Người nhà lo lắng không biết ba mẹ uống thuốc có đúng không</span></div>
+            <div style="display: flex; gap: 14px; align-items: flex-start;"><span style="flex: none; width: 42px; height: 42px; border-radius: 12px; background: var(--green-50); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg></span><span style="font-size: 17px; color: var(--text-body); line-height: 1.5;" data-i18n="s3s5">Anh chị đang tham gia CCM và muốn có thêm lớp bảo vệ về thuốc</span></div>
+          </div>
+        </x-import>
+      </div>
+      <p style="text-align: center; font-size: 17px; color: var(--text-muted); margin: 36px auto 0; max-width: 760px;"><span data-i18n="s3Close1">Không chắc mình có đủ điều kiện không? Gọi </span><a href="tel:8559999911" style="font-style: normal; font-weight: 800; color: var(--green-700);">855-999-9911</a><span data-i18n="s3Close2"> — đội ngũ AgeWell sẽ giúp anh chị kiểm tra miễn phí.</span></p>
+    </div>
+  </section>
+
+  <section id="sec-how" style="background: var(--white);">
+    <div data-reveal style="max-width: 1100px; margin: 0 auto; padding: 80px 32px;">
+      <div style="text-align: center; max-width: 640px; margin: 0 auto 56px;">
+        <span class="eyebrow" data-i18n="s4Eyebrow">Quy trình đơn giản</span>
+        <h2 style="font-size: 34px; margin: 12px 0 0; color: var(--text-strong); letter-spacing: -0.01em;" data-i18n="s4H2">Đăng ký và sử dụng chỉ với 3 bước</h2>
+      </div>
+      <div style="position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px;">
+        <div style="position: absolute; top: 38px; left: 17%; right: 17%; height: 2px; background: repeating-linear-gradient(90deg, var(--green-200) 0 10px, transparent 10px 20px); z-index: 0;"></div>
+        <div style="position: relative; z-index: 1; text-align: center;">
+          <div style="position: relative; width: 76px; height: 76px; margin: 0 auto 22px;">
+            <div style="width: 76px; height: 76px; border-radius: 50%; background: var(--green-500); color: #fff; font-size: 30px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-brand); border: 4px solid var(--white);">1</div>
+            <span style="position: absolute; right: -6px; bottom: -6px; width: 34px; height: 34px; border-radius: 50%; background: var(--white); border: 1px solid var(--green-200); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M9 14h6"/></svg></span>
+          </div>
+          <h3 style="font-size: 21px; margin: 0 0 10px; color: var(--text-strong);" data-i18n="s4t1">Gửi danh sách thuốc</h3>
+          <p style="margin: 0 auto; max-width: 300px; font-size: 17px; line-height: 1.55; color: var(--text-body);" data-i18n="s4d1">Anh chị gọi hotline hoặc điền form đăng ký — đội ngũ AgeWell kiểm tra bảo hiểm Part D và điều kiện của anh chị. Sau đó làm theo hướng dẫn của nhân viên để hoàn thành thủ tục đăng ký.</p>
+        </div>
+        <div style="position: relative; z-index: 1; text-align: center;">
+          <div style="position: relative; width: 76px; height: 76px; margin: 0 auto 22px;">
+            <div style="width: 76px; height: 76px; border-radius: 50%; background: var(--green-500); color: #fff; font-size: 30px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-brand); border: 4px solid var(--white);">2</div>
+            <span style="position: absolute; right: -6px; bottom: -6px; width: 34px; height: 34px; border-radius: 50%; background: var(--white); border: 1px solid var(--green-200); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
+          </div>
+          <h3 style="font-size: 21px; margin: 0 0 10px; color: var(--text-strong);" data-i18n="s4t2">Dược sĩ rà soát toàn diện</h3>
+          <p style="margin: 0 auto; max-width: 300px; font-size: 17px; line-height: 1.55; color: var(--text-body);" data-i18n="s4d2">Dược sĩ của chúng tôi sẽ ngồi lại với anh chị qua điện thoại ít nhất 15 phút — rà soát từng loại thuốc, kiểm tra tương tác, đánh giá liều lượng. Nếu phát hiện vấn đề, dược sĩ giải thích rõ ràng bằng tiếng Việt và đề xuất hướng xử lý với bác sĩ của anh chị.</p>
+        </div>
+        <div style="position: relative; z-index: 1; text-align: center;">
+          <div style="position: relative; width: 76px; height: 76px; margin: 0 auto 22px;">
+            <div style="width: 76px; height: 76px; border-radius: 50%; background: var(--green-500); color: #fff; font-size: 30px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-brand); border: 4px solid var(--white);">3</div>
+            <span style="position: absolute; right: -6px; bottom: -6px; width: 34px; height: 34px; border-radius: 50%; background: var(--white); border: 1px solid var(--green-200); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg></span>
+          </div>
+          <h3 style="font-size: 21px; margin: 0 0 10px; color: var(--text-strong);" data-i18n="s4t3">Yên tâm dùng thuốc đúng</h3>
+          <p style="margin: 0 auto; max-width: 300px; font-size: 17px; line-height: 1.55; color: var(--text-body);" data-i18n="s4d3">Sau buổi rà soát, anh chị nhận được bản tóm tắt rõ ràng về từng loại thuốc — uống lúc nào, cần lưu ý gì. Mỗi quý, dược sĩ gọi lại kiểm tra tình hình. Có thắc mắc về thuốc bất kỳ lúc nào, anh chị cứ gọi.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-benefits" style="background: #ECF3E0;">
+    <div data-reveal style="max-width: 1200px; margin: 0 auto; padding: 80px 32px;">
+      <div style="text-align: center; max-width: 720px; margin: 0 auto 48px;">
+        <span class="eyebrow" data-i18n="s5Eyebrow">Vì sao nên chọn Compass AgeWell</span>
+        <h2 style="font-size: 34px; margin: 12px 0 0; color: var(--text-strong); letter-spacing: -0.01em;" data-i18n="s5H2">Lợi ích cụ thể</h2>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start;">
+        <x-import component-from-global-scope="CompassAgeWellDesignSystem_ce0e6d.Card" hint-size="100%,auto" style="padding: 34px;">
+          <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 24px;">
+            <span style="width: 54px; height: 54px; border-radius: 16px; background: var(--green-50); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600);"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5-7-7a4.95 4.95 0 1 1 7-7l7 7a4.95 4.95 0 1 1-7 7Z"/><path d="m8.5 8.5 7 7"/></svg></span>
+            <h3 style="font-size: 24px; color: var(--green-700); margin: 0;" data-i18n="s5c1Title">Cho anh chị</h3>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 15px;">
+            <div style="display: flex; gap: 13px; align-items: flex-start;"><span style="flex: none; margin-top: 3px; color: var(--green-500);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 17px; line-height: 1.5; color: var(--text-body);" data-i18n="s5a1">Một dược sĩ riêng rà soát toàn bộ đơn thuốc — phát hiện tương tác nguy hiểm trước khi có hậu quả</span></div>
+            <div style="display: flex; gap: 13px; align-items: flex-start;"><span style="flex: none; margin-top: 3px; color: var(--green-500);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 17px; line-height: 1.5; color: var(--text-body);" data-i18n="s5a2">Biết chính xác uống thuốc gì, lúc nào, liều bao nhiêu</span></div>
+            <div style="display: flex; gap: 13px; align-items: flex-start;"><span style="flex: none; margin-top: 3px; color: var(--green-500);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 17px; line-height: 1.5; color: var(--text-body);" data-i18n="s5a3">Giảm nguy cơ tác dụng phụ do uống sai thuốc hoặc uống thuốc không cần thiết</span></div>
+            <div style="display: flex; gap: 13px; align-items: flex-start;"><span style="flex: none; margin-top: 3px; color: var(--green-500);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 17px; line-height: 1.5; color: var(--text-body);" data-i18n="s5a4">Dược sĩ đề xuất với bác sĩ nếu có thuốc cần điều chỉnh — anh chị không phải tự nói</span></div>
+            <div style="display: flex; gap: 13px; align-items: flex-start;"><span style="flex: none; margin-top: 3px; color: var(--green-500);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 17px; line-height: 1.5; color: var(--text-body);" data-i18n="s5a5">Được theo dõi định kỳ mỗi quý, không lo sót thay đổi nào về thuốc</span></div>
+            <div style="display: flex; gap: 13px; align-items: flex-start;"><span style="flex: none; margin-top: 3px; color: var(--green-500);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 17px; line-height: 1.5; color: var(--text-body);" data-i18n="s5a6">Chi phí được Medicare Part D chi trả theo quyền lợi của từng bảo hiểm</span></div>
+          </div>
+        </x-import>
+        <x-import component-from-global-scope="CompassAgeWellDesignSystem_ce0e6d.Card" hint-size="100%,auto" style="padding: 34px;">
+          <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 24px;">
+            <span style="width: 54px; height: 54px; border-radius: 16px; background: var(--blue-50); display: inline-flex; align-items: center; justify-content: center; color: var(--blue-500);"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+            <h3 style="font-size: 24px; color: var(--blue-700); margin: 0;" data-i18n="s5c2Title">Cho người thân</h3>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 15px;">
+            <div style="display: flex; gap: 13px; align-items: flex-start;"><span style="flex: none; margin-top: 3px; color: var(--blue-500);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 17px; line-height: 1.5; color: var(--text-body);" data-i18n="s5b1">Yên tâm vì có dược sĩ chuyên môn kiểm soát toàn bộ thuốc của ba mẹ, ông bà</span></div>
+            <div style="display: flex; gap: 13px; align-items: flex-start;"><span style="flex: none; margin-top: 3px; color: var(--blue-500);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 17px; line-height: 1.5; color: var(--text-body);" data-i18n="s5b2">Biết rõ ba mẹ, ông bà đang uống những gì — có vấn đề gì cần lưu ý không</span></div>
+            <div style="display: flex; gap: 13px; align-items: flex-start;"><span style="flex: none; margin-top: 3px; color: var(--blue-500);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 17px; line-height: 1.5; color: var(--text-body);" data-i18n="s5b3">Không phải tự mày mò tra Google xem thuốc này thuốc kia có kỵ nhau không</span></div>
+            <div style="display: flex; gap: 13px; align-items: flex-start;"><span style="flex: none; margin-top: 3px; color: var(--blue-500);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span style="font-size: 17px; line-height: 1.5; color: var(--text-body);" data-i18n="s5b4">Có người để gọi khi thấy ba mẹ, ông bà có triệu chứng lạ sau khi đổi thuốc</span></div>
+          </div>
+        </x-import>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-cost" style="background: var(--white);">
+    <div data-reveal style="max-width: 760px; margin: 0 auto; padding: 80px 32px; text-align: center;">
+      <span style="width: 72px; height: 72px; border-radius: 18px; background: var(--green-50); display: inline-flex; align-items: center; justify-content: center; color: var(--green-600); margin-bottom: 22px;"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="M12 8v8M9.5 10.2c0-.9.9-1.6 2-1.6h.8c1 0 1.7.6 1.7 1.5 0 .8-.5 1.2-1.4 1.5l-1.6.6c-.9.3-1.5.8-1.5 1.6 0 .9.8 1.5 1.8 1.5h.8c1.1 0 2-.7 2-1.6"/></svg></span>
+      <h2 style="font-size: 34px; margin: 12px 0 18px; color: var(--text-strong); letter-spacing: -0.01em;" data-i18n="s6H2">Chi phí</h2>
+      <p style="font-size: 19px; line-height: 1.6; color: var(--text-body); margin: 0 0 14px;" data-i18n="s6Body1">Dịch vụ Quản lý và Rà soát Thuốc được Medicare Part D chi trả theo quyền lợi bảo hiểm của anh chị. Một số gói Part D có thể yêu cầu copay tùy theo quyền lợi cụ thể.</p>
+      <p style="font-size: 19px; line-height: 1.6; color: var(--text-body); margin: 0 0 32px;" data-i18n="s6Body2">Chúng tôi sẽ kiểm tra và thông báo rõ ràng với anh chị trước khi thực hiện bất kỳ dịch vụ nào. Không có chi phí bất ngờ.</p>
+      <div style="background: var(--green-50); border: 1px solid var(--green-100); border-radius: 18px; padding: 30px 28px;">
+        <p style="font-size: 19px; font-weight: 600; color: var(--green-800); margin: 0 0 20px;" data-i18n="s6Q">Không chắc bảo hiểm của mình chi trả bao nhiêu?</p>
+        <div style="display: inline-flex;">
+          <x-import component-from-global-scope="CompassAgeWellDesignSystem_ce0e6d.Button" variant="outline" size="lg" hint-size="auto,56px">
+            <span data-i18n="s6Cta">Đăng ký tra cứu chi phí</span>
+          </x-import>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-faq" style="background: #ECF3E0;">
+    <div data-reveal style="max-width: 820px; margin: 0 auto; padding: 80px 32px;">
+      <div style="text-align: center; margin-bottom: 44px;">
+        <span class="eyebrow" data-i18n="s7Eyebrow">Giải đáp thắc mắc</span>
+        <h2 style="font-size: 34px; margin: 12px 0 0; color: var(--text-strong); letter-spacing: -0.01em;" data-i18n="s7H2">Câu hỏi thường gặp</h2>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div data-faq-item style="background: var(--white); border: 1px solid var(--border-subtle); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-xs);">
+          <button onClick="{{ onFaq }}" style="width: 100%; min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 24px; background: none; border: none; cursor: pointer; text-align: left; font-family: var(--font-body);">
+            <span style="font-size: 19px; font-weight: 700; color: var(--text-strong); line-height: 1.4;" data-i18n="q1">Tôi có phải đến phòng khám không?</span>
+            <span data-faq-chev style="flex: none; color: var(--green-600); transition: transform .3s ease;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+          </button>
+          <div data-faq-a style="max-height: 0; opacity: 0; overflow: hidden; transition: max-height .35s ease, opacity .3s ease; background: var(--green-50);">
+            <p style="margin: 0; padding: 4px 24px 22px; font-size: 18px; line-height: 1.6; color: var(--text-body);" data-i18n="a1">Không. Toàn bộ dịch vụ diễn ra qua điện thoại, ngay tại nhà anh chị. Dược sĩ sẽ gọi cho anh chị vào ngày giờ đã hẹn. Anh chị không phải đi đâu cả.</p>
+          </div>
+        </div>
+        <div data-faq-item style="background: var(--white); border: 1px solid var(--border-subtle); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-xs);">
+          <button onClick="{{ onFaq }}" style="width: 100%; min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 24px; background: none; border: none; cursor: pointer; text-align: left; font-family: var(--font-body);">
+            <span style="font-size: 19px; font-weight: 700; color: var(--text-strong); line-height: 1.4;" data-i18n="q2">Tôi đang tham gia CCM, có được MTM không?</span>
+            <span data-faq-chev style="flex: none; color: var(--green-600); transition: transform .3s ease;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+          </button>
+          <div data-faq-a style="max-height: 0; opacity: 0; overflow: hidden; transition: max-height .35s ease, opacity .3s ease; background: var(--green-50);">
+            <p style="margin: 0; padding: 4px 24px 22px; font-size: 18px; line-height: 1.6; color: var(--text-body);" data-i18n="a2">Được. MTM và CCM là hai dịch vụ song song, bổ trợ cho nhau. CCM giúp anh chị theo dõi sức khỏe toàn diện mỗi tháng. MTM giúp tối ưu toàn bộ đơn thuốc. Cùng một tháng, anh chị vừa nhận cuộc gọi từ Điều phối viên chăm sóc, vừa được dược sĩ rà soát thuốc — hai dịch vụ không thay thế nhau.</p>
+          </div>
+        </div>
+        <div data-faq-item style="background: var(--white); border: 1px solid var(--border-subtle); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-xs);">
+          <button onClick="{{ onFaq }}" style="width: 100%; min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 24px; background: none; border: none; cursor: pointer; text-align: left; font-family: var(--font-body);">
+            <span style="font-size: 19px; font-weight: 700; color: var(--text-strong); line-height: 1.4;" data-i18n="q3">Tôi có cần bỏ bác sĩ đang khám hiện tại không?</span>
+            <span data-faq-chev style="flex: none; color: var(--green-600); transition: transform .3s ease;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+          </button>
+          <div data-faq-a style="max-height: 0; opacity: 0; overflow: hidden; transition: max-height .35s ease, opacity .3s ease; background: var(--green-50);">
+            <p style="margin: 0; padding: 4px 24px 22px; font-size: 18px; line-height: 1.6; color: var(--text-body);" data-i18n="a3">Không. Anh chị vẫn giữ nguyên bác sĩ gia đình và các bác sĩ chuyên khoa. Dược sĩ của chúng tôi phối hợp với bác sĩ của anh chị, đề xuất điều chỉnh nếu cần — anh chị vẫn là người quyết định cuối cùng.</p>
+          </div>
+        </div>
+        <div data-faq-item style="background: var(--white); border: 1px solid var(--border-subtle); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-xs);">
+          <button onClick="{{ onFaq }}" style="width: 100%; min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 24px; background: none; border: none; cursor: pointer; text-align: left; font-family: var(--font-body);">
+            <span style="font-size: 19px; font-weight: 700; color: var(--text-strong); line-height: 1.4;" data-i18n="q4">Tôi uống cả thuốc mua ngoài và thực phẩm chức năng, có cần kể không?</span>
+            <span data-faq-chev style="flex: none; color: var(--green-600); transition: transform .3s ease;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+          </button>
+          <div data-faq-a style="max-height: 0; opacity: 0; overflow: hidden; transition: max-height .35s ease, opacity .3s ease; background: var(--green-50);">
+            <p style="margin: 0; padding: 4px 24px 22px; font-size: 18px; line-height: 1.6; color: var(--text-body);" data-i18n="a4">Có — rất quan trọng. Thuốc mua ngoài và thực phẩm chức năng cũng có thể tương tác với thuốc kê đơn. Anh chị hãy kể cho dược sĩ tất cả những gì mình đang uống, kể cả vitamin, thảo dược, thuốc bổ.</p>
+          </div>
+        </div>
+        <div data-faq-item style="background: var(--white); border: 1px solid var(--border-subtle); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-xs);">
+          <button onClick="{{ onFaq }}" style="width: 100%; min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 24px; background: none; border: none; cursor: pointer; text-align: left; font-family: var(--font-body);">
+            <span style="font-size: 19px; font-weight: 700; color: var(--text-strong); line-height: 1.4;" data-i18n="q5">Rà soát xong thì sao? Tôi có phải làm gì không?</span>
+            <span data-faq-chev style="flex: none; color: var(--green-600); transition: transform .3s ease;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+          </button>
+          <div data-faq-a style="max-height: 0; opacity: 0; overflow: hidden; transition: max-height .35s ease, opacity .3s ease; background: var(--green-50);">
+            <p style="margin: 0; padding: 4px 24px 22px; font-size: 18px; line-height: 1.6; color: var(--text-body);" data-i18n="a5">Dược sĩ sẽ gửi anh chị một bản tóm tắt kết quả rà soát. Nếu mọi thứ ổn, anh chị tiếp tục uống thuốc như bình thường và chờ cuộc gọi theo dõi mỗi quý. Nếu có vấn đề cần điều chỉnh, dược sĩ sẽ giải thích rõ và phối hợp với bác sĩ của anh chị.</p>
+          </div>
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 32px;">
+        <a href="#" style="display: inline-flex; align-items: center; gap: 8px; color: var(--green-700); font-weight: 700; font-size: 18px;"><span data-i18n="s7More">Xem tất cả câu hỏi thường gặp</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-more" style="background: var(--white); border-top: 1px solid var(--border-subtle);">
+    <div data-reveal style="max-width: 1100px; margin: 0 auto; padding: 80px 32px;">
+      <div style="text-align: center; max-width: 640px; margin: 0 auto 44px;">
+        <span class="eyebrow" data-i18n="s8Eyebrow">Khám phá thêm</span>
+        <h2 style="font-size: 34px; margin: 12px 0 0; color: var(--text-strong); letter-spacing: -0.01em;" data-i18n="s8H2">Bạn cũng có thể quan tâm</h2>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px;">
+        <x-import component-from-global-scope="CompassAgeWellDesignSystem_ce0e6d.Card" interactive="{{ true }}" hint-size="100%,auto" style="padding: 32px; border-color: var(--blue-200); border-top: 4px solid var(--blue-500);">
+          <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
+            <span style="width: 52px; height: 52px; border-radius: 14px; background: var(--blue-50); display: inline-flex; align-items: center; justify-content: center; color: var(--blue-500);"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16s1 1 1.5 1 2.5-3 2.5-3"/></svg></span>
+            <span style="font-size: 13px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--blue-700); background: var(--blue-100); padding: 5px 11px; border-radius: 999px;">CCM</span>
+          </div>
+          <h3 style="font-size: 22px; color: var(--text-strong); margin: 0 0 10px;" data-i18n="s8c1Title">Quản lý bệnh mãn tính (CCM)</h3>
+          <p style="font-size: 17px; line-height: 1.55; color: var(--text-body); margin: 0 0 18px;" data-i18n="s8c1Desc">Sống với nhiều bệnh mạn tính? Đội ngũ bác sĩ, dược sĩ và Điều phối viên chăm sóc đồng hành mỗi tháng. Theo dõi sức khỏe, nhắc thuốc, kết nối bác sĩ ngay tại nhà.</p>
+          <a href="#" style="display: inline-flex; align-items: center; gap: 7px; color: var(--blue-500); font-weight: 700; font-size: 17px;"><span data-i18n="s8c1Link">Xem chi tiết</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </x-import>
+        <x-import component-from-global-scope="CompassAgeWellDesignSystem_ce0e6d.Card" interactive="{{ true }}" hint-size="100%,auto" style="padding: 32px; border-color: var(--orange-200); border-top: 4px solid var(--orange-500);">
+          <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
+            <span style="width: 52px; height: 52px; border-radius: 14px; background: var(--orange-50); display: inline-flex; align-items: center; justify-content: center; color: var(--orange-500);"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6 6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6 6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg></span>
+            <span style="font-size: 13px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--orange-700); background: var(--orange-100); padding: 5px 11px; border-radius: 999px;">E&amp;M</span>
+          </div>
+          <h3 style="font-size: 22px; color: var(--text-strong); margin: 0 0 10px;" data-i18n="s8c2Title">Khám bệnh từ xa (Telehealth)</h3>
+          <p style="font-size: 17px; line-height: 1.55; color: var(--text-body); margin: 0 0 18px;" data-i18n="s8c2Desc">Cần gặp bác sĩ gấp nhưng ngại đi lại? Khám bệnh qua điện thoại hoặc video với bác sĩ nói tiếng Việt, ngay tại nhà.</p>
+          <a href="#" style="display: inline-flex; align-items: center; gap: 7px; color: var(--orange-700); font-weight: 700; font-size: 17px;"><span data-i18n="s8c2Link">Xem chi tiết</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </x-import>
+      </div>
+    </div>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.lang = 'vi';
+    this.EN = {
+      navServices: 'Services', navHow: 'How it works', navBenefits: 'Benefits', navFaq: 'FAQ',
+      bcHome: 'Home', bcServices: 'Services', bcCurrent: 'Medication Management & Review',
+      heroEyebrow: 'Medication Therapy Management · MTM',
+      heroH1a: 'Every pill right,', heroH1b: 'every day at ease.',
+      heroSub: 'The Medication Therapy Management (MTM) program gives you a pharmacist who reviews your entire medication list, prevents dangerous interactions, and gets the most out of your treatment.',
+      heroCta: 'Get a free consultation',
+      heroOr: 'Or call the hotline',
+      heroChip1: 'By phone, from home', heroChip2: 'Vietnamese-speaking pharmacist', heroChip3: 'Within your supported Medicare Part D benefits',
+      heroCardSub: 'Yearly full review, quarterly medication check',
+      heroCardItem1: 'Review every medication you take', heroCardItem2: 'Catch dangerous interactions', heroCardItem3: 'A clear summary in Vietnamese',
+      s2Eyebrow: 'Service overview', s2H2: 'What is Medication Management & Review?',
+      s2Lead: 'Are you taking 5 or 6 different medications every day? Blood pressure pills, diabetes pills, heart medication, plus a few more your doctor recently added. Taking many medicines at once is worrying: "Is this okay? Do any of them clash? Do I really need all of them?"',
+      s2Body: 'Medication Therapy Management (MTM) is a service that gives you a professional pharmacist to review your entire medication list.',
+      s2b1: 'Review each medication you take — prescription, over-the-counter, and supplements',
+      s2b2: 'Catch dangerous drug interactions you may not be aware of',
+      s2b3: 'Advise on the right times and doses so your medicine works its best',
+      s2b4: 'Recommend to your doctor if a medication is unnecessary or needs a dose change',
+      s2b5: 'Follow up every quarter so you always take your medicine safely',
+      s2Close1: 'A Compass AgeWell pharmacist advises you in Vietnamese over the phone — no need to travel to a clinic or pharmacy.',
+      s2Close2: 'MTM is an added benefit from Medicare Part D. If you are already in CCM, you can join MTM at the same time when you qualify.',
+      s3Eyebrow: 'Who it applies to', s3H2: 'Who is this service for?',
+      s3CardTitle: 'You are a good fit if:',
+      s3e1: 'You are 65 or older', s3e2: 'You have Medicare Part D (drug coverage)',
+      s3e3: 'You take 5 or more medications covered by Part D', s3e4: 'You have at least 2 chronic conditions recognized by CMS',
+      s3e5: 'Your yearly drug cost is at least $1,623 (2025 CMS threshold)',
+      s3SitTitle: 'When MTM is especially helpful',
+      s3s1: 'You were just discharged from the hospital and your prescriptions changed a lot',
+      s3s2: 'You see several specialists, each prescribing a little something',
+      s3s3: 'You feel tired, dizzy, or nauseous for no clear reason — it could be a drug interaction',
+      s3s4: 'Your family worries about whether mom or dad is taking their medicine correctly',
+      s3s5: 'You are already in CCM and want an extra layer of medication safety',
+      s3Close1: 'Not sure whether you qualify? Call ', s3Close2: ' — the AgeWell team will check for you, free of charge.',
+      s4Eyebrow: 'Simple process', s4H2: 'Sign up and get started in just 3 steps',
+      s4t1: 'Share your medication list',
+      s4d1: 'Call the hotline or fill out the sign-up form — the AgeWell team checks your Part D coverage and eligibility. Then follow the staff guidance to complete your registration.',
+      s4t2: 'Your pharmacist reviews everything',
+      s4d2: 'Our pharmacist sits with you by phone for at least 15 minutes — reviewing each medication, checking interactions, and assessing doses. If something comes up, the pharmacist explains it clearly in Vietnamese and proposes a plan with your doctor.',
+      s4t3: 'Take your medicine with confidence',
+      s4d3: 'After the review you receive a clear summary of each medication — when to take it and what to watch for. Every quarter your pharmacist calls to check in. Have a question anytime? Just call.',
+      s5Eyebrow: 'Why choose Compass AgeWell', s5H2: 'Concrete benefits',
+      s5c1Title: 'For you',
+      s5a1: 'A dedicated pharmacist reviews your whole list — catching dangerous interactions before they cause harm',
+      s5a2: 'Know exactly what to take, when, and how much',
+      s5a3: 'Lower the risk of side effects from wrong or unnecessary medication',
+      s5a4: 'Your pharmacist raises adjustments with your doctor — you do not have to speak up yourself',
+      s5a5: 'Regular quarterly follow-up, so no medication change is missed',
+      s5a6: 'Covered by Medicare Part D according to your plan benefits',
+      s5c2Title: 'For your family',
+      s5b1: 'Peace of mind: a professional pharmacist oversees all of your parents or grandparents medicine',
+      s5b2: 'Know exactly what your parents or grandparents are taking — and what to watch for',
+      s5b3: 'No more Googling whether one medicine clashes with another',
+      s5b4: 'Someone to call when you notice odd symptoms after a medication change',
+      s6Eyebrow: 'Cost', s6H2: 'Cost',
+      s6Body1: 'Medication Management & Review is covered by Medicare Part D under your insurance benefits. Some Part D plans may require a copay depending on the specific benefit.',
+      s6Body2: 'We always check and tell you clearly before performing any service. No surprise costs.',
+      s6Q: 'Not sure how much your insurance covers?', s6Cta: 'Check my cost',
+      s7Eyebrow: 'Answers', s7H2: 'Frequently asked questions',
+      q1: 'Do I have to go to a clinic?',
+      a1: 'No. The entire service happens by phone, right in your home. Your pharmacist calls you at the agreed time. You do not have to go anywhere.',
+      q2: 'I am already in CCM — can I still get MTM?',
+      a2: 'Yes. MTM and CCM are two parallel services that complement each other. CCM gives you comprehensive monthly health monitoring. MTM optimizes your entire medication list. In the same month you get a call from your Care Coordinator and a medication review from your pharmacist — they do not replace each other.',
+      q3: 'Do I have to leave my current doctor?',
+      a3: 'No. You keep your family doctor and all your specialists. Our pharmacist coordinates with your doctors and proposes adjustments if needed — you remain the final decision-maker.',
+      q4: 'I take over-the-counter medicine and supplements too — should I mention them?',
+      a4: 'Yes — it is very important. Over-the-counter medicine and supplements can also interact with prescriptions. Tell your pharmacist everything you take, including vitamins, herbs, and tonics.',
+      q5: 'After the review, what happens? Do I need to do anything?',
+      a5: 'Your pharmacist sends you a summary of the review. If everything is fine, keep taking your medicine as usual and wait for the quarterly follow-up call. If something needs adjusting, the pharmacist explains it clearly and coordinates with your doctor.',
+      s7More: 'See all frequently asked questions',
+      s8Eyebrow: 'Explore more', s8H2: 'You might also be interested in',
+      s8c1Title: 'Chronic Care Management (CCM)',
+      s8c1Desc: 'Living with several chronic conditions? A team of doctors, pharmacists, and a Care Coordinator walks with you every month. Health monitoring, medication reminders, and a direct line to your doctor — right at home.',
+      s8c1Link: 'Learn more',
+      s8c2Title: 'Telehealth visits',
+      s8c2Desc: 'Need to see a doctor soon but reluctant to travel? Visit by phone or video with a Vietnamese-speaking doctor, right at home.',
+      s8c2Link: 'Learn more',
+      footAbout: 'Compass AgeWell is a national healthcare-management system for Vietnamese-American communities on Medicare in the United States.',
+      footDisc1: 'You may decline or withdraw from a care program at any time. Your Medicare benefits will not be affected.',
+      footDisc2: 'Eligibility and coverage depend on each customer Medicare plan. Compass AgeWell is not endorsed or sponsored by CMS or any government agency.',
+      footCopy: '© 2026 Compass AgeWell. All rights reserved.',
+      stickyCall: 'Call 855-999-9911', stickyChat: 'Zalo · Messenger · WhatsApp · Viber'
+    };
+  }
+
+  componentDidMount() {
+    this.setup();
+    setTimeout(() => this.setup(), 120);
+  }
+
+  setup() {
+    const root = this.rootEl || document;
+    if (this._ready) { this.initFaq(root); return; }
+    this._ready = true;
+
+    this._i18n = [];
+    root.querySelectorAll('[data-i18n]').forEach((el) => {
+      this._i18n.push([el, el.getAttribute('data-i18n'), el.textContent]);
+    });
+
+    this._reveals = [...root.querySelectorAll('[data-reveal]')];
+    const vh0 = window.innerHeight || 800;
+    this._reveals.forEach((el) => {
+      if (el.getBoundingClientRect().top > vh0 - 40) {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(18px)';
+      }
+    });
+    const check = () => {
+      const vh = window.innerHeight || 800;
+      this._reveals = this._reveals.filter((el) => {
+        if (el.getBoundingClientRect().top < vh - 60) {
+          el.style.opacity = '1';
+          el.style.transform = 'none';
+          return false;
+        }
+        return true;
+      });
+      if (this._reveals.length === 0 && this._poll) { clearInterval(this._poll); this._poll = null; }
+    };
+    check();
+    if (!this._scrollBound) {
+      this._scrollBound = true;
+      // capture phase catches scroll from whichever element actually scrolls (window or a wrapper)
+      document.addEventListener('scroll', check, { passive: true, capture: true });
+      window.addEventListener('resize', check, { passive: true });
+      // safety poll so reveals never get stuck if no scroll event reaches us
+      this._poll = setInterval(check, 220);
+      // final safety net: never leave content permanently hidden
+      this._safety = setTimeout(() => {
+        this._reveals.forEach((el) => { el.style.opacity = '1'; el.style.transform = 'none'; });
+        this._reveals = [];
+        if (this._poll) { clearInterval(this._poll); this._poll = null; }
+      }, 3000);
+    }
+
+    this.initFaq(root);
+  }
+
+  initFaq(root) {
+    const first = root.querySelector('[data-faq-item]');
+    if (first && first.getAttribute('data-open') == null) this.setFaq(first, true);
+  }
+
+  setFaq(item, open) {
+    const a = item.querySelector('[data-faq-a]');
+    const chev = item.querySelector('[data-faq-chev]');
+    if (!a) return;
+    if (open) {
+      a.style.maxHeight = a.scrollHeight + 'px';
+      a.style.opacity = '1';
+      item.setAttribute('data-open', '1');
+      if (chev) chev.style.transform = 'rotate(180deg)';
+    } else {
+      a.style.maxHeight = '0px';
+      a.style.opacity = '0';
+      item.setAttribute('data-open', '0');
+      if (chev) chev.style.transform = 'none';
+    }
+  }
+
+  onFaq = (e) => {
+    const item = e.currentTarget.closest('[data-faq-item]');
+    if (!item) return;
+    const root = this.rootEl || document;
+    const isOpen = item.getAttribute('data-open') === '1';
+    root.querySelectorAll('[data-faq-item]').forEach((it) => { if (it !== item) this.setFaq(it, false); });
+    this.setFaq(item, !isOpen);
+  };
+
+  toggleLang = () => {
+    this.lang = this.lang === 'vi' ? 'en' : 'vi';
+    const en = this.lang === 'en';
+    (this._i18n || []).forEach(([el, key, vi]) => {
+      el.textContent = en ? (this.EN[key] != null ? this.EN[key] : vi) : vi;
+    });
+    const root = this.rootEl || document;
+    root.querySelectorAll('[data-langlabel]').forEach((el) => { el.textContent = en ? 'Tiếng Việt' : 'EN'; });
+    document.documentElement.lang = en ? 'en' : 'vi';
+    const openItem = root.querySelector('[data-faq-item][data-open="1"]');
+    if (openItem) {
+      const a = openItem.querySelector('[data-faq-a]');
+      if (a) { a.style.maxHeight = 'none'; const h = a.scrollHeight; a.style.maxHeight = h + 'px'; }
+    }
+  };
+
+  scrollTo = (id) => (e) => {
+    e.preventDefault();
+    const el = (this.rootEl || document).querySelector('#' + id);
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.pageYOffset - 80;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  };
+
+  renderVals() {
+    return {
+      rootRef: (el) => { this.rootEl = el; },
+      onFaq: this.onFaq,
+      toggleLang: this.toggleLang,
+      goServices: this.scrollTo('sec-what'),
+      goHow: this.scrollTo('sec-how'),
+      goBenefits: this.scrollTo('sec-benefits'),
+      goFaq: this.scrollTo('sec-faq'),
+    };
+  }
+}
+</script>
+</body>
+</html>

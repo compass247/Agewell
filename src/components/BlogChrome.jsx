@@ -9,7 +9,7 @@
    ============================================================ */
 import { useEffect } from "react";
 import { Header, MobileAnchor } from "../sections/sections-a.jsx";
-import { Footer, ContactBar } from "../sections/sections-b.jsx";
+import { Footer, ContactBar, SignupForm } from "../sections/sections-b.jsx";
 
 export default function BlogChrome({ C, lang, children }) {
   useEffect(() => {
@@ -24,7 +24,13 @@ export default function BlogChrome({ C, lang, children }) {
     <>
       <Header t={C} lang={lang} />
       <MobileAnchor t={C} />
-      <main className="lang-fade">{children}</main>
+      <main className="lang-fade">
+        {children}
+        {/* Always offer the signup form at the bottom of every sub-page so a
+            visitor can leave their info from anywhere (also makes the sticky
+            "Nhắn tin" button resolve to this in-page form). */}
+        <SignupForm t={C} />
+      </main>
       <Footer t={C} lang={lang} />
       <ContactBar t={C} />
     </>

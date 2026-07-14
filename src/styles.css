@@ -974,3 +974,153 @@ body.no-ph .ph .ph-label { display: none; }
    ============================================================ */
 /* Language switch: no opacity animation (frozen-clock safe). */
 .lang-fade { }
+
+/* ============================================================
+   NAV DROPDOWN (desktop header — "Services") + flattened mobile/footer
+   ============================================================ */
+.nav-dd { position: relative; display: inline-flex; align-items: center; }
+.nav-dd-trigger { display: inline-flex; align-items: center; }
+.nav-dd-trigger > a {
+  color: var(--ink); font-weight: 600; font-size: .98rem;
+  padding: 9px 4px 9px 12px; border-radius: 10px; white-space: nowrap;
+}
+.nav-dd-trigger > a:hover { color: var(--accent-d); text-decoration: none; }
+.nav-dd-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: none; cursor: pointer;
+  color: var(--muted); padding: 4px 8px 4px 2px; border-radius: 10px;
+  min-height: 40px;
+}
+.nav-dd-toggle svg { transition: transform .2s ease; }
+.nav-dd.open .nav-dd-toggle svg { transform: rotate(180deg); }
+
+.nav-dd-menu {
+  position: absolute; top: 100%; left: 0;
+  margin: 0; padding: 8px; list-style: none;
+  min-width: 240px;
+  background: #fff;
+  border: 1px solid color-mix(in oklab, var(--gray) 45%, #fff);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  opacity: 0; visibility: hidden; transform: translateY(6px);
+  transition: opacity .16s ease, transform .16s ease, visibility .16s;
+  z-index: 65;
+}
+.nav-dd.open .nav-dd-menu { opacity: 1; visibility: visible; transform: translateY(4px); }
+.nav-dd-menu li a {
+  display: block; padding: 11px 14px; border-radius: 10px;
+  color: var(--ink); font-weight: 600; font-size: .96rem; white-space: nowrap;
+}
+.nav-dd-menu li a:hover { background: var(--pastel-mint); color: var(--accent-d); text-decoration: none; }
+
+/* On the mobile strip / footer the nav is flattened (no dropdown), so the
+   dropdown container never renders there — nothing extra needed. */
+
+/* ============================================================
+   BREADCRUMB (sub-page trail)
+   ============================================================ */
+.breadcrumb { padding: 16px 0 0; }
+.breadcrumb ol {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  list-style: none; margin: 0; padding: 0;
+  font-size: .9rem; color: var(--muted);
+}
+.breadcrumb li { display: inline-flex; align-items: center; }
+.breadcrumb li.sep { color: var(--gray); }
+.breadcrumb li.sep svg { transform: rotate(-90deg); }
+.breadcrumb a { color: var(--accent-d); font-weight: 600; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb span[aria-current="page"] { color: var(--ink); font-weight: 700; }
+
+/* ============================================================
+   SERVICE DETAIL PAGES (shared 8-section template)
+   ============================================================ */
+/* Shared check-list (What-is / Who-for / Benefits bullets). */
+.check-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.check-list li { display: flex; align-items: flex-start; gap: 12px; color: var(--body); }
+.check-list li svg { flex: none; color: var(--green); margin-top: 3px; }
+
+/* What-is: 2-column copy + list. */
+.svc-detail-split { display: grid; grid-template-columns: 1fr; gap: 28px; align-items: start; }
+@media (min-width: 880px) { .svc-detail-split { grid-template-columns: 1.05fr 1fr; gap: 48px; } }
+.svc-detail-copy p { color: var(--body); }
+.svc-detail-list h3 { font-size: 1.14rem; margin-bottom: 14px; }
+.svc-detail-closing {
+  margin-top: 30px; text-align: center; font-weight: 700; color: var(--ink);
+  font-size: clamp(1.1rem, 2.4vw, 1.35rem); max-width: 800px; margin-inline: auto;
+}
+
+/* Who-for: eligibility card + tag cloud / situation list. */
+.whofor-grid { display: grid; grid-template-columns: 1fr; gap: 24px; align-items: start; }
+@media (min-width: 880px) { .whofor-grid { grid-template-columns: 1fr 1fr; gap: 32px; } }
+.whofor-card .check-list { margin-top: 4px; }
+.whofor-tags h3 { font-size: 1.14rem; margin-bottom: 16px; }
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 10px; }
+.tag-cloud .tag {
+  background: #fff; color: var(--green-d); font-weight: 600; font-size: .95rem;
+  padding: 9px 15px; border-radius: 999px;
+  border: 1px solid color-mix(in oklab, var(--green) 35%, #fff);
+}
+.tags-note { margin-top: 16px; color: var(--muted); font-size: .96rem; }
+.whofor-callout {
+  margin-top: 28px; text-align: center; font-weight: 700; color: var(--ink);
+  max-width: 760px; margin-inline: auto;
+}
+
+/* 3-step process. */
+.svc-steps {
+  display: grid; grid-template-columns: 1fr; gap: 20px; align-items: stretch;
+}
+@media (min-width: 860px) {
+  .svc-steps { grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; }
+}
+.svc-step {
+  position: relative; background: #fff; text-align: center;
+  border: 1px solid color-mix(in oklab, var(--gray) 45%, #fff);
+  border-top: 4px solid var(--accent);
+  border-radius: var(--radius); padding: 30px 24px 26px;
+  box-shadow: var(--shadow-sm);
+  display: flex; flex-direction: column; align-items: center;
+}
+.svc-step-num {
+  position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+  width: 36px; height: 36px; border-radius: 999px;
+  background: var(--accent); color: #fff; font-weight: 800;
+  display: grid; place-items: center; box-shadow: var(--shadow-sm);
+}
+.svc-step .icon-chip { margin: 8px 0 14px; }
+.svc-step h3 { font-size: 1.2rem; }
+.svc-step p { color: var(--muted); margin: 0; }
+.svc-step-conn { display: none; color: var(--gray); }
+@media (min-width: 860px) { .svc-step-conn { display: grid; place-items: center; } }
+
+/* Benefits columns. */
+.benefit-grid { display: grid; grid-template-columns: 1fr; gap: 22px; }
+@media (min-width: 820px) {
+  .benefit-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .benefit-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+}
+.benefit-card {
+  background: #fff; border-radius: var(--radius-lg); padding: 30px 28px;
+  border: 1px solid color-mix(in oklab, var(--gray) 40%, #fff);
+  box-shadow: var(--shadow-sm);
+}
+.benefit-head { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.benefit-head h3 { margin: 0; font-size: 1.28rem; }
+
+/* Cost intro copy above the reused .cost-cta. */
+.svc-cost-body {
+  max-width: 760px; margin: 0 auto 26px; text-align: center; color: var(--body);
+}
+.svc-cost-body p { margin-bottom: 14px; }
+.cost-cta .ct h3 { margin: 0; }
+
+/* Related-services grid holds only 2 cross-link cards. Override the inherited
+   3-column .svc-grid (built for the homepage's 3 cards) so the pair is centered
+   instead of left-skewed with an empty 3rd column. */
+@media (min-width: 820px) {
+  .svc-grid-related {
+    grid-template-columns: repeat(2, minmax(0, 360px));
+    justify-content: center;
+  }
+}
