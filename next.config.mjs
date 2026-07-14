@@ -7,7 +7,8 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.js");
 //   BUILD_TARGET=static  → pure static export for Cloudflare Pages. The marketing
 //                          site only (app/[lang]/**). The PHI portal + all
 //                          server-only surfaces are moved out of app/ first by
-//                          scripts/prebuild-static.mjs, so export can succeed.
+//                          scripts/build-static.mjs (via scripts/static-stash.mjs),
+//                          so export can succeed. Run it with `npm run build:static`.
 //   (default)            → standalone Node server for the PHI Fargate image,
 //                          which still serves the portal with SSR + middleware.
 const isStatic = process.env.BUILD_TARGET === "static";

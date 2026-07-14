@@ -1,20 +1,17 @@
 name: Deploy
 
-# On every push to main: apply infrastructure (Terraform) FIRST, then deploy
-# the frontend (ECR + ECS) and backend Lambda. Infra runs before code so any
-# new infra (env vars, DB changes, etc.) is ready before the new code runs.
+# On every push to main: apply infrastructure (Terraform) FIRST, then update the
+# lead-form Lambda. Infra runs before code so any new infra (env vars, DB
+# changes, etc.) is ready before the new code runs.
+#
+# The marketing site is served by Cloudflare Pages (static export) — deployed by
+# Cloudflare on push to main, NOT here. The PHI portal is deployed by the separate
+# `deploy-phi.yml` workflow. The old web ECS/ALB service was removed in the cost
+# migration, so this workflow no longer builds or deploys a web container.
 #
 # Required repo settings:
 #   Secrets:   AWS_DEPLOY_ROLE_ARN, CLOUDFLARE_API_TOKEN, TF_STATE_BUCKET
-#   Variables: AWS_REGION, ECR_REPOSITORY, ECS_CLUSTER, ECS_SERVICE,
-#              LEAD_LAMBDA_NAME, API_BASE, CLOUDFLARE_ZONE_ID,
-#              CMS_BASE (https://cms.compassagewell.com), SITE_URL
-#
-# NOTE (Phase 5 cutover): the web container is now Next.js (port 3000). At
-# cutover, update the web task definition's containerPort 80->3000, the ALB
-# health check path, and inject REVALIDATE_SECRET (server-side, from Secrets
-# Manager) so the /api/revalidate webhook works. Until then the existing
-# Fargate web service keeps serving the old static image unchanged.
+#   Variables: AWS_REGION, LEAD_LAMBDA_NAME, CLOUDFLARE_ZONE_ID
 
 on:
   push:
@@ -73,8 +70,9 @@ jobs:
       - name: Terraform apply
         run: terraform apply -auto-approve
 
-  # ---------------- Deploy: build image, ECS, Lambda ----------------
-  deploy:
+  # ---------------- Deploy: update the lead-form Lambda ----------------
+  # (Marketing → Cloudflare Pages; PHI portal → deploy-phi.yml. No web container.)
+  deploy-lambda:
     needs: infra
     runs-on: ubuntu-latest
     steps:
@@ -86,60 +84,6 @@ jobs:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        id: ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      # ---------------- Frontend: build, push, deploy ----------------
-      - name: Build & push web image
-        env:
-          REGISTRY: ${{ steps.ecr.outputs.registry }}
-          REPO: ${{ vars.ECR_REPOSITORY }}
-          API_BASE: ${{ vars.API_BASE }}
-          CMS_BASE: ${{ vars.CMS_BASE }}
-          SITE_URL: ${{ vars.SITE_URL }}
-          SHA: ${{ github.sha }}
-        run: |
-          IMAGE="$REGISTRY/$REPO:$SHA"
-          # NEXT_PUBLIC_* are baked at build time (Next inlines them).
-          docker build \
-            --build-arg NEXT_PUBLIC_API_BASE="$API_BASE" \
-            --build-arg NEXT_PUBLIC_CMS_BASE="$CMS_BASE" \
-            --build-arg NEXT_PUBLIC_SITE_URL="${SITE_URL:-https://compassagewell.com}" \
-            -t "$IMAGE" -t "$REGISTRY/$REPO:latest" .
-          docker push "$IMAGE"
-          docker push "$REGISTRY/$REPO:latest"
-          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
-
-      - name: Render new task definition
-        id: taskdef
-        run: |
-          aws ecs describe-task-definition \
-            --task-definition "${{ vars.ECS_SERVICE }}" \
-            --query taskDefinition > taskdef.json
-          # Drop fields the register call rejects, then swap in the new image.
-          jq --arg IMG "$IMAGE" '
-            .containerDefinitions[0].image = $IMG
-            | del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
-                  .compatibilities, .registeredAt, .registeredBy)
-          ' taskdef.json > new-taskdef.json
-          NEW_ARN=$(aws ecs register-task-definition \
-            --cli-input-json file://new-taskdef.json \
-            --query taskDefinition.taskDefinitionArn --output text)
-          echo "task_arn=$NEW_ARN" >> "$GITHUB_OUTPUT"
-
-      - name: Deploy ECS service
-        run: |
-          aws ecs update-service \
-            --cluster "${{ vars.ECS_CLUSTER }}" \
-            --service "${{ vars.ECS_SERVICE }}" \
-            --task-definition "${{ steps.taskdef.outputs.task_arn }}" \
-            --force-new-deployment
-          aws ecs wait services-stable \
-            --cluster "${{ vars.ECS_CLUSTER }}" \
-            --services "${{ vars.ECS_SERVICE }}"
-
-      # ---------------- Backend: package & update Lambda ----------------
       - name: Update lead Lambda
         working-directory: backend/lead-handler
         run: |
