@@ -6,6 +6,13 @@
 > vận hành + onboarding. Việc còn lại cho BD: tạo collection `posts` để viết blog, cấu hình
 > Flow webhook (Bước 4), service token lead-sync (Bước 3).
 
+> 📌 **CẬP NHẬT (sau 2026-07):** Đây là **runbook lịch sử** của lần migration CMS — mô tả đúng
+> trạng thái tại thời điểm đó, khi Next.js còn chạy trên **Fargate/ALB**. **Về sau, marketing
+> site đã tách khỏi Fargate sang Cloudflare Pages** (static export; web ALB + web Fargate đã
+> gỡ). Directus CMS vẫn dùng như mô tả (giờ publish → **Pages Deploy Hook** rebuild). Các bước
+> Cutover-lên-Fargate bên dưới giữ nguyên làm lịch sử — xem [CLAUDE.md](../CLAUDE.md) /
+> [README.md](../README.md) cho kiến trúc **hiện tại**.
+
 Hướng dẫn từng bước đưa CMS lên production sau khi PR [#4](https://github.com/compass247/Agewell/pull/4) được merge. Mỗi bước đều có cách kiểm chứng. Thứ tự quan trọng — làm tuần tự.
 
 > **Nguyên tắc an toàn:** homepage hiện tại (Fargate nginx) **không bị đụng** cho tới bước Cutover (Bước 6). Bạn có thể dừng sau bất kỳ bước nào mà site live vẫn chạy bình thường.
