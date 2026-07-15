@@ -81,6 +81,11 @@ Mở:
 Tất cả đọc từ **Directus local**. Sửa nội dung trong Studio local
 (`localhost:8055`) → tải lại trang để thấy thay đổi.
 
+> **Lưu ý:** cơ chế webhook → `/api/revalidate` dưới đây chỉ áp dụng cho
+> **local dev** (`npm run dev`). Trên production, website là bản **static
+> export trên Cloudflare Pages** — Directus publish kích hoạt **Pages Deploy
+> Hook** để rebuild toàn site (~1–2 phút), không đi qua `/api/revalidate`.
+
 #### Vì sao có trang cập nhật ngay, có trang phải đợi?
 - **Trang chủ** đọc mới mỗi lần (force-dynamic) → sửa xong F5 là thấy ngay.
 - **Team / Blog** được **cache** (tối ưu tốc độ). Chỉ cập nhật khi Directus gửi

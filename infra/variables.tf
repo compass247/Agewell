@@ -39,46 +39,30 @@ variable "cloudflare_proxied" {
   default     = false
 }
 
-variable "alb_subnet_ids" {
-  description = "Exactly the subnets (2 AZs) the web ALB attaches to. Each ALB node carries a billed public IPv4, so pin to 2 rather than all default-VPC subnets. Empty = auto-pick the first 2 default subnets. Set explicitly in terraform.tfvars to match live state."
-  type        = list(string)
-  default     = []
-}
+# (alb_subnet_ids / desired_count / task_cpu / task_memory removed — they
+# belonged to the retired web ALB + web Fargate service.)
 
 variable "container_image" {
-  description = "Full ECR image URI:tag for the web container. CI overrides this per deploy; default lets the ECS service start before the first image push."
+  description = "Full ECR image URI:tag used as the PHI portal image fallback (phi-ecs.tf) before CI pushes the first phi-<sha> tag. Normally left empty — deploy-phi.yml registers image updates directly."
   type        = string
   default     = ""
 }
 
-variable "desired_count" {
-  description = "Number of ECS tasks for the web service."
-  type        = number
-  default     = 1
-}
-
-variable "task_cpu" {
-  description = "Fargate task CPU units (256 = 0.25 vCPU)."
-  type        = number
-  default     = 256
-}
-
-variable "task_memory" {
-  description = "Fargate task memory (MiB)."
-  type        = number
-  default     = 512
-}
-
+# NOTE: terraform.tfvars is gitignored, so CI applies (deploy.yml) only ever
+# see these DEFAULTS. Any value that must hold in production belongs here (or
+# in a TF_VAR_* workflow env), not only in the local tfvars — otherwise every
+# CI apply silently reverts it. ses_from/ses_to defaulted to "" for a while,
+# which blanked the Lambda's SES env on each CI deploy (emails off).
 variable "ses_from" {
-  description = "Verified SES sender address for lead notifications (e.g. no-reply@compassagewell.com). Empty disables email."
+  description = "Verified SES sender address for lead notifications. Empty disables email."
   type        = string
-  default     = ""
+  default     = "admin@compass247.vn"
 }
 
 variable "ses_to" {
   description = "Comma-separated recipient(s) for lead notifications (BD inbox)."
   type        = string
-  default     = ""
+  default     = "admin@compass247.vn"
 }
 
 variable "github_repo" {
@@ -213,7 +197,7 @@ variable "phi_log_retention_days" {
 }
 
 variable "create_cloudtrail" {
-  description = "Create an account-level multi-region CloudTrail. Set true ONLY if no existing account/org trail (check `aws cloudtrail describe-trails` first)."
+  description = "Create an account-level multi-region CloudTrail (management events — the first trail is free; S3 storage is pennies). Default true: API-level audit is a HIPAA expectation for the PHI stack. Set false ONLY if another account/org trail already exists (check `aws cloudtrail describe-trails`)."
   type        = bool
-  default     = false
+  default     = true
 }

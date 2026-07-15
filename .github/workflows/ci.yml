@@ -28,8 +28,32 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Unit tests
+        run: npm test
+
       - name: Build
         run: npm run build
+
+  # The production marketing build (Cloudflare Pages) runs `npm run build:static`,
+  # which stashes the portal/auth surfaces out of the tree (scripts/static-stash.mjs).
+  # Exercise that fragile path on every PR so a regression can't first appear in a
+  # production Pages build.
+  static:
+    name: Static export (Cloudflare Pages path)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build static export
+        run: npm run build:static
 
   docker:
     name: Docker build (smoke)
@@ -52,13 +76,19 @@ jobs:
       TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       TF_VAR_cloudflare_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID }}
       TF_VAR_aws_region: ${{ vars.AWS_REGION }}
+      # Keep the PR plan consistent with deploy.yml's apply.
+      TF_VAR_portal_tunnel_token: ${{ secrets.PHI_TUNNEL_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
+      # PRs assume the READ-ONLY plan role (agewell-github-plan, infra/oidc.tf) —
+      # the PowerUser deploy role is main-only. Set the AWS_PLAN_ROLE_ARN secret
+      # from `terraform output github_plan_role_arn`; the deploy-role fallback
+      # only works until its trust policy is tightened to main.
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          role-to-assume: ${{ secrets.AWS_PLAN_ROLE_ARN || secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
       - uses: hashicorp/setup-terraform@v3
@@ -66,11 +96,11 @@ jobs:
           terraform_version: "1.9.8"
 
       - name: Prepare Lambda deps (lead-handler)
-        run: npm install --omit=dev --no-audit --no-fund
+        run: npm ci --omit=dev --no-audit --no-fund
         working-directory: backend/lead-handler
 
       - name: Prepare Lambda deps (lead-sync)
-        run: npm install --omit=dev --no-audit --no-fund
+        run: npm ci --omit=dev --no-audit --no-fund
         working-directory: backend/lead-sync
 
       - name: Terraform fmt check

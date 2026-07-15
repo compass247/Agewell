@@ -7,18 +7,12 @@
    and deliberately does NOT use Reveal, so its HTML is always
    visible to crawlers.
    ============================================================ */
-import { useEffect } from "react";
 import { Header, MobileAnchor } from "../sections/sections-a.jsx";
 import { Footer, ContactBar, SignupForm } from "../sections/sections-b.jsx";
+import { useAccent } from "./useAccent.js";
 
 export default function BlogChrome({ C, lang, children }) {
-  useEffect(() => {
-    const r = document.documentElement.style;
-    r.setProperty("--accent", "#26a146");
-    r.setProperty("--accent-d", "#1c7d36");
-    r.setProperty("--accent-soft", "#ecf3e0");
-    r.setProperty("--fs-base", "19px");
-  }, []);
+  useAccent();
 
   return (
     <>

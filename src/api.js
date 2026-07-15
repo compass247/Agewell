@@ -1,8 +1,9 @@
 /* ============================================================
    COMPASS AGEWELL — Lead form API client
-   POSTs the signup form to the serverless backend.
-   Base URL is configurable via NEXT_PUBLIC_API_BASE (defaults to same-origin
-   so the ALB/Cloudflare can route /api to the backend).
+   POSTs the signup form to the serverless backend
+   (API Gateway → Lambda → DynamoDB). Base URL comes from
+   NEXT_PUBLIC_API_BASE — https://api.compassagewell.com in prod
+   (Cloudflare Pages build env); empty = same-origin /api for local dev.
    ============================================================ */
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "";
 

@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { requireSession } from "../../../../../../src/lib/phi/session.js";
+import { canEditPatient } from "../../../../../../src/lib/phi/rbac.js";
 import { getPatient } from "../../../../../../src/lib/phi/patients.repo.js";
 import { updatePatient } from "../../../_actions/patients.js";
 import PatientForm from "../../../_components/PatientForm.jsx";
@@ -14,11 +15,7 @@ export default async function EditPatientPage({ params }) {
   if (!patient) notFound();
 
   // Record-level gate for the UI (the action re-checks authoritatively).
-  const canEdit =
-    actor.role === "ADMIN" ||
-    actor.role === "CS" ||
-    (actor.role === "BD" && patient.createdBy === actor.id);
-  if (!canEdit) redirect(`/portal/patients/${patient.id}`);
+  if (!canEditPatient(actor, patient)) redirect(`/portal/patients/${patient.id}`);
 
   const action = updatePatient.bind(null, patient.id);
 

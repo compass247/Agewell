@@ -4,8 +4,8 @@
    Swaps the URL locale prefix (/vi <-> /en) instead of flipping
    client state. Keeps the same path so the user stays on the same
    page in the other language — every language has a crawlable URL.
-   Also remembers the choice in localStorage so the middleware can
-   honor it as a soft preference on the next "/" visit.
+   (next-intl persists the choice in its own locale cookie via the
+   router; the old Vite-era "agewell-lang" localStorage key is gone.)
    ============================================================ */
 import { usePathname, useRouter } from "../i18n/navigation.js";
 
@@ -14,11 +14,6 @@ export function LangToggle({ lang }) {
   const pathname = usePathname(); // path WITHOUT the locale prefix
 
   const switchTo = (next) => {
-    try {
-      localStorage.setItem("agewell-lang", next);
-    } catch {
-      /* ignore */
-    }
     router.replace(pathname, { locale: next });
   };
 

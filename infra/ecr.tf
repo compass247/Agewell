@@ -1,5 +1,9 @@
 /* ============================================================
-   ECR repository for the web container image.
+   ECR app-image repository. Named "agewell-web" for historical reasons (the
+   retired marketing web container); today it holds the PHI portal images —
+   `phi-<sha>` (portal, Dockerfile) and `migrate-<sha>` (Dockerfile.migrate),
+   pushed by deploy-phi.yml. NOT renamed: changing `name` forces replacement
+   and would orphan the image history the running service points at.
    ============================================================ */
 resource "aws_ecr_repository" "web" {
   name                 = "${var.project}-web"

@@ -32,6 +32,14 @@ const ROOT = process.cwd();
 const STASH_DIR = join(ROOT, ".static-stash");
 
 export function stash() {
+  // Crash recovery: if a previous build was hard-killed between stash() and
+  // unstash(), the server-only files are still in .static-stash/ and the tree
+  // is broken. Restore them FIRST — otherwise this build would silently export
+  // without them and leave the tree broken again.
+  if (existsSync(STASH_DIR)) {
+    console.warn("[static-stash] leftover .static-stash/ found (previous build crashed?) — restoring first");
+    unstash();
+  }
   mkdirSync(STASH_DIR, { recursive: true });
   for (const rel of STASH_PATHS) {
     const src = join(ROOT, rel);

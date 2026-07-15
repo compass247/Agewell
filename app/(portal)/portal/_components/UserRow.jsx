@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { setRole, setActive } from "../_actions/users.js";
+import { setRole, setActive, resetMfa } from "../_actions/users.js";
 
 const ROLES = ["ADMIN", "BD", "CS"];
 
@@ -37,6 +37,15 @@ export default function UserRow({ user, selfId }) {
     if (res?.error) setError(res.error);
   }
 
+  async function onResetMfa() {
+    if (!window.confirm(`Reset MFA for ${user.email}? They will re-enroll at next login.`)) return;
+    setBusy(true);
+    setError("");
+    const res = await resetMfa(user.id);
+    setBusy(false);
+    if (res?.error) setError(res.error);
+  }
+
   return (
     <tr>
       <td>{user.email}{isSelf ? <span className="pf-muted"> (you)</span> : null}</td>
@@ -48,7 +57,20 @@ export default function UserRow({ user, selfId }) {
         </select>
         {error ? <div className="pf-error">{error}</div> : null}
       </td>
-      <td>{user.mfaEnrolledAt ? "Enrolled" : <span className="pf-muted">Not yet</span>}</td>
+      <td>
+        {user.mfaEnrolledAt ? "Enrolled" : <span className="pf-muted">Not yet</span>}
+        {user.mfaEnrolledAt && !isSelf ? (
+          <button
+            className="pf-btn pf-btn--ghost"
+            style={{ padding: "2px 8px", marginLeft: 8 }}
+            onClick={onResetMfa}
+            disabled={busy}
+            title="Clear enrollment so the user re-enrolls at next login"
+          >
+            Reset
+          </button>
+        ) : null}
+      </td>
       <td>{user.isActive ? "Yes" : "No"}</td>
       <td>{fmt(user.lastLoginAt)}</td>
       <td>

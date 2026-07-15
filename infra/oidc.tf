@@ -26,12 +26,74 @@ resource "aws_iam_role" "github_deploy" {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
         }
         StringLike = {
-          # Only this repo's workflows may assume the role.
-          "token.actions.githubusercontent.com:sub" = "repo:${var.github_repo}:*"
+          # This near-admin role must ONLY be assumable from main (push/dispatch)
+          # or from the protected `production` environment — NOT from arbitrary
+          # branches or PR refs (PR plans use the read-only role below).
+          "token.actions.githubusercontent.com:sub" = [
+            "repo:${var.github_repo}:ref:refs/heads/main",
+            "repo:${var.github_repo}:environment:production",
+          ]
         }
       }
     }]
   })
+}
+
+/* ------------------------------------------------------------
+   Read-only PLAN role for pull requests.
+   ci.yml's terraform-plan job runs on every PR; it previously assumed the
+   PowerUser deploy role, meaning any PR branch had near-admin credentials.
+   This role can only read AWS state (plan/refresh) + use the TF state
+   bucket/lock. Set the repo secret AWS_PLAN_ROLE_ARN to its ARN.
+   Note: ReadOnlyAccess includes secretsmanager:GetSecretValue (terraform
+   refresh needs it for secret_version resources) — same-repo PRs only;
+   forked PRs get no OIDC token.
+   ------------------------------------------------------------ */
+resource "aws_iam_role" "github_plan" {
+  name = "${var.project}-github-plan"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Federated = aws_iam_openid_connect_provider.github.arn }
+      Action    = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+        }
+        StringLike = {
+          "token.actions.githubusercontent.com:sub" = "repo:${var.github_repo}:pull_request"
+        }
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "github_plan_readonly" {
+  role       = aws_iam_role.github_plan.name
+  policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
+}
+
+# State bucket writes are NOT needed for plan (read-only backend init), but the
+# DynamoDB lock table needs item writes to take/release the state lock.
+resource "aws_iam_role_policy" "github_plan_state" {
+  name = "${var.project}-github-plan-state"
+  role = aws_iam_role.github_plan.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid      = "TfStateLock"
+      Effect   = "Allow"
+      Action   = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:DeleteItem"]
+      Resource = "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/agewell-tf-lock"
+    }]
+  })
+}
+
+output "github_plan_role_arn" {
+  description = "Set the repo secret AWS_PLAN_ROLE_ARN to this ARN (used by ci.yml's PR terraform plan)."
+  value       = aws_iam_role.github_plan.arn
 }
 
 # Terraform on CI manages the whole stack (ECS, ALB, ACM, API GW, DynamoDB,

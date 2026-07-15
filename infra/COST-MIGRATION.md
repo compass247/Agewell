@@ -103,12 +103,25 @@ removed until the CMS has its own ingress. Correct sequence:
 
 ## Still TODO (later stages)
 
-- **PHI ALB → Cloudflare Tunnel + Access (Stage 6b)** — replace `phi-alb.tf` +
-  `phi-dns.tf` with a `cloudflared` sidecar in the portal task; add a Cloudflare
-  Access policy (email/SSO) in front, replacing the ALB IP-allowlist
-  (portal_allowed_cidrs, currently 0.0.0.0/0 = open). Then the PHI public
-  subnets + IGW can go too. Do the NAT→endpoints 2-phase apply (above) around
-  the same time.
+- **VPC endpoint cost correction (done 2026-07)** — the original estimate here
+  and in `phi-endpoints.tf` missed the per-AZ factor: 5 endpoints × 2 AZs =
+  10 ENIs ≈ **$73/mo**, MORE than the $32 NAT they replaced. Trimmed to 4
+  endpoints (kms dropped — nothing task-side calls the KMS API) × 1 AZ pinned
+  to the RDS AZ ≈ **$29/mo**. The remaining endpoints disappear entirely at
+  the Stage 6b teardown (task moves to a public subnet for tunnel egress).
+- **PHI ALB → Cloudflare Tunnel + Access (Stage 6b — IN PROGRESS)** — being
+  done blue-green via `phi-canary.tf`: a second `agewell-portal-canary`
+  service (same image/secrets → same RDS data) with a `cloudflared` sidecar,
+  running in a PUBLIC subnet (the private subnets have no internet route, so
+  the sidecar can't dial the Cloudflare edge from there) behind a
+  zero-ingress SG. Cloudflare Access (email allowlist) + the zone WAF replace
+  the ALB IP-allowlist (portal_allowed_cidrs, currently 0.0.0.0/0 = open).
+  Full runbook in the `phi-canary.tf` header: verify on
+  `portal-test.compassagewell.com` against live data → DNS cutover
+  (reversible) → soak → teardown Apply B (delete phi-alb.tf/phi-acm.tf, ALB
+  logs bucket, interface endpoints; fold the tunnel into the main service;
+  delete the canary). ⚠️ Real-PHI gate: Cloudflare BAA needs Enterprise —
+  see `backend/phi/README.md`.
 - **RDS → Aurora Serverless v2 (scale-to-zero) (Stage 6c)** — deferred; needs a
   data migration: `pg_dump` from INSIDE the PHI VPC (RDS is private — run an ECS
   task or bastion), create the Aurora cluster (min_capacity 0 ACU, PG 16.4–16.10

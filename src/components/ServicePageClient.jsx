@@ -9,10 +9,10 @@
    designs), so we set the same accent tokens as the rest of the
    site — no per-page override needed.
    ============================================================ */
-import { useEffect } from "react";
 import { Header, MobileAnchor } from "../sections/sections-a.jsx";
 import { Footer, ContactBar, SignupForm } from "../sections/sections-b.jsx";
 import { Breadcrumb } from "./Breadcrumb.jsx";
+import { useAccent } from "./useAccent.js";
 import {
   ServiceHero,
   ServiceWhatIs,
@@ -25,21 +25,14 @@ import {
 } from "../sections/service-detail.jsx";
 
 export default function ServicePageClient({ C, lang, service }) {
-  useEffect(() => {
-    const r = document.documentElement.style;
-    r.setProperty("--accent", "#26a146");
-    r.setProperty("--accent-d", "#1c7d36");
-    r.setProperty("--accent-soft", "#ecf3e0");
-    r.setProperty("--fs-base", "19px");
-  }, []);
+  useAccent();
 
   // Breadcrumb: Trang chủ → Dịch vụ → <current service>. The "Services"
-  // crumb points at the homepage services section; labels are localized.
-  const homeLabel = lang === "en" ? "Home" : "Trang chủ";
-  const servicesLabel = lang === "en" ? "Services" : "Dịch vụ";
+  // crumb points at the homepage services section; labels come from
+  // content-data (chrome block) like all other copy.
   const crumbs = [
-    { label: homeLabel, href: "/" },
-    { label: servicesLabel, href: "/#dichvu" },
+    { label: C.chrome.breadcrumbHome, href: "/" },
+    { label: C.chrome.breadcrumbServices, href: "/#dichvu" },
     { label: service.breadcrumbLabel },
   ];
 

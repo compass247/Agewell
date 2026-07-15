@@ -60,12 +60,19 @@ export function requireCan(actor, action) {
 }
 
 /**
- * Record-level edit rule: ADMIN and CS may edit/status any patient; BD may only
- * edit patients they created. Throws otherwise.
+ * Record-level edit rule (defined ONCE — pages must not re-derive it inline):
+ * ADMIN and CS may edit/status any patient; BD may only edit patients they
+ * created. Boolean form for UI gating.
  */
+export function canEditPatient(actor, patient) {
+  if (!actor || !patient) return false;
+  if (actor.role === ROLES.ADMIN || actor.role === ROLES.CS) return true;
+  return actor.role === ROLES.BD && patient.createdBy === actor.id;
+}
+
+/** canEditPatient() but throws — used by the server actions. */
 export function assertCanEditPatient(actor, patient) {
-  if (!actor || !patient) throw forbidden();
-  if (actor.role === ROLES.ADMIN || actor.role === ROLES.CS) return;
-  if (actor.role === ROLES.BD && patient.createdBy === actor.id) return;
-  throw forbidden("BD may only edit records they created.");
+  if (!canEditPatient(actor, patient)) {
+    throw forbidden("BD may only edit records they created.");
+  }
 }

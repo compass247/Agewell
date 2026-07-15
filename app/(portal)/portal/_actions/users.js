@@ -103,6 +103,41 @@ export async function setRole(userId, formData) {
   return { ok: true };
 }
 
+/**
+ * Reset a user's MFA enrollment (lost authenticator). Admin only. Nulls the
+ * secret + enrollment timestamp so the user re-enrolls at next login —
+ * startMfaEnrollment refuses to regenerate a secret for an enrolled user, so
+ * this is the ONLY legitimate re-enrollment path.
+ */
+export async function resetMfa(userId) {
+  const actor = await requireSession();
+  requireCan(actor, "manageUsers");
+
+  await db.transaction(async (tx) => {
+    const [before] = await tx
+      .select({ mfaEnrolledAt: users.mfaEnrolledAt })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+    if (!before || !before.mfaEnrolledAt) return;
+    await tx
+      .update(users)
+      .set({ mfaSecret: null, mfaEnrolledAt: null, updatedAt: new Date() })
+      .where(eq(users.id, userId));
+    await writeAudit(tx, {
+      actorId: actor.id,
+      actorEmail: actor.email,
+      action: "MFA_ENROLL",
+      entity: "user",
+      entityId: userId,
+      meta: { reset: true },
+    });
+  });
+
+  revalidatePath("/portal/admin/users");
+  return { ok: true };
+}
+
 export async function setActive(userId, isActive) {
   const actor = await requireSession();
   requireCan(actor, "manageUsers");

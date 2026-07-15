@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { getContent } from "../../../../src/content.js";
 import { getPost, getPosts } from "../../../../src/cms.js";
 import { SITE_URL, OG_LOCALE, languageAlternates } from "../../../../src/seo.js";
+import { sanitizeCmsHtml, jsonLdSafe } from "../../../../src/lib/sanitize.js";
 import BlogChrome from "../../../../src/components/BlogChrome.jsx";
 
 // Only pre-rendered slugs are served; any other slug 404s (via notFound below)
@@ -111,16 +112,16 @@ export default async function Article({ params }) {
               }}
             />
           )}
-          {/* Body is sanitized rich-text HTML authored in Directus. */}
+          {/* Rich text authored in Directus — sanitized before innerHTML. */}
           <div
             className="article-body"
-            dangerouslySetInnerHTML={{ __html: post.body }}
+            dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(post.body) }}
           />
         </div>
       </article>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdSafe(jsonLd) }}
       />
     </BlogChrome>
   );

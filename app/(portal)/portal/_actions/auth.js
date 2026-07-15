@@ -4,6 +4,7 @@
    Node runtime. All write audit rows.
    ============================================================ */
 import { eq } from "drizzle-orm";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 import {
@@ -21,11 +22,28 @@ import {
   buildEnrollment,
   verifyTotp,
 } from "../../../../src/lib/phi/totp.js";
+import {
+  isLocked,
+  recordFailure,
+  clearFailures,
+  requestIp,
+  TOTP_POLICY,
+  LOCKED_MESSAGE,
+} from "../../../../src/lib/phi/throttle.js";
 
 /** Login form action. On success Auth.js sets the cookie; we route to MFA. */
 export async function loginAction(_prev, formData) {
   const email = String(formData.get("email") || "").toLowerCase();
   const password = String(formData.get("password") || "");
+
+  // Friendly pre-check so a locked account/IP gets a clear message; the
+  // authoritative (bypass-proof) enforcement lives in authorize() itself.
+  const ip = requestIp(headers());
+  const lockKeys = [`email:${email}`, ip ? `ip:${ip}` : null];
+  if (email && (await isLocked(db, lockKeys))) {
+    return { error: LOCKED_MESSAGE };
+  }
+
   try {
     // Let Auth.js set the session cookie AND redirect in one response. Calling
     // auth() in the same action (with redirect:false) would read the OLD request
@@ -52,6 +70,19 @@ export async function startMfaEnrollment() {
   const session = await auth();
   if (!session?.user) redirect("/portal/login");
 
+  // An already-enrolled user must NOT be able to regenerate the secret here:
+  // a stolen password would otherwise let an attacker enroll their own
+  // authenticator and bypass MFA. Legitimate re-enrollment (lost phone) goes
+  // through an ADMIN resetMfa (users.js), which nulls the enrollment first.
+  const [row] = await db
+    .select({ mfaEnrolledAt: users.mfaEnrolledAt })
+    .from(users)
+    .where(eq(users.id, session.user.id))
+    .limit(1);
+  if (row?.mfaEnrolledAt) {
+    redirect(session.mfa === "ok" ? "/portal/patients" : "/portal/mfa/verify");
+  }
+
   const secret = generateTotpSecret();
   await db
     .update(users)
@@ -68,6 +99,9 @@ export async function confirmMfaEnrollment(_prev, formData) {
   if (!session?.user) redirect("/portal/login");
   const token = String(formData.get("token") || "");
 
+  const totpKey = `totp:${session.user.id}`;
+  if (await isLocked(db, [totpKey])) return { error: LOCKED_MESSAGE };
+
   const [row] = await db
     .select({ mfaSecret: users.mfaSecret })
     .from(users)
@@ -76,8 +110,10 @@ export async function confirmMfaEnrollment(_prev, formData) {
 
   const secret = row?.mfaSecret ? decryptField(row.mfaSecret) : null;
   if (!secret || !verifyTotp(token, secret)) {
+    await recordFailure(db, totpKey, TOTP_POLICY);
     return { error: "Invalid code. Scan the QR and try again." };
   }
+  await clearFailures(db, [totpKey]);
 
   await db
     .update(users)
@@ -100,6 +136,9 @@ export async function verifyMfaAction(_prev, formData) {
   if (!session?.user) redirect("/portal/login");
   const token = String(formData.get("token") || "");
 
+  const totpKey = `totp:${session.user.id}`;
+  if (await isLocked(db, [totpKey])) return { error: LOCKED_MESSAGE };
+
   const [row] = await db
     .select({ mfaSecret: users.mfaSecret })
     .from(users)
@@ -108,8 +147,10 @@ export async function verifyMfaAction(_prev, formData) {
 
   const secret = row?.mfaSecret ? decryptField(row.mfaSecret) : null;
   if (!secret || !verifyTotp(token, secret)) {
+    await recordFailure(db, totpKey, TOTP_POLICY);
     return { error: "Invalid code." };
   }
+  await clearFailures(db, [totpKey]);
 
   await db
     .update(users)
