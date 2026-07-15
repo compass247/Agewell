@@ -16,7 +16,10 @@ const KEY_MAP = {
   loop: "loop",
   usp: "usp",
   elig: "elig",
-  testi: "testi",
+  // testi removed: the Testimonials section shipped fabricated placeholder
+  // stats and was never rendered — deleted until real numbers exist. (The
+  // Directus homepage collection may still carry a `testi` field; it is
+  // simply ignored here.)
   form: "form",
   footer: "footer",
   // nav is intentionally NOT overlaid from CMS: it now carries route links

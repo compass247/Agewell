@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireSession } from "../../../../../src/lib/phi/session.js";
-import { can } from "../../../../../src/lib/phi/rbac.js";
+import { can, canEditPatient } from "../../../../../src/lib/phi/rbac.js";
 import { getPatient } from "../../../../../src/lib/phi/patients.repo.js";
 import { logPatientRead } from "../../../../../src/lib/phi/read-audit.js";
 import {
@@ -41,15 +41,9 @@ export default async function PatientDetailPage({ params }) {
     getPatientNotes(patient.id),
   ]);
 
-  const canEdit =
-    actor.role === "ADMIN" ||
-    actor.role === "CS" ||
-    (actor.role === "BD" && patient.createdBy === actor.id);
+  const canEdit = canEditPatient(actor, patient);
   const canDelete = can(actor, "delete");
-  const canStatus =
-    actor.role === "ADMIN" ||
-    actor.role === "CS" ||
-    (actor.role === "BD" && patient.createdBy === actor.id);
+  const canStatus = canEditPatient(actor, patient);
 
   return (
     <div>

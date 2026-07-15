@@ -29,11 +29,8 @@ export default async function BlogIndex({ params }) {
   setRequestLocale(lang);
 
   const [C, posts] = await Promise.all([getContent(lang), getPosts(lang)]);
-  const heading = lang === "en" ? "Blog" : "Bài viết";
-  const empty =
-    lang === "en"
-      ? "No articles yet. Check back soon."
-      : "Chưa có bài viết. Vui lòng quay lại sau.";
+  const heading = C.chrome.blogTitle;
+  const empty = C.chrome.blogEmpty;
 
   return (
     <BlogChrome C={C} lang={lang}>

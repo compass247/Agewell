@@ -11,23 +11,14 @@ import { useEffect } from "react";
 import { Header, MobileAnchor, Hero, Problem, Services, CareLoop } from "../sections/sections-a.jsx";
 import { UspTeam, Eligibility, SignupForm, Footer, ContactBar } from "../sections/sections-b.jsx";
 import { scrollToId } from "./shared.jsx";
+import { useAccent } from "./useAccent.js";
 
-// Fixed design tokens (previously controlled by the removed tweaks panel).
-const ACCENT = "#26a146";
-const ACCENT_D = "#1c7d36";
-const ACCENT_SOFT = "#ecf3e0";
-const FONT_SIZE = 19;
+// Fixed section variants (previously controlled by the removed tweaks panel).
 const SVC_VARIANT = "bordered";
 const LOOP_VARIANT = "circle";
 
 export default function HomePageClient({ C, lang }) {
-  useEffect(() => {
-    const r = document.documentElement.style;
-    r.setProperty("--accent", ACCENT);
-    r.setProperty("--accent-d", ACCENT_D);
-    r.setProperty("--accent-soft", ACCENT_SOFT);
-    r.setProperty("--fs-base", FONT_SIZE + "px");
-  }, []);
+  useAccent();
 
   // Landing on "/#id" (e.g. an anchor nav item clicked from /blog or /team)
   // — apply the same header-offset smooth scroll as in-page nav, since the
@@ -51,7 +42,6 @@ export default function HomePageClient({ C, lang }) {
         <CareLoop t={C} variant={LOOP_VARIANT} />
         <UspTeam t={C} />
         <Eligibility t={C} />
-        {/* Testimonials section hidden — chưa có số liệu thật */}
         <SignupForm t={C} />
       </main>
       <Footer t={C} lang={lang} />

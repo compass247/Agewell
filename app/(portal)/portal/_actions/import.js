@@ -19,7 +19,7 @@ import { patients } from "../../../../src/lib/phi/schema.js";
 import { requireSession } from "../../../../src/lib/phi/session.js";
 import { requireCan } from "../../../../src/lib/phi/rbac.js";
 import { writeAudit } from "../../../../src/lib/phi/audit.js";
-import { encryptField } from "../../../../src/lib/phi/crypto.js";
+import { toPatientRow } from "../../../../src/lib/phi/patient-map.js";
 import { patientInputSchema } from "../../../../src/lib/phi/validation.js";
 import { parsePatientWorkbook } from "../../../../src/lib/phi/import.js";
 
@@ -125,28 +125,7 @@ export async function commitImport(payload) {
       const [row] = await tx
         .insert(patients)
         .values({
-          patientExternalId: d.patientExternalId,
-          firstName: d.firstName,
-          lastName: d.lastName,
-          dobEnc: encryptField(d.dob),
-          primaryPhone: d.primaryPhone,
-          secondaryPhone: d.secondaryPhone,
-          email: d.email,
-          address1: d.address1,
-          address2: d.address2,
-          city: d.city,
-          state: d.state,
-          zip: d.zip,
-          medicareMbiEnc: encryptField(d.medicareMbi),
-          insurancePlan: d.insurancePlan,
-          insuranceMemberId: d.insuranceMemberId,
-          emergencyName: d.emergencyName,
-          emergencyRelationship: d.emergencyRelationship,
-          emergencyPhone: d.emergencyPhone,
-          referralSource: d.referralSource,
-          preferredLanguage: d.preferredLanguage,
-          gender: d.gender,
-          notes: d.notes,
+          ...toPatientRow(d),
           status: "NEW",
           createdBy: actor.id,
         })

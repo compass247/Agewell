@@ -39,34 +39,13 @@ variable "cloudflare_proxied" {
   default     = false
 }
 
-variable "alb_subnet_ids" {
-  description = "Exactly the subnets (2 AZs) the web ALB attaches to. Each ALB node carries a billed public IPv4, so pin to 2 rather than all default-VPC subnets. Empty = auto-pick the first 2 default subnets. Set explicitly in terraform.tfvars to match live state."
-  type        = list(string)
-  default     = []
-}
+# (alb_subnet_ids / desired_count / task_cpu / task_memory removed — they
+# belonged to the retired web ALB + web Fargate service.)
 
 variable "container_image" {
-  description = "Full ECR image URI:tag for the web container. CI overrides this per deploy; default lets the ECS service start before the first image push."
+  description = "Full ECR image URI:tag used as the PHI portal image fallback (phi-ecs.tf) before CI pushes the first phi-<sha> tag. Normally left empty — deploy-phi.yml registers image updates directly."
   type        = string
   default     = ""
-}
-
-variable "desired_count" {
-  description = "Number of ECS tasks for the web service."
-  type        = number
-  default     = 1
-}
-
-variable "task_cpu" {
-  description = "Fargate task CPU units (256 = 0.25 vCPU)."
-  type        = number
-  default     = 256
-}
-
-variable "task_memory" {
-  description = "Fargate task memory (MiB)."
-  type        = number
-  default     = 512
 }
 
 # NOTE: terraform.tfvars is gitignored, so CI applies (deploy.yml) only ever

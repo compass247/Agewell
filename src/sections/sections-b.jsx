@@ -1,7 +1,7 @@
 "use client";
 /* ============================================================
    COMPASS AGEWELL — Sections B
-   USP+Team · Eligibility+FAQ · Testimonials · Form · Footer · ContactBar
+   USP+Team · Eligibility+FAQ · Form · Footer · ContactBar
    ============================================================ */
 import { useState, useRef } from "react";
 import { Icon } from "../components/icons.jsx";
@@ -12,13 +12,6 @@ import { submitLead } from "../api.js";
 
 const C = () => AGEWELL_COLORS;
 const go = (id) => scrollToId(id);
-
-const CHATS = [
-  { name: "Zalo", href: "#" },
-  { name: "Messenger", href: "#" },
-  { name: "WhatsApp", href: "#" },
-  { name: "Viber", href: "#" },
-];
 
 /* ---------------- USP + Team ---------------- */
 export function UspTeam({ t }) {
@@ -120,43 +113,6 @@ export function Eligibility({ t }) {
             </a>
           </p>
         </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------------- Testimonials + Stats ---------------- */
-export function Testimonials({ t }) {
-  const ts = t.testi;
-  const avatarColors = ["#26a146", "#007bc3", "#f47d42"];
-  return (
-    <section className="bg-white section-pad">
-      <div className="container">
-        <SectionHead center eyebrow={ts.eyebrow} title={ts.title} />
-        <div className="stats-row">
-          {ts.stats.map((s, i) => (
-            <Reveal key={i} className="stat" delay={i * 80}>
-              <div className="num">{s.num}</div>
-              <div className="lbl">{s.lbl}</div>
-            </Reveal>
-          ))}
-        </div>
-        <div className="testi-grid">
-          {ts.cards.map((c, i) => (
-            <Reveal key={i} className="testi-card" delay={i * 80}>
-              <div className="quote-mark">&ldquo;</div>
-              <p className="quote">{c.quote}</p>
-              <div className="testi-who">
-                <span className="testi-avatar" style={{ background: avatarColors[i % 3] }}>{c.initials}</span>
-                <span>
-                  <b>{c.name}</b>
-                  <small><Icon name="pin" size={15} />{c.place}</small>
-                </span>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-        <p style={{ textAlign: "center", marginTop: 20, color: "var(--muted)", fontSize: ".88rem", fontStyle: "italic" }}>{ts.note}</p>
       </div>
     </section>
   );
@@ -310,12 +266,8 @@ export function Footer({ t, lang }) {
           <div className="footer-col footer-contact">
             <h4>{fo.contactTitle}</h4>
             <a className="num" href={"tel:" + t.hotline.tel}>{t.hotline.number}</a>
-            <div style={{ color: "#9fb8a7", fontSize: ".9rem", marginTop: 4 }}>{fo.chatTitle}</div>
-            <div className="footer-chats">
-              {CHATS.map((c) => (
-                <a key={c.name} className="footer-chat" href={c.href}><Icon name="chat" size={18} />{c.name}</a>
-              ))}
-            </div>
+            {/* Chat links (Zalo/Messenger/…) removed until real channel URLs
+                exist — placeholder href="#" links hurt trust and SEO. */}
             <div style={{ marginTop: 18 }}>
               <LangToggle lang={lang} />
             </div>

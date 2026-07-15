@@ -50,8 +50,7 @@ export default async function TeamPage({ params }) {
     getTeamMembers(lang),
   ]);
 
-  const heading =
-    page?.title || (lang === "en" ? "Medical Team" : "Đội ngũ y tế");
+  const heading = page?.title || C.chrome.teamTitle;
 
   return (
     <BlogChrome C={C} lang={lang}>

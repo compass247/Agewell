@@ -105,22 +105,6 @@ export const AGEWELL_CONTENT = {
       ],
     },
 
-    testi: {
-      eyebrow: "Khách hàng nói gì",
-      title: "Được tin tưởng bởi cộng đồng người Việt",
-      stats: [
-        { num: "2.000+", lbl: "bệnh nhân được chăm sóc" },
-        { num: "12+", lbl: "tiểu bang phục vụ" },
-        { num: "98%", lbl: "hài lòng với dịch vụ" },
-      ],
-      cards: [
-        { quote: "Bác sĩ nói tiếng Việt nên tôi hiểu hết, không còn lo uống nhầm thuốc nữa.", name: "Cô Lan", place: "California", initials: "L" },
-        { quote: "Mỗi tháng có người gọi hỏi thăm, tôi thấy yên tâm như có con cháu bên cạnh.", name: "Bác Hùng", place: "Texas", initials: "H" },
-        { quote: "Không phải nhờ con chở đi khám xa nữa, tiện và đỡ mệt rất nhiều.", name: "Cô Mai", place: "Washington", initials: "M" },
-      ],
-      note: "Placeholder — sẽ thay bằng cảm nhận thật của khách hàng.",
-    },
-
     form: {
       eyebrow: "Đăng ký",
       title: "Để lại thông tin, chúng tôi sẽ gọi lại cho bạn",
@@ -146,12 +130,21 @@ export const AGEWELL_CONTENT = {
       desc: "Hệ thống chăm sóc sức khỏe tại nhà cho người Việt cao tuổi dùng Medicare trên khắp nước Mỹ.",
       contactTitle: "Liên hệ",
       navTitle: "Trang",
-      chatTitle: "Nhắn tin với chúng tôi",
       disclaimer: "Disclaimer: Bạn có quyền từ chối hoặc rút khỏi chương trình chăm sóc bất kỳ lúc nào mà không ảnh hưởng đến quyền lợi Medicare Original. Điều kiện tham gia và chi trả phụ thuộc vào gói Medicare Original của từng khách hàng — trong đó dịch vụ Rà Soát Thuốc (MTM) yêu cầu thêm Medicare Part D. Để biết thêm về quyền lợi Medicare, gọi 1-800-MEDICARE (1-800-633-4227). Compass AgeWell không được CMS hay bất kỳ cơ quan chính phủ nào xác nhận hay bảo trợ.",
       rights: "© 2026 Compass AgeWell. Mọi quyền được bảo lưu.",
     },
 
     contactBar: { call: "Gọi", chat: "Nhắn tin" },
+
+    // Sub-page chrome copy (breadcrumbs, blog/team headings + empty states).
+    // NOT overlaid from the CMS — dev-controlled like nav.
+    chrome: {
+      breadcrumbHome: "Trang chủ",
+      breadcrumbServices: "Dịch vụ",
+      blogTitle: "Bài viết",
+      blogEmpty: "Chưa có bài viết. Vui lòng quay lại sau.",
+      teamTitle: "Đội ngũ y tế",
+    },
   },
 
   /* ===================== ENGLISH ===================== */
@@ -256,22 +249,6 @@ export const AGEWELL_CONTENT = {
       ],
     },
 
-    testi: {
-      eyebrow: "What members say",
-      title: "Trusted by the Vietnamese community",
-      stats: [
-        { num: "2,000+", lbl: "patients cared for" },
-        { num: "12+", lbl: "states served" },
-        { num: "98%", lbl: "satisfied with the service" },
-      ],
-      cards: [
-        { quote: "The doctor speaks Vietnamese so I understand everything — no more worry about wrong medication.", name: "Ms. Lan", place: "California", initials: "L" },
-        { quote: "Someone calls every month to check on me. I feel reassured, like family is here.", name: "Mr. Hung", place: "Texas", initials: "H" },
-        { quote: "No more asking my kids to drive me far for visits. So much easier and less tiring.", name: "Ms. Mai", place: "Washington", initials: "M" },
-      ],
-      note: "Placeholder — to be replaced with real member stories.",
-    },
-
     form: {
       eyebrow: "Sign up",
       title: "Leave your details and we'll call you back",
@@ -297,11 +274,20 @@ export const AGEWELL_CONTENT = {
       desc: "Healthcare at home for Vietnamese seniors on Medicare, across the United States.",
       contactTitle: "Contact",
       navTitle: "Pages",
-      chatTitle: "Message us",
       disclaimer: "Disclaimer: You have the right to refuse or withdraw from the care program at any time without affecting your Medicare Original benefits. Eligibility and coverage depend on each member's Medicare Original plan — Medication Therapy Management (MTM) additionally requires Medicare Part D. For more information about Medicare benefits, call 1-800-MEDICARE (1-800-633-4227). Compass AgeWell is not endorsed or sponsored by CMS or any government agency.",
       rights: "© 2026 Compass AgeWell. All rights reserved.",
     },
 
     contactBar: { call: "Call", chat: "Chat" },
+
+    // Sub-page chrome copy (breadcrumbs, blog/team headings + empty states).
+    // NOT overlaid from the CMS — dev-controlled like nav.
+    chrome: {
+      breadcrumbHome: "Home",
+      breadcrumbServices: "Services",
+      blogTitle: "Blog",
+      blogEmpty: "No articles yet. Check back soon.",
+      teamTitle: "Medical Team",
+    },
   },
 };

@@ -4,11 +4,11 @@ A HIPAA-oriented internal portal for BD/CS staff to enter and review patient
 intake records. PHI is stored in a **dedicated, isolated Postgres** — never in
 Directus, DynamoDB, or SES.
 
-> ⚠️ **LOCAL DEV ONLY — synthetic data exclusively.**
-> Never load real patient data onto a developer machine. The local encryption
-> key is dev-grade (a static env value, not a KMS-managed key). Production
-> hardening (AWS BAA, customer-managed KMS, CloudTrail, network isolation,
-> 6-year retention) is a **separate, later phase** and is NOT in place here.
+> ⚠️ **Synthetic data exclusively — everywhere, including production.**
+> Never load real patient data onto a developer machine, and none has been
+> loaded into the deployed stack either. The production infra (below) is
+> live, but the **Real-PHI go-live gate** at the bottom of this file must be
+> cleared before any real patient data enters the system.
 
 ## Architecture
 
@@ -73,9 +73,45 @@ npm run dev              # open http://localhost:3000/portal
 - **Never commit** `backend/phi/.env`, the repo-root `.env.local`, or the DB
   volume. `.gitignore` already excludes the env files.
 
-## NOT in this phase (deferred to production)
+## Production status (what IS deployed)
 
-AWS deploy / RDS / Terraform for PHI · signed AWS BAA · customer-managed KMS +
-envelope encryption + key rotation · CloudTrail / immutable audit log shipping ·
-WAF / VPC isolation · automated backup-restore + 6-year retention · breach
-alerting. See the assessment in the plan file for the production roadmap.
+The production stack is implemented in `infra/phi-*.tf` and live (synthetic
+data only):
+
+- **Isolated VPC** (10.20.0.0/16) — private subnets have NO internet route;
+  AWS APIs are reached via VPC endpoints. RDS Postgres 16 (db.t4g.micro,
+  single-AZ, encrypted with a customer-managed KMS CMK, 30-day backups,
+  deletion-protected).
+- **Fargate portal service** + one-off migrate task (`deploy-phi.yml` builds
+  images, runs migrations, rolls the service; separate least-privilege OIDC
+  role).
+- **Secrets Manager** (KMS-encrypted) injects DATABASE_URL_PHI / AUTH_SECRET /
+  PHI_ENC_KEY at task start; `PHI_ENC_KEY` is frozen in Terraform
+  (prevent_destroy — rotating it would brick all ciphertext).
+- **Logging/audit**: KMS-encrypted CloudWatch logs (90-day), VPC flow logs,
+  account CloudTrail (`create_cloudtrail`), DB-enforced append-only
+  `audit_log` (trigger, `drizzle/0004`).
+- **App-layer controls**: login/TOTP throttling (`auth_throttle`), mandatory
+  MFA with admin-only reset, RBAC re-checked in every action, CSV
+  formula-injection neutralization.
+- **Ingress**: ALB today; migrating to Cloudflare Tunnel + Access via the
+  blue-green canary (`infra/phi-canary.tf` — see its header runbook).
+
+## Real-PHI go-live gate (clear ALL before real patient data)
+
+1. **AWS BAA** signed (AWS Artifact).
+2. **Cloudflare BAA** — requires Enterprise. If not purchased, revert portal
+   ingress to the ALB + `portal_allowed_cidrs` office /32s + private subnets
+   + interface endpoints (the Terraform history keeps this one revert away).
+3. Re-evaluate task placement (public-subnet tunnel egress vs private subnets
+   + endpoints/NAT) under the chosen ingress.
+4. `phi_multi_az = true` (RDS HA) decision.
+5. Dedicated low-privilege `phi_app` DB role — the app currently connects as
+   the master user, so the audit_log trigger is a guardrail, not a privilege
+   boundary; REVOKE only becomes real with a separate role.
+6. KMS envelope encryption + rotation for `PHI_ENC_KEY` (today: static
+   secret value — flagged in `src/lib/phi/crypto.js`).
+7. BD minimum-necessary decision: BD reps can currently READ all patients
+   (record-level scoping exists only for edit). Confirm or narrow.
+8. Immutable audit-log shipping (e.g. S3 Object Lock), backup-restore drill,
+   breach-alerting runbook.

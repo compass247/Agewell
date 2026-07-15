@@ -70,12 +70,16 @@ CMS/PHI helpers (see `docs/LOCAL-DEV.md`): `npm run cms:up`/`cms:down` (Directus
   Directus publish → **Pages Deploy Hook**) rebuilds via `npm run build:static` and deploys
   the `out/` export. Build config lives in the Cloudflare Pages project (dashboard), not the
   repo. A publish goes live in ~1–2 min without a code change.
-- **PHI portal + CMS → AWS.** `.github/workflows/deploy.yml` runs `terraform apply` then
-  builds/rolls out the Fargate image + Lambda on push to `main`. (Note: `deploy.yml` still
-  contains leftover web-ECS steps from before the Cloudflare Pages cutover — being cleaned up.)
-- **PRs** run `ci.yml` (lint + `next build` + `terraform plan`) and the Cloudflare Pages
-  check builds a preview. Review the terraform plan before merging — watch for DynamoDB
-  table destroy = data loss.
+- **PHI portal + CMS → AWS.** `.github/workflows/deploy.yml` runs `terraform apply`
+  (gated by the `production` GitHub environment) then updates the lead Lambda on push to
+  `main`. PHI images/migrations/service roll via `deploy-phi.yml` (auto on PHI-path
+  changes, or manual dispatch).
+- **PRs** run `ci.yml` (lint + `next build` + `npm run build:static` + read-only
+  `terraform plan` via the plan role) and the Cloudflare Pages check builds a preview.
+  Review the terraform plan before merging — watch for DynamoDB table destroy = data loss.
+- **`infra/terraform.tfvars` is gitignored** — CI applies only see the DEFAULTS in
+  `infra/variables.tf`. Production values belong in the defaults (or TF_VAR_* workflow
+  env), never only in tfvars.
 - **DB schema** lives in ONE place: `backend/lead-handler/table-schema.json`.
 - **Infra** in `infra/` (Terraform, S3 state + DynamoDB lock). See `infra/README.md`.
 
