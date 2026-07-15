@@ -52,6 +52,8 @@ jobs:
       TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       TF_VAR_cloudflare_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID }}
       TF_VAR_aws_region: ${{ vars.AWS_REGION }}
+      # Keep the PR plan consistent with deploy.yml's apply.
+      TF_VAR_portal_tunnel_token: ${{ secrets.PHI_TUNNEL_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 

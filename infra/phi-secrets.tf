@@ -54,5 +54,10 @@ resource "aws_secretsmanager_secret_version" "phi" {
       random_password.phi_db_master.result,
       aws_db_instance.phi.address,
     )
+    # Cloudflare Tunnel token for the portal canary/tunnel sidecar
+    # (phi-canary.tf). Empty while the canary is disabled — updating this key
+    # writes a new secret version but does NOT redeploy the running service
+    # (tasks read secrets at start only).
+    TUNNEL_TOKEN = var.portal_tunnel_token
   })
 }
