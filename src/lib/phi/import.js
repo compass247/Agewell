@@ -98,6 +98,12 @@ const GENDER_ALIASES = {
 function normalize(s) {
   return String(s ?? "")
     .toLowerCase()
+    // Strip Vietnamese diacritics so "Nữ" → "nu", "Tiếng Việt" → "tieng viet"
+    // (the alias tables are ASCII). NFD splits combining marks; đ is a
+    // standalone letter and needs its own replace.
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/đ/g, "d")
     .replace(/[()./_-]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -164,7 +170,9 @@ export async function parsePatientWorkbook(buffer, filename = "", existingIds = 
     if (!anyValue) continue; // skip blank rows
 
     // Accept friendly language spellings ("English", "Tiếng Việt") → enum.
-    if (raw.preferredLanguage) {
+    // Must also run for "" (blank cell in a mapped column): z.enum would
+    // reject the empty string, while coerceLanguage("") defaults to ENGLISH.
+    if (raw.preferredLanguage !== undefined) {
       raw.preferredLanguage = coerceLanguage(raw.preferredLanguage);
     }
     // Accept friendly gender spellings ("M", "Male", "Nam") → enum, or null.
