@@ -78,9 +78,12 @@ resource "aws_iam_role_policy" "lambda_app" {
         Resource = aws_dynamodb_table.leads.arn
       },
       {
+        # Scoped to this account/region's verified identities (was "*").
+        # Covers both identity forms (address or domain) without needing to
+        # know which one was verified.
         Effect   = "Allow"
         Action   = ["ses:SendEmail"]
-        Resource = "*"
+        Resource = "arn:aws:ses:${var.aws_region}:${data.aws_caller_identity.current.account_id}:identity/*"
       }
     ]
   })

@@ -66,11 +66,11 @@ jobs:
           terraform_version: "1.9.8"
 
       - name: Prepare Lambda deps (lead-handler)
-        run: npm install --omit=dev --no-audit --no-fund
+        run: npm ci --omit=dev --no-audit --no-fund
         working-directory: backend/lead-handler
 
       - name: Prepare Lambda deps (lead-sync)
-        run: npm install --omit=dev --no-audit --no-fund
+        run: npm ci --omit=dev --no-audit --no-fund
         working-directory: backend/lead-sync
 
       - name: Terraform fmt check

@@ -69,16 +69,21 @@ variable "task_memory" {
   default     = 512
 }
 
+# NOTE: terraform.tfvars is gitignored, so CI applies (deploy.yml) only ever
+# see these DEFAULTS. Any value that must hold in production belongs here (or
+# in a TF_VAR_* workflow env), not only in the local tfvars — otherwise every
+# CI apply silently reverts it. ses_from/ses_to defaulted to "" for a while,
+# which blanked the Lambda's SES env on each CI deploy (emails off).
 variable "ses_from" {
-  description = "Verified SES sender address for lead notifications (e.g. no-reply@compassagewell.com). Empty disables email."
+  description = "Verified SES sender address for lead notifications. Empty disables email."
   type        = string
-  default     = ""
+  default     = "admin@compass247.vn"
 }
 
 variable "ses_to" {
   description = "Comma-separated recipient(s) for lead notifications (BD inbox)."
   type        = string
-  default     = ""
+  default     = "admin@compass247.vn"
 }
 
 variable "github_repo" {
@@ -213,7 +218,7 @@ variable "phi_log_retention_days" {
 }
 
 variable "create_cloudtrail" {
-  description = "Create an account-level multi-region CloudTrail. Set true ONLY if no existing account/org trail (check `aws cloudtrail describe-trails` first)."
+  description = "Create an account-level multi-region CloudTrail (management events — the first trail is free; S3 storage is pennies). Default true: API-level audit is a HIPAA expectation for the PHI stack. Set false ONLY if another account/org trail already exists (check `aws cloudtrail describe-trails`)."
   type        = bool
-  default     = false
+  default     = true
 }

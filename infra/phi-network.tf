@@ -1,8 +1,9 @@
 /* ============================================================
    PHI portal — isolated network.
    A dedicated VPC (NOT the default one) so the PHI RDS stays private and
-   the audited boundary is small. Public subnets host the ALB + NAT; private
-   subnets host the Fargate tasks + RDS (no internet route in, NAT for egress).
+   the audited boundary is small. Public subnets host the ALB; private
+   subnets host the Fargate tasks + RDS (no internet route at all — AWS APIs
+   are reached via VPC endpoints, see phi-endpoints.tf).
    ============================================================ */
 # aws_availability_zones.available is declared in cms-storage.tf and reused here.
 
@@ -13,7 +14,7 @@ resource "aws_vpc" "phi" {
   tags                 = { Name = "${var.project}-phi", Scope = "phi" }
 }
 
-# --- Public subnets (ALB + NAT) ---
+# --- Public subnets (ALB) ---
 resource "aws_subnet" "phi_public" {
   count                   = 2
   vpc_id                  = aws_vpc.phi.id

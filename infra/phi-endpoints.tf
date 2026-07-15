@@ -3,10 +3,20 @@
 
    The portal Fargate tasks + migrate task live in private subnets and need to
    reach a small, fixed set of AWS APIs: pull the image (ECR), read the secret
-   (Secrets Manager), decrypt it (KMS), and ship logs (CloudWatch Logs). The old
-   design routed that egress through a NAT gateway (~$32/mo + data). Interface
-   endpoints keep the tasks fully private (no internet route at all) and cost
-   ~$7/mo/endpoint-AZ instead — cheaper here and a smaller audited surface.
+   (Secrets Manager), and ship logs (CloudWatch Logs). The old design routed
+   that egress through a NAT gateway (~$32/mo + data).
+
+   Cost math (learned the hard way): an interface endpoint bills ~$7.30/mo PER
+   ENI, i.e. per endpoint PER AZ. The original 5 endpoints × 2 AZs = 10 ENIs
+   ≈ $73/mo — MORE than the NAT it replaced. Trimmed to 4 endpoints × 1 AZ
+   ≈ $29/mo by (a) dropping the kms endpoint — nothing in the task calls the
+   KMS API through the VPC (PHI_ENC_KEY is a static secret value; Secrets
+   Manager / RDS / CloudWatch decrypt with the CMK server-side) — and
+   (b) pinning the remaining endpoints to the single AZ where the RDS instance
+   lives. Private DNS resolves VPC-wide, so a task in either private subnet
+   still reaches them; if that AZ goes down, task launches fail until it
+   recovers — same blast radius as the single-AZ RDS (phi_multi_az=false) and
+   desired_count=1 service we already run.
 
    S3 uses a *gateway* endpoint (free) because ECR image layers are stored in S3.
    ============================================================ */
@@ -35,16 +45,23 @@ resource "aws_security_group" "phi_endpoints" {
   tags = { Scope = "phi" }
 }
 
-# Interface endpoints — one ENI per private subnet, private DNS on so the normal
-# service hostnames resolve to the endpoint inside the VPC.
+# Interface endpoints — single ENI in the RDS's AZ (see cost math above),
+# private DNS on so the normal service hostnames resolve to the endpoint
+# inside the VPC.
 locals {
   phi_interface_endpoints = {
     ecr_api = "com.amazonaws.${var.aws_region}.ecr.api"
     ecr_dkr = "com.amazonaws.${var.aws_region}.ecr.dkr"
     secrets = "com.amazonaws.${var.aws_region}.secretsmanager"
-    kms     = "com.amazonaws.${var.aws_region}.kms"
     logs    = "com.amazonaws.${var.aws_region}.logs"
   }
+
+  # Pin endpoints + the portal service to the AZ the (single-AZ) RDS instance
+  # lives in — no cross-AZ data charges, and everything co-fails with the DB
+  # rather than adding independent failure modes. Derived from state, so no
+  # manual AZ lookup is needed and it survives an RDS AZ change.
+  phi_pinned_subnet_index = index(aws_subnet.phi_private[*].availability_zone, aws_db_instance.phi.availability_zone)
+  phi_pinned_subnet_id    = aws_subnet.phi_private[local.phi_pinned_subnet_index].id
 }
 
 resource "aws_vpc_endpoint" "phi_interface" {
@@ -53,7 +70,7 @@ resource "aws_vpc_endpoint" "phi_interface" {
   vpc_id              = aws_vpc.phi.id
   service_name        = each.value
   vpc_endpoint_type   = "Interface"
-  subnet_ids          = aws_subnet.phi_private[*].id
+  subnet_ids          = [local.phi_pinned_subnet_id]
   security_group_ids  = [aws_security_group.phi_endpoints.id]
   private_dns_enabled = true
 

@@ -50,7 +50,10 @@ crash.log
 # Backend build artifacts
 backend/**/*.zip
 infra/build/
-sample-patients-import.xlsx
+
+# Patient-shaped spreadsheets must never be committed (import scratch files)
+sample-patients-import*.xlsx
+testing.xlsx
 
 # Static-export temporary stash (scripts/static-stash.mjs)
 .static-stash/

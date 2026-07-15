@@ -120,9 +120,11 @@ resource "aws_ecs_service" "phi" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets          = aws_subnet.phi_private[*].id
+    # Pinned to the RDS's AZ — matches the single-AZ interface endpoints
+    # (phi-endpoints.tf) and avoids cross-AZ traffic to the DB.
+    subnets          = [local.phi_pinned_subnet_id]
     security_groups  = [aws_security_group.phi_task.id]
-    assign_public_ip = false # private subnets reach ECR/Secrets via NAT
+    assign_public_ip = false # private subnets reach ECR/Secrets/Logs via VPC endpoints
   }
 
   load_balancer {
