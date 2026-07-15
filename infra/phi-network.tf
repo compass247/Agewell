@@ -155,7 +155,7 @@ resource "aws_security_group" "phi_rds" {
   # Canary tasks (Cloudflare Tunnel migration, phi-canary.tf) — only while
   # the canary is enabled; disappears with it.
   dynamic "ingress" {
-    for_each = var.portal_tunnel_token != "" ? [1] : []
+    for_each = toset(var.portal_tunnel_token != "" ? ["canary"] : [])
     content {
       description     = "Postgres from portal canary tasks"
       from_port       = 5432

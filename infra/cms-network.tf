@@ -25,7 +25,7 @@ resource "aws_security_group" "cms_host" {
   # Optional break-glass SSH (disabled unless cms_ssh_cidr is set).
   # Prefer SSM Session Manager (no inbound port) for normal access.
   dynamic "ingress" {
-    for_each = var.cms_ssh_cidr != "" ? [1] : []
+    for_each = toset(var.cms_ssh_cidr != "" ? ["ssh"] : [])
     content {
       description = "SSH (break-glass)"
       from_port   = 22
