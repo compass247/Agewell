@@ -30,6 +30,12 @@ jobs:
   # ---------------- Infra: terraform apply (runs first) ----------------
   infra:
     runs-on: ubuntu-latest
+    # Gate: `terraform apply -auto-approve` on every push to main is a data-loss
+    # hazard (e.g. a DynamoDB replace in an unreviewed plan). Configure the
+    # `production` environment in repo Settings → Environments with a required
+    # reviewer to make this job wait for approval. Until that's configured the
+    # environment is a no-op (plans are still previewed on PRs by ci.yml).
+    environment: production
     defaults:
       run:
         working-directory: infra
