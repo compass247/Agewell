@@ -22,6 +22,20 @@
       "when": 1782725867068,
       "tag": "0002_add_gender",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784107651974,
+      "tag": "0003_bitter_lord_tyger",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784107738923,
+      "tag": "0004_audit_append_only",
+      "breakpoints": true
     }
   ]
 }

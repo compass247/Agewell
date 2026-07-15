@@ -17,6 +17,7 @@ import {
   timestamp,
   jsonb,
   bigserial,
+  integer,
   index,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
@@ -178,6 +179,17 @@ export const patientNotes = pgTable(
     ),
   })
 );
+
+// ---------------- auth_throttle (login/TOTP brute-force counters) ----------------
+// One row per throttle key: "email:<addr>" | "ip:<ip>" | "totp:<userId>".
+// Maintained by src/lib/phi/throttle.js; rows are upserted on failure and
+// deleted on success — no PHI, safe to truncate at any time.
+export const authThrottle = pgTable("auth_throttle", {
+  key: text("key").primaryKey(),
+  failCount: integer("fail_count").notNull().default(0),
+  firstFailAt: timestamp("first_fail_at", { withTimezone: true }),
+  lockedUntil: timestamp("locked_until", { withTimezone: true }),
+});
 
 // ---------------- audit_log (append-only, immutable) ----------------
 export const auditLog = pgTable(

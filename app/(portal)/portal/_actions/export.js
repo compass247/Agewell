@@ -7,6 +7,7 @@ import { requireSession } from "../../../../src/lib/phi/session.js";
 import { requireCan } from "../../../../src/lib/phi/rbac.js";
 import { writeAudit } from "../../../../src/lib/phi/audit.js";
 import { listPatients } from "../../../../src/lib/phi/patients.repo.js";
+import { csvLine } from "../../../../src/lib/phi/csv.js";
 
 const HEADERS = [
   "id",
@@ -22,12 +23,6 @@ const HEADERS = [
   "createdAt",
 ];
 
-function csvCell(v) {
-  if (v == null) return "";
-  const s = String(v);
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-}
-
 export async function exportCsv(filters = {}) {
   const actor = await requireSession();
   requireCan(actor, "export"); // ADMIN or CS only
@@ -38,7 +33,7 @@ export async function exportCsv(filters = {}) {
   const lines = [HEADERS.join(",")];
   for (const r of rows) {
     lines.push(
-      [
+      csvLine([
         r.id,
         r.patientExternalId,
         r.lastName,
@@ -50,9 +45,7 @@ export async function exportCsv(filters = {}) {
         r.referralSource,
         r.assignedCsEmail,
         r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
-      ]
-        .map(csvCell)
-        .join(",")
+      ])
     );
   }
   const csv = lines.join("\n");

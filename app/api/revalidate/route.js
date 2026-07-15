@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from "node:crypto";
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
@@ -18,6 +19,19 @@ import { NextResponse } from "next/server";
    ============================================================ */
 const SECRET = process.env.REVALIDATE_SECRET || "";
 
+// Constant-time comparison (hash both sides to equalize lengths first) — a
+// plain !== leaks match-prefix length through timing.
+function secretMatches(provided) {
+  if (!SECRET || !provided) return false;
+  const a = createHash("sha256").update(provided).digest();
+  const b = createHash("sha256").update(SECRET).digest();
+  return timingSafeEqual(a, b);
+}
+
+// NOTE: in production the marketing site is a static Cloudflare Pages export —
+// publishes rebuild via the Pages Deploy Hook, not this route (it is stashed
+// out of the static build). This endpoint only serves the standalone/local
+// `next dev` workflow (docs/LOCAL-DEV.md).
 export async function POST(request) {
   const url = new URL(request.url);
   const provided =
@@ -25,7 +39,7 @@ export async function POST(request) {
     request.headers.get("x-revalidate-secret") ||
     "";
 
-  if (!SECRET || provided !== SECRET) {
+  if (!secretMatches(provided)) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 

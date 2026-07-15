@@ -2,6 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 import { getContent } from "../../../src/content.js";
 import { getPage, getTeamMembers } from "../../../src/cms.js";
 import { SITE_URL, OG_LOCALE, languageAlternates } from "../../../src/seo.js";
+import { sanitizeCmsHtml } from "../../../src/lib/sanitize.js";
 import BlogChrome from "../../../src/components/BlogChrome.jsx";
 
 const SLUG = "team";
@@ -58,11 +59,11 @@ export default async function TeamPage({ params }) {
         <div className="container">
           <div className="section-head center">
             <h1>{heading}</h1>
-            {/* Optional intro text authored in Pages → team. */}
+            {/* Optional intro text authored in Pages → team (sanitized). */}
             {page?.body && (
               <div
                 className="lede"
-                dangerouslySetInnerHTML={{ __html: page.body }}
+                dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(page.body) }}
               />
             )}
           </div>
