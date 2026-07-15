@@ -130,6 +130,7 @@ resource "aws_iam_role_policy" "github_deploy_iam" {
         "iam:GetRole", "iam:GetRolePolicy", "iam:GetPolicy", "iam:GetPolicyVersion",
         "iam:ListRolePolicies", "iam:ListAttachedRolePolicies", "iam:ListPolicyVersions",
         "iam:CreateRole", "iam:DeleteRole", "iam:UpdateRole",
+        "iam:UpdateAssumeRolePolicy",
         "iam:PutRolePolicy", "iam:DeleteRolePolicy",
         "iam:AttachRolePolicy", "iam:DetachRolePolicy",
         "iam:CreatePolicy", "iam:DeletePolicy", "iam:CreatePolicyVersion", "iam:DeletePolicyVersion",
