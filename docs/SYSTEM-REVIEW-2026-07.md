@@ -2,7 +2,14 @@
 
 > Kết quả review toàn diện (hạ tầng AWS, source code, CI/CD, docs) bằng multi-agent audit.
 > Mục tiêu: **chuẩn chỉnh, chuyên nghiệp, chi phí tối thiểu**.
-> Trạng thái: ĐANG THỰC THI theo roadmap bên dưới (nhánh `feat/system-optimization`).
+>
+> **Trạng thái thực thi (nhánh `feat/system-optimization`):**
+> - ✅ P1 quick wins · ✅ P2 Apply A (canary code, chờ tunnel token) · ✅ P4 bảo mật app
+>   · ✅ P5 CI/CD+IAM · ✅ P6 cleanup/docs · ✅ P7 tests (55 tests xanh)
+> - ⏳ P2 bước 2.0/2.2/2.3 (tạo tunnel trên dashboard → verify canary → cutover → teardown ALB+endpoints)
+> - ⏳ P3 ARM64 (làm SAU khi P2 ổn định, theo thứ tự roadmap) · P3b SP/RI (để sau)
+> - Sau merge cần làm tay: secret `PHI_TUNNEL_TOKEN` + `AWS_PLAN_ROLE_ARN`, required reviewer
+>   cho environment `production`, chạy `phi:db:migrate` (migrations 0003/0004).
 
 ## 1. Tóm tắt điều hành
 
