@@ -47,12 +47,22 @@ variable "portal_tunnel_token" {
   sensitive   = true
 }
 
+variable "portal_canary_image" {
+  description = "Full ECR image URI:tag the canary runs. Must be the SAME image the live portal service runs (deploy-phi.yml pushes phi-<sha> and updates the service via the ECS API, outside Terraform). Empty falls back to local.phi_portal_image (a :bootstrap placeholder that does NOT exist in ECR — so this MUST be set when enabling the canary). Supply via TF_VAR_portal_canary_image / GitHub secret."
+  type        = string
+  default     = ""
+}
+
 locals {
   phi_canary_enabled = var.portal_tunnel_token != "" ? 1 : 0
 
   # Public subnet in the same AZ as the RDS/endpoints pin (subnet sets share
   # AZ ordering, so the private-subnet index maps 1:1 onto the public set).
   phi_canary_subnet_id = aws_subnet.phi_public[local.phi_pinned_subnet_index].id
+
+  # Canary must run the ACTUAL running portal image, not the :bootstrap
+  # fallback (which doesn't exist in ECR).
+  phi_canary_image = var.portal_canary_image != "" ? var.portal_canary_image : local.phi_portal_image
 }
 
 # Zero-ingress task SG: the tunnel dials OUT to Cloudflare; nothing connects in.
@@ -116,7 +126,7 @@ resource "aws_ecs_task_definition" "phi_canary" {
   container_definitions = jsonencode([
     {
       name      = "portal"
-      image     = local.phi_portal_image
+      image     = local.phi_canary_image
       essential = true
       portMappings = [{
         containerPort = 3000
@@ -126,6 +136,11 @@ resource "aws_ecs_task_definition" "phi_canary" {
         { name = "NODE_ENV", value = "production" },
         { name = "PHI_SESSION_IDLE_MINUTES", value = tostring(var.phi_session_idle_minutes) },
         { name = "AUTH_TRUST_HOST", value = "true" },
+        # Next.js standalone binds to $HOSTNAME. The ALB reaches the portal by
+        # task IP so the default is fine there, but the cloudflared sidecar
+        # dials 127.0.0.1:3000 over the shared awsvpc loopback — force the
+        # server to listen on all interfaces so loopback works too.
+        { name = "HOSTNAME", value = "0.0.0.0" },
       ]
       secrets = [
         { name = "DATABASE_URL_PHI", valueFrom = "${aws_secretsmanager_secret.phi.arn}:DATABASE_URL_PHI::" },
