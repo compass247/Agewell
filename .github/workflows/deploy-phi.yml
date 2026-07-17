@@ -12,7 +12,7 @@ name: Deploy PHI portal
 #   Secrets:   AWS_PHI_DEPLOY_ROLE_ARN  (output phi_github_deploy_role_arn)
 #   Variables: AWS_REGION, ECR_REPOSITORY,
 #              PHI_ECS_CLUSTER, PHI_PORTAL_SERVICE, PHI_MIGRATE_TASKDEF,
-#              PHI_PRIVATE_SUBNETS (comma-separated), PHI_TASK_SG
+#              PHI_TASK_SUBNETS (public subnet, comma-separated), PHI_TASK_SG
 
 # Auto-deploys on pushes to main that touch portal/PHI surfaces (path filters
 # below), plus manual dispatch. Prereqs (long satisfied): the PHI ECS service +
@@ -95,14 +95,19 @@ jobs:
             --cli-input-json file://new-migratedef.json \
             --query taskDefinition.taskDefinitionArn --output text)
 
-          SUBNETS=$(echo "${{ vars.PHI_PRIVATE_SUBNETS }}" | tr ',' ' ')
+          # The migrate task runs in the PUBLIC subnet with a public IP: after
+          # the P2 teardown the private subnets have no internet route and the
+          # interface endpoints are gone, so ECR/Secrets are reached over the
+          # IGW. PHI_TASK_SUBNETS = the public subnet (terraform output
+          # phi_task_subnet_id).
+          SUBNETS=$(echo "${{ vars.PHI_TASK_SUBNETS }}" | tr ',' ' ')
           SUBNET_JSON=$(printf '"%s",' $SUBNETS | sed 's/,$//')
 
           TASK_ARN=$(aws ecs run-task \
             --cluster "${{ vars.PHI_ECS_CLUSTER }}" \
             --task-definition "$MIG_ARN" \
             --launch-type FARGATE \
-            --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_JSON],securityGroups=[${{ vars.PHI_TASK_SG }}],assignPublicIp=DISABLED}" \
+            --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_JSON],securityGroups=[${{ vars.PHI_TASK_SG }}],assignPublicIp=ENABLED}" \
             --query 'tasks[0].taskArn' --output text)
           echo "Migration task: $TASK_ARN"
 
@@ -124,8 +129,10 @@ jobs:
           aws ecs describe-task-definition \
             --task-definition "${{ vars.PHI_PORTAL_SERVICE }}" \
             --query taskDefinition > portaldef.json
+          # Select the "portal" container by name — the task def now also has a
+          # "cloudflared" sidecar, so [0] is no longer safe.
           jq --arg IMG "$PORTAL_IMAGE" '
-            .containerDefinitions[0].image = $IMG
+            (.containerDefinitions[] | select(.name=="portal") | .image) = $IMG
             | del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
                   .compatibilities, .registeredAt, .registeredBy)
           ' portaldef.json > new-portaldef.json

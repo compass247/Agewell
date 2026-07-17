@@ -78,36 +78,65 @@ resource "aws_ecs_task_definition" "phi" {
   memory                   = var.phi_task_memory
   execution_role_arn       = aws_iam_role.phi_task_execution.arn
 
-  container_definitions = jsonencode([{
-    name      = "portal"
-    image     = local.phi_portal_image
-    essential = true
-    portMappings = [{
-      containerPort = 3000
-      protocol      = "tcp"
-    }]
-    environment = [
-      { name = "NODE_ENV", value = "production" },
-      { name = "PHI_SESSION_IDLE_MINUTES", value = tostring(var.phi_session_idle_minutes) },
-      # Auth.js v5 behind the ALB: trust the proxy host and pin the canonical URL,
-      # else login callbacks break.
-      { name = "AUTH_TRUST_HOST", value = "true" },
-      { name = "AUTH_URL", value = "https://${var.portal_subdomain}" },
-    ]
-    secrets = [
-      { name = "DATABASE_URL_PHI", valueFrom = "${aws_secretsmanager_secret.phi.arn}:DATABASE_URL_PHI::" },
-      { name = "AUTH_SECRET", valueFrom = "${aws_secretsmanager_secret.phi.arn}:AUTH_SECRET::" },
-      { name = "PHI_ENC_KEY", valueFrom = "${aws_secretsmanager_secret.phi.arn}:PHI_ENC_KEY::" },
-    ]
-    logConfiguration = {
-      logDriver = "awslogs"
-      options = {
-        "awslogs-group"         = aws_cloudwatch_log_group.phi.name
-        "awslogs-region"        = var.aws_region
-        "awslogs-stream-prefix" = "portal"
+  container_definitions = jsonencode([
+    {
+      name      = "portal"
+      image     = local.phi_portal_image
+      essential = true
+      portMappings = [{
+        containerPort = 3000
+        protocol      = "tcp"
+      }]
+      environment = [
+        { name = "NODE_ENV", value = "production" },
+        { name = "PHI_SESSION_IDLE_MINUTES", value = tostring(var.phi_session_idle_minutes) },
+        # Auth.js v5 behind Cloudflare: trust the forwarded host. AUTH_URL is
+        # NOT pinned — with AUTH_TRUST_HOST the canonical URL is derived from
+        # the Host header the tunnel forwards.
+        { name = "AUTH_TRUST_HOST", value = "true" },
+        # Next.js standalone binds $HOSTNAME; the cloudflared sidecar dials
+        # 127.0.0.1:3000 over the shared awsvpc loopback, so listen on all
+        # interfaces.
+        { name = "HOSTNAME", value = "0.0.0.0" },
+      ]
+      secrets = [
+        { name = "DATABASE_URL_PHI", valueFrom = "${aws_secretsmanager_secret.phi.arn}:DATABASE_URL_PHI::" },
+        { name = "AUTH_SECRET", valueFrom = "${aws_secretsmanager_secret.phi.arn}:AUTH_SECRET::" },
+        { name = "PHI_ENC_KEY", valueFrom = "${aws_secretsmanager_secret.phi.arn}:PHI_ENC_KEY::" },
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.phi.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "portal"
+        }
+      }
+    },
+    {
+      # Cloudflare Tunnel sidecar — portal is now reached ONLY through the
+      # tunnel (the ALB was retired in the P2 teardown). Outbound-only; all
+      # routing lives on the Zero Trust dashboard, the container just needs
+      # the token. Multiple replicas can share one tunnel, so this is the same
+      # tunnel the canary used — the handover was gap-free.
+      name      = "cloudflared"
+      image     = "cloudflare/cloudflared:2024.10.0"
+      essential = true
+      command   = ["tunnel", "--no-autoupdate", "run"]
+      dependsOn = [{ containerName = "portal", condition = "START" }]
+      secrets = [
+        { name = "TUNNEL_TOKEN", valueFrom = "${aws_secretsmanager_secret.phi.arn}:TUNNEL_TOKEN::" }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.phi.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "cloudflared"
+        }
       }
     }
-  }])
+  ])
 
   tags = { Scope = "phi" }
 }
@@ -120,20 +149,15 @@ resource "aws_ecs_service" "phi" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    # Pinned to the RDS's AZ — matches the single-AZ interface endpoints
-    # (phi-endpoints.tf) and avoids cross-AZ traffic to the DB.
-    subnets          = [local.phi_pinned_subnet_id]
+    # Public subnet (pinned to the RDS's AZ) with a public IP: the private
+    # subnets have no internet route, and cloudflared must dial out to the
+    # Cloudflare edge. Ingress is closed at the SG (tunnel is outbound-only).
+    subnets          = [local.phi_pinned_subnet_id_public]
     security_groups  = [aws_security_group.phi_task.id]
-    assign_public_ip = false # private subnets reach ECR/Secrets/Logs via VPC endpoints
+    assign_public_ip = true
   }
 
-  load_balancer {
-    target_group_arn = aws_lb_target_group.phi.arn
-    container_name   = "portal"
-    container_port   = 3000
-  }
-
-  depends_on = [aws_lb_listener.phi_https]
+  # No load_balancer / depends_on: the ALB is gone; ingress is the tunnel.
 
   # CI deploys by pushing a new image + forcing a new deployment.
   lifecycle {

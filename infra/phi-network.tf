@@ -82,57 +82,49 @@ resource "aws_db_subnet_group" "phi" {
 
 /* ---------------- Security groups ---------------- */
 
-# ALB: 443/80 from the admin allowlist ONLY (no 0.0.0.0/0).
-resource "aws_security_group" "phi_alb" {
-  name        = "${var.project}-phi-alb"
-  description = "PHI portal ALB - ingress 443/80 from allowlisted CIDRs only"
-  vpc_id      = aws_vpc.phi.id
-
-  ingress {
-    description = "HTTPS from allowlist"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = var.portal_allowed_cidrs
-  }
-
-  ingress {
-    description = "HTTP from allowlist (redirects to HTTPS)"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = var.portal_allowed_cidrs
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = { Scope = "phi" }
-}
-
-# Fargate tasks: 3000 from the ALB SG only.
+# Fargate portal task: ZERO ingress — the Cloudflare Tunnel is outbound-only,
+# nothing connects in (the ALB that used to reach :3000 is gone). Egress is
+# restricted to exactly what the task needs: HTTPS (ECR/Secrets/Logs/S3 over
+# the IGW + the cloudflared HTTP/2 fallback), cloudflared's QUIC to the CF
+# edge (7844 TCP+UDP), and Postgres to the RDS SG.
 resource "aws_security_group" "phi_task" {
-  name        = "${var.project}-phi-task"
+  name = "${var.project}-phi-task"
+  # Description kept as-is (SG description is immutable — changing it forces a
+  # replace, which deadlocks against the service using it). The task now has NO
+  # ingress; the tunnel is outbound-only. Rules below are the source of truth.
   description = "PHI portal tasks - ingress 3000 from the PHI ALB only"
   vpc_id      = aws_vpc.phi.id
 
-  ingress {
-    description     = "From PHI ALB"
-    from_port       = 3000
-    to_port         = 3000
-    protocol        = "tcp"
-    security_groups = [aws_security_group.phi_alb.id]
+  egress {
+    description = "HTTPS (AWS APIs over IGW, cloudflared HTTP/2 fallback)"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    description = "cloudflared QUIC/http2 to the Cloudflare edge"
+    from_port   = 7844
+    to_port     = 7844
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "cloudflared QUIC (UDP) to the Cloudflare edge"
+    from_port   = 7844
+    to_port     = 7844
+    protocol    = "udp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Postgres to the PHI RDS (VPC-internal)"
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.phi.cidr_block]
   }
 
   tags = { Scope = "phi" }
@@ -150,19 +142,6 @@ resource "aws_security_group" "phi_rds" {
     to_port         = 5432
     protocol        = "tcp"
     security_groups = [aws_security_group.phi_task.id]
-  }
-
-  # Canary tasks (Cloudflare Tunnel migration, phi-canary.tf) — only while
-  # the canary is enabled; disappears with it.
-  dynamic "ingress" {
-    for_each = toset(var.portal_tunnel_token != "" ? ["canary"] : [])
-    content {
-      description     = "Postgres from portal canary tasks"
-      from_port       = 5432
-      to_port         = 5432
-      protocol        = "tcp"
-      security_groups = [aws_security_group.phi_canary_task[0].id]
-    }
   }
 
   egress {
