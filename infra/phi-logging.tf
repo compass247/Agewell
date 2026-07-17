@@ -1,64 +1,12 @@
 /* ============================================================
    PHI portal — audit/logging controls for HIPAA.
-   - ALB access logs to a private, encrypted S3 bucket
    - VPC Flow Logs for the PHI VPC -> encrypted CloudWatch
    - (optional) account CloudTrail, only if none exists
+
+   (The ALB access-logs bucket was removed with the ALB in the P2 teardown —
+   the portal is reached through the Cloudflare Tunnel, whose request logs live
+   in Cloudflare. VPC flow logs still capture the task's network activity.)
    ============================================================ */
-
-# ---------------- ALB access logs bucket ----------------
-data "aws_elb_service_account" "main" {}
-
-resource "aws_s3_bucket" "phi_alb_logs" {
-  bucket        = "${var.project}-phi-alb-logs-${data.aws_caller_identity.current.account_id}"
-  force_destroy = false
-  tags          = { Scope = "phi" }
-}
-
-resource "aws_s3_bucket_public_access_block" "phi_alb_logs" {
-  bucket                  = aws_s3_bucket.phi_alb_logs.id
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-# ALB log delivery uses SSE-S3 (AES256). ALB cannot write to a bucket whose
-# default encryption is SSE-KMS without extra grants, so AES256 is the supported,
-# still-encrypted choice for access logs.
-resource "aws_s3_bucket_server_side_encryption_configuration" "phi_alb_logs" {
-  bucket = aws_s3_bucket.phi_alb_logs.id
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-resource "aws_s3_bucket_lifecycle_configuration" "phi_alb_logs" {
-  bucket = aws_s3_bucket.phi_alb_logs.id
-  rule {
-    id     = "expire"
-    status = "Enabled"
-    filter {}
-    expiration {
-      days = 365
-    }
-  }
-}
-
-# Bucket policy: allow the regional ELB account to put log objects.
-resource "aws_s3_bucket_policy" "phi_alb_logs" {
-  bucket = aws_s3_bucket.phi_alb_logs.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect    = "Allow"
-      Principal = { AWS = data.aws_elb_service_account.main.arn }
-      Action    = "s3:PutObject"
-      Resource  = "${aws_s3_bucket.phi_alb_logs.arn}/alb/AWSLogs/${data.aws_caller_identity.current.account_id}/*"
-    }]
-  })
-}
 
 # ---------------- VPC Flow Logs ----------------
 resource "aws_cloudwatch_log_group" "phi_flowlog" {

@@ -6,11 +6,6 @@ output "portal_url" {
   value       = "https://${var.portal_subdomain}"
 }
 
-output "phi_alb_dns_name" {
-  description = "PHI ALB DNS name (Cloudflare CNAME target)."
-  value       = aws_lb.phi.dns_name
-}
-
 output "phi_rds_endpoint" {
   description = "PHI RDS endpoint (host:port). Reachable only from the portal tasks."
   value       = aws_db_instance.phi.endpoint
@@ -37,8 +32,13 @@ output "phi_migrate_taskdef_family" {
 }
 
 output "phi_private_subnet_ids" {
-  description = "Private subnet IDs for run-task network config."
+  description = "Private subnet IDs (RDS lives here)."
   value       = aws_subnet.phi_private[*].id
+}
+
+output "phi_task_subnet_id" {
+  description = "Public subnet the portal + migrate tasks run in (public IP for cloudflared / IGW egress after the ALB/endpoint teardown). Set repo var PHI_TASK_SUBNETS to this for deploy-phi.yml."
+  value       = local.phi_pinned_subnet_id_public
 }
 
 output "phi_task_security_group_id" {

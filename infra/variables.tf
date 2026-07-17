@@ -131,16 +131,13 @@ variable "cms_key_name" {
    Stores PHI; only enter real data after the control verification passes.
    ------------------------------------------------------------ */
 variable "portal_subdomain" {
-  description = "Hostname for the PHI portal (separate ALB, IP-restricted)."
+  description = "Hostname for the PHI portal (served via Cloudflare Tunnel)."
   type        = string
   default     = "portal.compassagewell.com"
 }
 
-variable "portal_allowed_cidrs" {
-  description = "CIDRs allowed to reach the PHI portal ALB on 443 (admin/office /32s). ⚠️ Defaults to 0.0.0.0/0 (open) for initial testing — login + MFA still gate access, but TIGHTEN this to specific /32s in terraform.tfvars before real PHI use."
-  type        = list(string)
-  default     = ["0.0.0.0/0"]
-}
+# (portal_allowed_cidrs removed — it gated the retired ALB security group.
+# The portal now has no public inbound port; ingress is the Cloudflare Tunnel.)
 
 variable "phi_vpc_cidr" {
   description = "CIDR for the isolated PHI VPC."
