@@ -47,6 +47,12 @@ variable "portal_tunnel_token" {
   sensitive   = true
 }
 
+variable "portal_tunnel_id" {
+  description = "Cloudflare Tunnel UUID for the PHI portal (agewell-portal). The portal DNS record CNAMEs to <id>.cfargotunnel.com after the P2 cutover. Get it from Zero Trust → Tunnels or the tunnel-create API response."
+  type        = string
+  default     = "b5bd1b98-a1fc-4284-90d6-f5b9d3894c4e"
+}
+
 variable "portal_canary_image" {
   description = "Full ECR image URI:tag the canary runs. Must be the SAME image the live portal service runs (deploy-phi.yml pushes phi-<sha> and updates the service via the ECS API, outside Terraform). Empty falls back to local.phi_portal_image (a :bootstrap placeholder that does NOT exist in ECR — so this MUST be set when enabling the canary). Supply via TF_VAR_portal_canary_image / GitHub secret."
   type        = string
