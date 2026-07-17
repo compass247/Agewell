@@ -46,6 +46,11 @@ jobs:
       # Empty until the PHI_TUNNEL_TOKEN secret is created — then the portal
       # canary (phi-canary.tf) comes up on the next apply.
       TF_VAR_portal_tunnel_token: ${{ secrets.PHI_TUNNEL_TOKEN }}
+      # The canary must run the SAME image as the live portal (deploy-phi.yml
+      # updates the portal image outside Terraform). Set PHI_CANARY_IMAGE to the
+      # current phi-<sha> tag while the canary is up; empty → canary disabled
+      # path or a bootstrap placeholder, so keep it in sync during the P2 soak.
+      TF_VAR_portal_canary_image: ${{ vars.PHI_CANARY_IMAGE }}
     steps:
       - uses: actions/checkout@v4
 
