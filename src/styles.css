@@ -285,8 +285,16 @@ body.no-ph .ph .ph-label { display: none; }
 }
 .lang-toggle button.active { background: var(--accent); color: #fff; }
 
-.header-cta { display: none; }
+.header-cta { display: none; white-space: nowrap; }
 @media (min-width: 720px) { .header-cta { display: inline-flex; } }
+/* Tight range where the full anchor nav is visible but the container is still
+   narrow: compact everything slightly so the CTA never wraps mid-word. */
+@media (min-width: 1040px) and (max-width: 1199px) {
+  .header-inner { gap: 12px; }
+  .brand img { height: 46px; }
+  .nav-anchor a { padding: 9px 8px; font-size: .93rem; }
+  .header-cta { padding: 14px 18px; min-height: 46px; font-size: .95rem; }
+}
 
 /* mobile scrollable anchor strip (appears after hero) */
 .mobile-anchor {

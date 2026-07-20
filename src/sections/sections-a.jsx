@@ -100,12 +100,14 @@ export function NavDropdown({ n }) {
 
 /* ---------------- Header ---------------- */
 export function Header({ t, lang }) {
+  const pathname = usePathname(); // locale-less path ("/" on the homepage)
   return (
     <header className="site-header">
       <div className="container header-inner">
-        <a className="brand" href="#top" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+        {/* Logo → homepage (locale-aware); already home → just scroll to top. */}
+        <Link className="brand" href="/" onClick={(e) => { if (pathname === "/") { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); } }}>
           <img src="/assets/logo-color.png" alt="Compass AgeWell" />
-        </a>
+        </Link>
 
         <nav className="nav-anchor" aria-label="Section navigation">
           {t.nav.map((n) => (
