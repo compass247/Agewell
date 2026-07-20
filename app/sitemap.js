@@ -1,5 +1,6 @@
 import { getPosts } from "../src/cms.js";
 import { SITE_URL } from "../src/seo.js";
+import { FAQ_PATHS, faqLanguageAlternates } from "../src/faq-content.js";
 
 // Dynamic sitemap: homepage + blog index + every published post, in both
 // languages, with hreflang alternates. Regenerated on each static build
@@ -43,6 +44,16 @@ export default async function sitemap() {
         alternates: alternatesFor(path),
       });
     }
+  }
+
+  // FAQ page: per-language slugs (/vi/cau-hoi-thuong-gap vs /en/faq), so it
+  // can't join STATIC_PATHS (that loop assumes the same path in both langs).
+  // Only the two canonical URLs are listed; alternates are cross-slug.
+  for (const lang of LANGS) {
+    entries.push({
+      url: `${SITE_URL}/${lang}${FAQ_PATHS[lang]}`,
+      alternates: { languages: faqLanguageAlternates() },
+    });
   }
 
   // Blog posts. Fetch once per language; dedupe by slug and keep the newest

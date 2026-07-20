@@ -708,6 +708,285 @@ body.no-ph .ph .ph-label { display: none; }
 }
 .faq-a .faq-a-inner { padding: 0 24px 22px 68px; color: var(--muted); }
 
+/* ---------- FAQ page ---------- */
+/* Dedicated FAQ landing page (/vi/cau-hoi-thuong-gap, /en/faq).
+   Mobile-first; group colors flow through --gc / --gc-d set per group. */
+.faqp { background: var(--cream); }
+
+.faqp-hero {
+  text-align: center;
+  padding: clamp(36px, 6vw, 60px) var(--gutter) 22px;
+}
+.faqp-hero h1 {
+  color: var(--green);
+  font-weight: 800;
+  font-size: clamp(1.7rem, 4.5vw, 1.95rem);
+  margin-bottom: 10px;
+}
+.faqp-sub { color: var(--blue); font-weight: 300; font-size: 1rem; margin: 0; }
+
+/* Quick nav — sticky only on desktop (≥1040px); below that the site's
+   .mobile-anchor already sticks at top:72px, so this stays static to
+   avoid stacking two sticky bars. */
+.faqp-nav {
+  background: rgba(249, 248, 246, 0.92);
+  border-bottom: 1px solid color-mix(in oklab, var(--gray) 50%, #fff);
+  padding: 16px var(--gutter);
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+@media (min-width: 1040px) {
+  .faqp-nav {
+    position: sticky;
+    top: 72px;
+    z-index: 40;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
+.faqp-pill {
+  min-height: 48px;
+  padding: 10px 24px;
+  border-radius: 999px;
+  border: 2px solid;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: filter 0.2s ease, transform 0.15s ease;
+}
+.faqp-pill:hover { filter: brightness(0.94); transform: translateY(-1px); }
+.faqp-pill:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.faqp-pill.green  { background: var(--green);  border-color: var(--green); }
+.faqp-pill.blue   { background: var(--blue);   border-color: var(--blue); }
+.faqp-pill.orange { background: var(--orange); border-color: var(--orange); }
+
+.faqp-body {
+  max-width: 860px;
+  margin-inline: auto;
+  padding: 34px var(--gutter) clamp(40px, 6vw, 64px);
+}
+
+/* Group header: decorative number + title + divider in the group color. */
+.faqp-group { margin-bottom: clamp(48px, 7vw, 72px); scroll-margin-top: 150px; }
+.faqp-group.green  { --gc: var(--green);  --gc-d: var(--green-d); }
+.faqp-group.blue   { --gc: var(--blue);   --gc-d: var(--blue-d); }
+.faqp-group.orange { --gc: var(--orange); --gc-d: var(--orange-d); }
+.faqp-group-head { position: relative; padding-top: 44px; margin-bottom: 30px; }
+.faqp-group-num {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-weight: 800;
+  font-size: 48px;
+  line-height: 1;
+  color: var(--gc);
+  opacity: 0.15;
+}
+.faqp-group-head h2 {
+  color: var(--gc-d);
+  font-size: clamp(1.3rem, 3vw, 1.45rem);
+  margin: 0 0 12px;
+}
+.faqp-divider { width: 60px; height: 2px; background: var(--gc); }
+
+/* Accordion cards — multiple open allowed, arrow rotates when open. */
+.faqp-item {
+  background: #fff;
+  border: 1px solid color-mix(in oklab, var(--gray) 45%, #fff);
+  border-left: 3px solid transparent;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+  margin-bottom: 16px;
+  transition: box-shadow 0.3s ease, border-left-color 0.3s ease;
+}
+@media (min-width: 720px) { .faqp-item { padding: 24px; } }
+.faqp-item:hover { box-shadow: var(--shadow); border-left-color: var(--green); }
+.faqp-q {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 44px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--ink);
+}
+@media (min-width: 720px) { .faqp-q { font-size: 1.05rem; } }
+.faqp-q:focus-visible { outline: 3px solid var(--green); outline-offset: 4px; border-radius: 6px; }
+.faqp-arrow {
+  flex: none;
+  color: var(--green);
+  font-size: 20px;
+  line-height: 1;
+  transition: transform 0.3s ease;
+}
+.faqp-q[aria-expanded="true"] .faqp-arrow { transform: rotate(90deg); }
+.faqp-a {
+  margin-top: 16px;
+  font-weight: 300;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--body);
+}
+.faqp-p { margin: 0 0 14px; }
+.faqp-a > :last-child { margin-bottom: 0; }
+
+/* Q5 — service mini-cards (3-col desktop → 1-col mobile). */
+.faqp-cards { display: grid; grid-template-columns: 1fr; gap: 16px; margin: 6px 0 20px; }
+@media (min-width: 720px) { .faqp-cards { grid-template-columns: repeat(3, 1fr); } }
+.faqp-scard {
+  background: #fff;
+  border: 1px solid color-mix(in oklab, var(--blue) 25%, #fff);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.faqp-scard-ic { display: inline-flex; color: var(--blue); }
+.faqp-scard h4 { font-size: 0.9rem; font-weight: 700; margin: 12px 0 8px; }
+.faqp-scard p { font-size: 0.78rem; line-height: 1.5; margin: 0; }
+
+/* Q5 — prep-info checklist box. */
+.faqp-check {
+  background: var(--cream);
+  border-left: 3px solid var(--green);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 14px;
+}
+.faqp-check-title { font-weight: 700; font-size: 0.85rem; color: var(--ink); margin-bottom: 12px; }
+.faqp-check ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.faqp-check li { display: flex; gap: 10px; align-items: flex-start; font-size: 0.85rem; line-height: 1.5; }
+.faqp-check li svg { flex: none; color: var(--green); margin-top: 2px; }
+
+/* Q6 — Medicare table (green header, zebra rows, badge pills + note text). */
+.faqp-table-wrap {
+  overflow-x: auto;
+  border: 1px solid color-mix(in oklab, var(--gray) 60%, #fff);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+.faqp-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 480px; }
+.faqp-table th {
+  background: var(--green);
+  color: #fff;
+  font-weight: 700;
+  text-align: left;
+  padding: 13px 16px;
+}
+.faqp-table td { padding: 13px 16px; vertical-align: middle; }
+.faqp-table tbody tr:nth-child(odd) { background: var(--cream); }
+.faqp-table tbody tr:nth-child(even) { background: #fff; }
+.faqp-badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  background: #ededed;
+  color: var(--muted);
+}
+.faqp-badge.ok { background: var(--pastel-green); color: var(--green-d); }
+.faqp-note { margin-left: 8px; }
+
+/* Q6 — blue tip box. */
+.faqp-tip {
+  background: rgba(0, 123, 195, 0.08);
+  border-left: 3px solid var(--blue);
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+.faqp-tip b { color: var(--blue-d); }
+
+/* Q10 — 3-step timeline: vertical stack on mobile, horizontal with a
+   connecting line between the circles on desktop. */
+.faqp-steps { display: grid; grid-template-columns: 1fr; gap: 24px; margin: 6px 0 24px; }
+.faqp-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+.faqp-step-num {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--orange);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 18px;
+}
+.faqp-step h4 { font-size: 0.9rem; font-weight: 700; margin: 0; }
+.faqp-step p { font-weight: 300; font-size: 0.78rem; line-height: 1.5; margin: 0; }
+.faqp-step + .faqp-step::before {
+  content: "";
+  position: absolute;
+  left: calc(50% - 1px);
+  top: -23px;
+  width: 2px;
+  height: 22px;
+  background: var(--gray);
+}
+@media (min-width: 720px) {
+  .faqp-steps { grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .faqp-step + .faqp-step::before {
+    left: auto;
+    right: calc(50% + 26px);
+    top: 19px;
+    width: calc(100% - 32px);
+    height: 2px;
+  }
+}
+
+/* Q10 — green highlight box. */
+.faqp-highlight {
+  background: var(--pastel-green);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--green-d);
+  margin-bottom: 16px;
+}
+
+/* Disclaimer info box + contact line. */
+.faqp-disclaimer {
+  background: rgba(0, 123, 195, 0.08);
+  border-left: 3px solid var(--blue);
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin-top: 40px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+.faqp-disclaimer b { display: block; color: var(--blue-d); margin-bottom: 6px; }
+.faqp-disclaimer p { margin: 0; color: var(--body); }
+.faqp-contact {
+  text-align: center;
+  margin: 24px 0 0;
+  color: var(--muted);
+  font-weight: 300;
+  font-size: 0.78rem;
+}
+
 /* ============================================================
    FORM (section 8)
    ============================================================ */
