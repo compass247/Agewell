@@ -13,7 +13,7 @@ export const AGEWELL_CONTENT = {
         { id: "em",  label: "Khám bệnh từ xa",        type: "route", href: "/services/em" },
       ] },
       { id: "team",    label: "Đội ngũ y tế", type: "route", href: "/team" },
-      { id: "dieukien", label: "Câu hỏi thường gặp" },
+      { id: "faq",     label: "Câu hỏi thường gặp", type: "route", href: "/cau-hoi-thuong-gap" },
       { id: "dangky",  label: "Liên hệ" },
       { id: "blog",    label: "Blog", type: "route", href: "/blog" },
     ],
@@ -98,6 +98,7 @@ export const AGEWELL_CONTENT = {
       },
       faqTitle: "Câu hỏi thường gặp",
       faqMore: "Xem thêm",
+      faqMoreHref: "/cau-hoi-thuong-gap",
       faqs: [
         { q: "Tôi có phải trả thêm tiền không?", a: "Phần lớn dịch vụ nằm trong quyền lợi Medicare Original của bạn. Chúng tôi sẽ kiểm tra và thông báo rõ trước khi bắt đầu, không có chi phí bất ngờ." },
         { q: "Tôi không rành công nghệ thì sao?", a: "Bạn chỉ cần nghe điện thoại. Điều phối viên sẽ gọi cho bạn, hướng dẫn từng bước bằng tiếng Việt, chậm rãi và rõ ràng." },
@@ -157,7 +158,7 @@ export const AGEWELL_CONTENT = {
         { id: "em",  label: "Telehealth",              type: "route", href: "/services/em" },
       ] },
       { id: "team",    label: "Medical Team", type: "route", href: "/team" },
-      { id: "dieukien", label: "FAQ" },
+      { id: "faq",     label: "FAQ", type: "route", href: "/faq" },
       { id: "dangky",  label: "Contact" },
       { id: "blog",    label: "Blog", type: "route", href: "/blog" },
     ],
@@ -242,6 +243,7 @@ export const AGEWELL_CONTENT = {
       },
       faqTitle: "Frequently asked questions",
       faqMore: "See more questions",
+      faqMoreHref: "/faq",
       faqs: [
         { q: "Do I have to pay extra?", a: "Most services are covered by your Medicare Original benefits. We check and explain everything clearly before we begin — no surprise costs." },
         { q: "What if I'm not good with technology?", a: "You only need to answer the phone. A coordinator calls you and guides every step in Vietnamese, slowly and clearly." },
