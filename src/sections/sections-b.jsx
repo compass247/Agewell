@@ -7,6 +7,7 @@ import { useState, useRef } from "react";
 import { Icon } from "../components/icons.jsx";
 import { AGEWELL_COLORS, Reveal, SectionHead, Placeholder, scrollToId } from "../components/shared.jsx";
 import { LangToggle } from "../components/LangToggle.jsx";
+import { Link } from "../i18n/navigation.js";
 import { NavItem, flattenNav } from "./sections-a.jsx";
 import { submitLead } from "../api.js";
 
@@ -108,9 +109,18 @@ export function Eligibility({ t }) {
             <FaqItem key={i} q={f.q} a={f.a} defaultOpen={i === 0} />
           ))}
           <p style={{ textAlign: "center", marginTop: 20 }}>
-            <a className="svc-link" style={{ justifyContent: "center" }} href="#dangky" onClick={(ev) => { ev.preventDefault(); go("dangky"); }}>
-              {e.faqMore} <Icon name="arrowRight" />
-            </a>
+            {/* "See more" → the dedicated FAQ page when content provides its
+                per-locale href; anchor to the signup form as the fallback
+                (e.g. a CMS elig overlay without faqMoreHref). */}
+            {e.faqMoreHref ? (
+              <Link className="svc-link" style={{ justifyContent: "center" }} href={e.faqMoreHref}>
+                {e.faqMore} <Icon name="arrowRight" />
+              </Link>
+            ) : (
+              <a className="svc-link" style={{ justifyContent: "center" }} href="#dangky" onClick={(ev) => { ev.preventDefault(); go("dangky"); }}>
+                {e.faqMore} <Icon name="arrowRight" />
+              </a>
+            )}
           </p>
         </div>
       </div>
