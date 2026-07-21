@@ -3,7 +3,7 @@
    COMPASS AGEWELL — Sections B
    USP+Team · Eligibility+FAQ · Form · Footer · ContactBar
    ============================================================ */
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Icon } from "../components/icons.jsx";
 import { AGEWELL_COLORS, Reveal, SectionHead, Placeholder, scrollToId } from "../components/shared.jsx";
 import { LangToggle } from "../components/LangToggle.jsx";
@@ -294,16 +294,74 @@ export function Footer({ t, lang }) {
 }
 
 /* ---------------- Sticky contact bar ---------------- */
+/* Hover (mouse) or tap opens the messaging-channel menu upward. Pointer
+   events with a `pointerType === "mouse"` guard, NOT mouse events: mobile
+   taps fire a synthetic mouseenter right before click, which would open
+   then immediately toggle the menu closed — tap must be a pure toggle. */
+function ChatMenu({ label, channels }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div
+      className={"chat-menu" + (open ? " open" : "")}
+      ref={ref}
+      onPointerEnter={(e) => { if (e.pointerType === "mouse") setOpen(true); }}
+      onPointerLeave={(e) => { if (e.pointerType === "mouse") setOpen(false); }}
+      /* No onFocus auto-open (unlike NavDropdown): a tap focuses then clicks,
+         so focus-open + click-toggle cancel out and the first tap does
+         nothing. Keyboard still works — Enter/Space on the button toggles. */
+      onBlur={(e) => { if (!ref.current?.contains(e.relatedTarget)) setOpen(false); }}
+    >
+      <button
+        type="button"
+        className="chat-primary"
+        aria-haspopup="true"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <Icon name="chat" /><span>{label}</span>
+      </button>
+      <ul className="chat-menu-list" role="menu" aria-label={label}>
+        {channels.map((c) => (
+          <li key={c.id} role="none">
+            <a
+              role="menuitem"
+              className={"chat-ch chat-ch-" + c.id}
+              href={c.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setOpen(false)}
+            >
+              <Icon name={c.id} /><span>{c.label}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function ContactBar({ t }) {
   const cb = t.contactBar;
   return (
     <div className="contact-bar" role="complementary" aria-label="Quick contact">
-      <a className="call" href={"tel:" + t.hotline.tel}>
-        <Icon name="phone" /><span>{cb.call} {t.hotline.number}</span>
+      <a className="call" href={"tel:" + t.hotline.tel} aria-label={t.hotline.label + " " + t.hotline.number}>
+        <Icon name="phone" /><span>{t.hotline.number}</span>
       </a>
-      <a className="chat-primary" href="#dangky" onClick={(e) => { e.preventDefault(); go("dangky"); }}>
-        <Icon name="chat" /><span>{cb.chat}</span>
-      </a>
+      <ChatMenu label={cb.chat} channels={t.chatChannels || []} />
     </div>
   );
 }
