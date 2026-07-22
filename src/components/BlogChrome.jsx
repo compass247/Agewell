@@ -21,8 +21,8 @@ export default function BlogChrome({ C, lang, children }) {
       <main className="lang-fade">
         {children}
         {/* Always offer the signup form at the bottom of every sub-page so a
-            visitor can leave their info from anywhere (also makes the sticky
-            "Nhắn tin" button resolve to this in-page form). */}
+            visitor can leave their info from anywhere. (The sticky "Nhắn tin"
+            button now opens the messaging-channel menu, not this form.) */}
         <SignupForm t={C} />
       </main>
       <Footer t={C} lang={lang} />

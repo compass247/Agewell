@@ -135,7 +135,15 @@ export const AGEWELL_CONTENT = {
       rights: "© 2026 Compass AgeWell. Mọi quyền được bảo lưu.",
     },
 
-    contactBar: { call: "Gọi", chat: "Nhắn tin" },
+    contactBar: { chat: "Nhắn tin" },
+    // Kênh nhắn tin của nút "Nhắn tin" (ContactBar). Top-level có chủ đích —
+    // KHÔNG nằm trong contactBar vì Directus overlay thay nguyên khối
+    // contact_bar (content.js KEY_MAP) sẽ làm mất mảng này.
+    chatChannels: [
+      { id: "zalo",     label: "Zalo",     href: "https://zalo.me/0982378873" },
+      { id: "viber",    label: "Viber",    href: "https://vb.me/letsChatOnViber" },
+      { id: "whatsapp", label: "WhatsApp", href: "https://wa.me/qr/FUKZJBAFGFVIF1" },
+    ],
 
     // Sub-page chrome copy (breadcrumbs, blog/team headings + empty states).
     // NOT overlaid from the CMS — dev-controlled like nav.
@@ -280,7 +288,15 @@ export const AGEWELL_CONTENT = {
       rights: "© 2026 Compass AgeWell. All rights reserved.",
     },
 
-    contactBar: { call: "Call", chat: "Chat" },
+    contactBar: { chat: "Chat" },
+    // Messaging channels for the ContactBar "Chat" button. Intentionally
+    // top-level — NOT inside contactBar, because the Directus overlay replaces
+    // contact_bar wholesale (content.js KEY_MAP) and would drop this array.
+    chatChannels: [
+      { id: "zalo",     label: "Zalo",     href: "https://zalo.me/0982378873" },
+      { id: "viber",    label: "Viber",    href: "https://vb.me/letsChatOnViber" },
+      { id: "whatsapp", label: "WhatsApp", href: "https://wa.me/qr/FUKZJBAFGFVIF1" },
+    ],
 
     // Sub-page chrome copy (breadcrumbs, blog/team headings + empty states).
     // NOT overlaid from the CMS — dev-controlled like nav.

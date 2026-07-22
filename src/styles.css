@@ -18,6 +18,7 @@
 
   /* Pastels */
   --pastel-green: #ecf3e0;
+  --pastel-green-2: #dbefe1; /* BD: nền section bg-green + card elig ok */
   --pastel-mint:  #eaf4ed;
 
   /* Ink */
@@ -101,7 +102,7 @@ section { position: relative; }
 
 .bg-white  { background: #fff; }
 .bg-mint   { background: var(--pastel-mint); }
-.bg-green  { background: var(--pastel-green); }
+.bg-green  { background: var(--pastel-green-2); }
 .bg-cream  { background: var(--cream); }
 
 .eyebrow {
@@ -844,7 +845,7 @@ body.no-ph .ph .ph-label { display: none; }
   display: grid; place-items: center; flex: none;
 }
 .elig-card h3 { font-size: 1.22rem; margin: 0; }
-.elig-card.ok  { background: var(--pastel-green); border-color: color-mix(in oklab, var(--green) 45%, #fff); }
+.elig-card.ok  { background: var(--pastel-green-2); border-color: color-mix(in oklab, var(--green) 45%, #fff); }
 .elig-card.ok .badge { background: var(--green); color: #fff; }
 .elig-card.no  { background: #fdf0e8; border-color: color-mix(in oklab, var(--orange) 45%, #fff); }
 .elig-card.no .badge { background: var(--orange); color: #fff; }
@@ -1348,31 +1349,64 @@ body.no-ph .ph .ph-label { display: none; }
   display: flex; align-items: stretch;
   box-shadow: 0 -6px 20px -8px rgba(0,0,0,.25);
 }
-.contact-bar a {
+/* `>` scoping matters: the chat menu's own links live inside .contact-bar
+   and must NOT inherit the bar-button styling. */
+.contact-bar > a, .contact-bar .chat-primary {
   flex: 1;
   display: flex; align-items: center; justify-content: center; gap: 9px;
   color: #fff; font-weight: 700; font-size: 1rem;
   padding: 12px 8px; min-height: var(--bottombar-h);
 }
-.contact-bar a:hover { text-decoration: none; background: rgba(255,255,255,.1); }
-.contact-bar a.call { background: var(--orange); }
-.contact-bar a.call:hover { background: var(--orange-d); }
-.contact-bar a + a { border-left: 1px solid rgba(255,255,255,.18); }
-.contact-bar svg { width: 22px; height: 22px; flex: none; }
+.contact-bar button.chat-primary { border: 0; font: inherit; cursor: pointer; width: 100%; }
+.contact-bar > a:hover, .contact-bar .chat-primary:hover { text-decoration: none; background: rgba(255,255,255,.1); }
+.contact-bar > a.call { background: var(--orange); }
+.contact-bar > a.call:hover { background: var(--orange-d); }
+.contact-bar > * + * { border-left: 1px solid rgba(255,255,255,.18); }
+.contact-bar > a svg, .contact-bar .chat-primary svg { width: 22px; height: 22px; flex: none; }
 
 /* mobile: Call (orange) + Chat (green), full-width bar */
 .contact-bar .chat-primary { background: var(--green); }
+.contact-bar .chat-menu { position: relative; flex: 1; display: flex; align-items: stretch; }
 
 @media (min-width: 880px) {
   .contact-bar {
     left: auto; right: 24px; bottom: 24px;
     border-radius: 999px;
-    overflow: hidden;
+    /* no overflow:hidden — it would clip the upward chat menu; the pill
+       shape comes from rounding the two end children instead */
     width: auto;
     box-shadow: var(--shadow-lg);
   }
-  .contact-bar a { padding: 14px 22px; min-height: 56px; flex: none; }
+  .contact-bar > a, .contact-bar .chat-primary { padding: 14px 22px; min-height: 56px; flex: none; }
+  .contact-bar .chat-menu { flex: none; }
+  .contact-bar > a.call { border-radius: 999px 0 0 999px; }
+  .contact-bar .chat-primary { border-radius: 0 999px 999px 0; }
 }
+
+/* chat menu: opens upward, right-aligned above the bar */
+.chat-menu-list {
+  position: absolute; bottom: calc(100% + 8px); right: 0;
+  margin: 0; padding: 8px; list-style: none; min-width: 210px;
+  background: #fff;
+  border: 1px solid color-mix(in oklab, var(--gray) 45%, #fff);
+  border-radius: 14px; box-shadow: var(--shadow-lg);
+  opacity: 0; visibility: hidden; transform: translateY(6px);
+  transition: opacity .16s ease, transform .16s ease, visibility .16s;
+  z-index: 75;
+}
+.chat-menu.open .chat-menu-list { opacity: 1; visibility: visible; transform: none; }
+/* invisible hover bridge across the 8px gap so mouse travel doesn't close it */
+.chat-menu.open::after { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 10px; }
+.chat-menu-list li a {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; border-radius: 10px;
+  color: var(--ink); font-weight: 600; font-size: .96rem; white-space: nowrap;
+}
+.chat-menu-list li a:hover { background: var(--pastel-mint); text-decoration: none; }
+.chat-menu-list svg { width: 20px; height: 20px; flex: none; }
+.chat-ch-zalo svg { color: #0068ff; }
+.chat-ch-viber svg { color: #7360f2; }
+.chat-ch-whatsapp svg { color: #25d366; }
 
 /* ============================================================
    SCROLL REVEAL
