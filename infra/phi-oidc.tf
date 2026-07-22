@@ -84,10 +84,16 @@ resource "aws_iam_role_policy" "phi_github_deploy" {
         Resource = "*"
       },
       {
-        Sid      = "PassPhiExecRole"
-        Effect   = "Allow"
-        Action   = ["iam:PassRole"]
-        Resource = aws_iam_role.phi_task_execution.arn
+        # Both roles referenced by the portal task definition: registering a
+        # revision requires PassRole on the execution role AND the task role
+        # (added for the /portal/leads DynamoDB read).
+        Sid    = "PassPhiExecRole"
+        Effect = "Allow"
+        Action = ["iam:PassRole"]
+        Resource = [
+          aws_iam_role.phi_task_execution.arn,
+          aws_iam_role.phi_task.arn,
+        ]
       }
     ]
   })
