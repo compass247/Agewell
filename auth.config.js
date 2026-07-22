@@ -101,6 +101,14 @@ export const authConfig = {
         return Response.redirect(new URL("/portal/patients", request.nextUrl));
       }
 
+      // Marketing-leads area requires ADMIN or BD (coarse; page re-checks).
+      if (
+        pathname.startsWith("/portal/leads") &&
+        !["ADMIN", "BD"].includes(auth.user.role)
+      ) {
+        return Response.redirect(new URL("/portal/patients", request.nextUrl));
+      }
+
       return true;
     },
   },
