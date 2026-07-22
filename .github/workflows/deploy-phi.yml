@@ -26,6 +26,7 @@ on:
       - "app/(portal)/**"
       - "app/api/portal/**"
       - "src/lib/phi/**"
+      - "src/lib/leads.repo.js"
       - "auth.js"
       - "auth.config.js"
       - "middleware.js"

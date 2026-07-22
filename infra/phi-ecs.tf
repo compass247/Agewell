@@ -64,6 +64,44 @@ resource "aws_iam_role_policy" "phi_exec_secrets" {
   })
 }
 
+# ---------------- Task role (runtime AWS permissions) ----------------
+# The app container had NO task role until the portal Leads screen: its only
+# runtime AWS need is READ access to the marketing leads table. Keep this
+# policy leads-only so the PHI blast radius is unchanged — leads are not PHI
+# and live outside the PHI Postgres.
+resource "aws_iam_role" "phi_task" {
+  name = "${var.project}-phi-task"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "ecs-tasks.amazonaws.com" }
+      Action    = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "phi_task_leads_read" {
+  name = "${var.project}-phi-task-leads-read"
+  role = aws_iam_role.phi_task.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "dynamodb:Scan",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:DescribeTable"
+      ]
+      Resource = [
+        aws_dynamodb_table.leads.arn,
+        "${aws_dynamodb_table.leads.arn}/index/*"
+      ]
+    }]
+  })
+}
+
 # Portal image = the same web image CI builds/pushes. Default to a placeholder
 # for the very first apply (before CI pushes a phi-<sha> tag).
 locals {
@@ -77,6 +115,7 @@ resource "aws_ecs_task_definition" "phi" {
   cpu                      = var.phi_task_cpu
   memory                   = var.phi_task_memory
   execution_role_arn       = aws_iam_role.phi_task_execution.arn
+  task_role_arn            = aws_iam_role.phi_task.arn
 
   container_definitions = jsonencode([
     {
@@ -98,6 +137,10 @@ resource "aws_ecs_task_definition" "phi" {
         # 127.0.0.1:3000 over the shared awsvpc loopback, so listen on all
         # interfaces.
         { name = "HOSTNAME", value = "0.0.0.0" },
+        # Marketing leads table for the read-only /portal/leads screen (task
+        # role above grants read). AWS_REGION so the SDK resolves the endpoint.
+        { name = "LEADS_TABLE", value = aws_dynamodb_table.leads.name },
+        { name = "AWS_REGION", value = var.aws_region },
       ]
       secrets = [
         { name = "DATABASE_URL_PHI", valueFrom = "${aws_secretsmanager_secret.phi.arn}:DATABASE_URL_PHI::" },
