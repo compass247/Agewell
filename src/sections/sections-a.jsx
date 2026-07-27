@@ -232,6 +232,10 @@ export function Problem({ t }) {
 }
 
 /* ---------------- Services ---------------- */
+// Thứ tự khớp services.cards trong content-data.js (Telehealth, CCM, MTM).
+// Giữ ở đây thay vì trong data: overlay Directus thay nguyên object services nên slug trong data có thể bị mất.
+const SVC_SLUGS = ["em", "ccm", "mtm"];
+
 export function Services({ t, variant }) {
   const s = t.services;
   return (
@@ -250,9 +254,9 @@ export function Services({ t, variant }) {
                       <span className="svc-tag">{c.tag}</span>
                       <h3>{c.title}</h3>
                       <p>{c.text}</p>
-                      <a className="svc-link" href="#dangky" onClick={(e) => { e.preventDefault(); scrollToId("dangky"); }}>
+                      <Link className="svc-link" href={"/services/" + SVC_SLUGS[i]}>
                         {s.learnMore} <Icon name="arrowRight" />
-                      </a>
+                      </Link>
                     </div>
                   </Reveal>
                 );
@@ -263,9 +267,9 @@ export function Services({ t, variant }) {
                   <span className="svc-tag">{c.tag}</span>
                   <h3>{c.title}</h3>
                   <p>{c.text}</p>
-                  <a className="svc-link" href="#dangky" onClick={(e) => { e.preventDefault(); scrollToId("dangky"); }}>
+                  <Link className="svc-link" href={"/services/" + SVC_SLUGS[i]}>
                     {s.learnMore} <Icon name="arrowRight" />
-                  </a>
+                  </Link>
                 </Reveal>
               );
             })}
