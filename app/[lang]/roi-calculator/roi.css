@@ -1,0 +1,711 @@
+/* ============================================================
+   COMPASS AGEWELL — ROI partner tool styles
+
+   Scoped entirely under .roi-page so this financial tool can hold its own
+   (design-system) token values without touching the marketing site's globals
+   in src/styles.css. Colours, type and spacing are copied from the BD design
+   system token files (BD_Requirements _ds bundle: colors.css, typography.css,
+   spacing.css); layout and sizing from the BD comp "ROI Partner Tool.dc.html".
+
+   Mobile-first: single column by default, two columns from 1000px up.
+   Deliberately flat — no gradients, no decorative effects (brief 8): this has
+   to read like a serious financial tool, from across a meeting table.
+   ============================================================ */
+
+.roi-page {
+  /* ---- brand tokens (brief 8) ---- */
+  --roi-green-700: #1b6b2f;
+  --roi-green-600: #1c7a34;
+  --roi-green-500: #26a146; /* Restorative Emerald — primary */
+  --roi-green-200: #bce0c6;
+  --roi-green-100: #e3f2e8;
+  --roi-green-50: #f1f8f3;
+  --roi-blue-700: #015a90;
+  --roi-blue-500: #007bc3; /* Precision Azure — focus rings, MTM border */
+  --roi-blue-200: #abd7ee;
+  --roi-blue-50: #eff7fc;
+  --roi-orange-700: #c75a26; /* Active Vitality (darkened for text contrast) */
+  --roi-cream: #f9f8f6; /* Molecular Cloud — page background */
+  --roi-gray-100: #f0efed;
+  --roi-gray-300: #c5c4c4; /* Platinum Pure — borders, unit labels */
+  --roi-gray-500: #7d7c7c;
+  --roi-border-subtle: #e4e3e1;
+  --roi-ink-700: #3a3d3b;
+  --roi-ink-900: #1f2422;
+
+  /* ---- alert red: intentionally OUTSIDE the brand palette (brief 8) so the
+     two warnings never blend into the green result cards ---- */
+  --roi-alert: #d4452f;
+  --roi-alert-bg: #fbe5e1;
+  --roi-alert-ink: #7d2417;
+
+  --roi-radius: 16px;
+  --roi-shadow: 0 1px 3px rgba(31, 36, 34, 0.08);
+
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 24px 20px 64px;
+  max-width: 1240px;
+  background: var(--roi-cream);
+  color: var(--roi-ink-900);
+  line-height: 1.55;
+}
+
+/* The marketing shell paints the body white and reserves room for the mobile
+   contact bar; this page has neither. */
+body:has(.roi-page) {
+  background: var(--cream);
+  padding-bottom: 0;
+}
+
+@media (min-width: 700px) {
+  .roi-page {
+    padding: 28px 32px 64px;
+  }
+}
+
+/* ---------- page header ---------- */
+
+.roi-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.roi-head-left {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.roi-logo {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+  align-self: flex-start;
+}
+
+.roi-title {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--roi-green-700);
+}
+
+@media (min-width: 700px) {
+  .roi-title {
+    font-size: 32px;
+  }
+}
+
+.roi-sub {
+  margin: 0;
+  font-size: 17px;
+  color: var(--roi-gray-500);
+}
+
+.roi-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.roi-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 18px;
+  border: 2px solid var(--roi-green-500);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--roi-green-700);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.roi-btn:hover {
+  background: var(--roi-green-50);
+}
+
+.roi-lang {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  min-width: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--roi-gray-300);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--roi-ink-700);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.roi-lang:hover {
+  border-color: var(--roi-blue-500);
+  color: var(--roi-blue-700);
+  text-decoration: none;
+}
+
+/* ---------- alert banners (page disclaimer + Anti-Kickback) ---------- */
+
+.roi-alert {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px 20px;
+  border: 2px solid var(--roi-alert);
+  background: var(--roi-alert-bg);
+  border-radius: 14px;
+}
+
+.roi-alert-page {
+  margin-top: 20px;
+}
+
+.roi-alert-inline {
+  padding: 14px 16px;
+  gap: 12px;
+  border-radius: 12px;
+}
+
+.roi-alert-mark {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--roi-alert);
+  color: #fff;
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.roi-alert-inline .roi-alert-mark {
+  width: 22px;
+  height: 22px;
+  font-size: 15px;
+}
+
+.roi-alert p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--roi-alert-ink);
+}
+
+.roi-alert-inline p {
+  font-size: 15px;
+}
+
+/* ---------- block section ---------- */
+
+.roi-section {
+  margin-top: 32px;
+}
+
+.roi-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.roi-section-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--roi-green-700);
+}
+
+.roi-section-note {
+  font-size: 15px;
+  color: var(--roi-gray-500);
+}
+
+.roi-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (min-width: 1000px) {
+  .roi-grid {
+    grid-template-columns: minmax(400px, 1fr) minmax(380px, 460px);
+  }
+}
+
+/* ---------- input card ---------- */
+
+.roi-card {
+  background: #fff;
+  border: 1px solid var(--roi-border-subtle);
+  border-radius: var(--roi-radius);
+  box-shadow: var(--roi-shadow);
+  padding: 22px;
+}
+
+@media (min-width: 700px) {
+  .roi-card {
+    padding: 26px;
+  }
+}
+
+/* MTM gets the blue border so the two blocks never get mistaken for one
+   another mid-conversation (brief 8: blue = MTM block border). */
+.roi-card-mtm {
+  border-color: var(--roi-blue-200);
+}
+
+.roi-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.roi-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.roi-field-choice {
+  gap: 10px;
+}
+
+/* Groups a selector with the explainer that belongs to it (MTM "who bills"
+   + its cash-flow box) without making them look like one input field. */
+.roi-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.roi-label {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--roi-ink-900);
+}
+
+.roi-req {
+  color: var(--roi-alert);
+}
+
+.roi-hint {
+  font-size: 14px;
+  color: var(--roi-gray-500);
+}
+
+/* ---------- segmented control ---------- */
+
+.roi-seg {
+  display: flex;
+  padding: 5px;
+  gap: 4px;
+  background: var(--roi-gray-100);
+  border: 1px solid var(--roi-border-subtle);
+  border-radius: 999px;
+}
+
+.roi-seg button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--roi-ink-700);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  min-height: 44px;
+  padding: 8px 14px;
+  min-width: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  line-height: 1.3;
+}
+
+.roi-seg button[aria-pressed="true"] {
+  background: var(--roi-green-500);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(31, 36, 34, 0.18);
+}
+
+/* ---------- number inputs ---------- */
+
+.roi-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 52px;
+  padding: 0 16px;
+  border: 2px solid var(--roi-gray-300);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.roi-affix {
+  font-size: 18px;
+  color: var(--roi-gray-500);
+}
+
+.roi-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--roi-ink-900);
+  min-width: 0;
+}
+
+.roi-input::placeholder {
+  font-weight: 400;
+  color: var(--roi-gray-300);
+}
+
+/* Spinners are removed: this is typed in front of a partner, and a stray
+   scroll over a spinner silently changing a fee would be worse than useless. */
+.roi-input::-webkit-outer-spin-button,
+.roi-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.roi-input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Focus lands on the whole field (input + $ / % affix), not just the bare
+   input, so the ring reads as one control. Blue per brief 8. */
+.roi-input:focus-visible {
+  outline: none;
+}
+
+.roi-input-wrap:focus-within {
+  border-color: var(--roi-blue-500);
+  outline: 3px solid var(--roi-blue-500);
+  outline-offset: 2px;
+}
+
+/* ---------- cash-flow explainer (MTM only) ---------- */
+
+.roi-flow {
+  padding: 12px 16px;
+  background: var(--roi-blue-50);
+  border: 1px solid var(--roi-blue-200);
+  border-radius: 10px;
+}
+
+.roi-flow-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--roi-blue-700);
+}
+
+.roi-flow-text {
+  display: block;
+  margin-top: 4px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--roi-ink-700);
+}
+
+.roi-flow-note {
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--roi-gray-500);
+}
+
+.roi-divider {
+  height: 1px;
+  background: var(--roi-border-subtle);
+}
+
+/* ---------- results column ---------- */
+
+.roi-results {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.roi-prompt {
+  background: #fff;
+  border: 2px dashed var(--roi-gray-300);
+  border-radius: var(--roi-radius);
+  padding: 44px 28px;
+  text-align: center;
+}
+
+.roi-prompt p {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--roi-gray-500);
+}
+
+.roi-rows {
+  background: #fff;
+  border: 1px solid var(--roi-border-subtle);
+  border-radius: var(--roi-radius);
+  box-shadow: var(--roi-shadow);
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.roi-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.roi-row-label {
+  font-size: 16px;
+  color: var(--roi-ink-700);
+}
+
+.roi-row-sub {
+  display: block;
+  font-style: normal;
+  font-size: 14px;
+  color: var(--roi-gray-500);
+}
+
+.roi-row-value {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Secondary figures stay >= 20px so they are readable across a table
+   (brief 6.8 / requirement: secondary numbers at least 20px). */
+.roi-num-sm {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--roi-green-700);
+}
+
+.roi-num-sm-neutral {
+  color: var(--roi-ink-700);
+}
+
+.roi-unit {
+  display: block;
+  font-style: normal;
+  font-size: 14px;
+  color: var(--roi-gray-500);
+}
+
+.roi-equiv {
+  display: block;
+  font-style: normal;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--roi-orange-700);
+}
+
+/* ---------- headline net-benefit card ---------- */
+
+.roi-net {
+  background: var(--roi-green-50);
+  border: 2px solid var(--roi-green-200);
+  border-radius: var(--roi-radius);
+  padding: 22px 20px;
+}
+
+@media (min-width: 700px) {
+  .roi-net {
+    padding: 26px 28px;
+  }
+}
+
+.roi-eyebrow {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--roi-green-600);
+}
+
+/* The one dominant number in each block. 48px on small screens, 56px from
+   tablet up — inside the 48-64px band the brief asks for. */
+.roi-net-num {
+  display: block;
+  margin-top: 8px;
+  font-size: 48px;
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--roi-green-500);
+  white-space: nowrap;
+}
+
+@media (min-width: 700px) {
+  .roi-net-num {
+    font-size: 56px;
+  }
+}
+
+.roi-net-unit {
+  display: block;
+  margin-top: 2px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--roi-gray-500);
+}
+
+.roi-net-year {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--roi-green-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.roi-num-year {
+  display: block;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--roi-green-700);
+}
+
+.roi-year-note {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--roi-gray-500);
+}
+
+/* Brief 6.4: fee not confirmed -> dim every fee-dependent figure. */
+.roi-dim {
+  opacity: 0.38;
+}
+
+.roi-fee-missing {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 700;
+  color: var(--roi-alert);
+}
+
+/* ---------- combined block (brief 5) ---------- */
+
+.roi-combined {
+  margin-top: 40px;
+  background: var(--roi-green-700);
+  border-radius: var(--roi-radius);
+  padding: 26px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 700px) {
+  .roi-combined {
+    padding: 30px 34px;
+  }
+}
+
+.roi-combined-copy {
+  max-width: 520px;
+}
+
+.roi-combined-eyebrow {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--roi-green-200);
+}
+
+.roi-combined-note {
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--roi-green-100);
+}
+
+.roi-combined-figure {
+  text-align: right;
+}
+
+.roi-combined-label {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--roi-green-100);
+}
+
+.roi-combined-num {
+  display: block;
+  margin-top: 6px;
+  font-size: 48px;
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #fff;
+  white-space: nowrap;
+}
+
+@media (min-width: 700px) {
+  .roi-combined-num {
+    font-size: 60px;
+  }
+}
+
+.roi-combined-unit {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--roi-green-200);
+}
+
+.roi-combined-month {
+  display: block;
+  margin-top: 4px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--roi-green-200);
+}
+
+/* ---------- footer note ---------- */
+
+.roi-foot {
+  margin: 32px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--roi-gray-500);
+  max-width: 820px;
+}
