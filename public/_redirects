@@ -3,3 +3,8 @@
 # Pages build there is no middleware, so do it here. 302 (not 301) so the
 # default locale can change later without poisoning browser caches.
 /    /vi/    302
+
+# ROI partner tool: the bare path is what gets typed or pasted in a meeting, so
+# it has to land on the page. Same reason as above — middleware is stashed out
+# of the static build, so next-intl cannot do this redirect on Pages.
+/roi-calculator    /vi/roi-calculator/    302

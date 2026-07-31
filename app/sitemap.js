@@ -15,6 +15,9 @@ import { FAQ_PATHS, faqLanguageAlternates } from "../src/faq-content.js";
 //   destroyed the signal value of <lastmod>.
 const LANGS = ["vi", "en"];
 
+// Marketing pages only. /roi-calculator is deliberately EXCLUDED: it is an
+// internal-facing partner negotiation tool, noindexed in its metadata and
+// disallowed in app/robots.js. Do not add it here.
 const STATIC_PATHS = [
   "",
   "/blog",
