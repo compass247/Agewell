@@ -128,8 +128,12 @@ export function Eligibility({ t }) {
   );
 }
 
-/* ---------------- Signup form ---------------- */
-export function SignupForm({ t }) {
+/* ---------------- Signup form ----------------
+   `source` is what the BD team sees in the Source column of /portal/leads and
+   in the Excel export — it is how a lead from a printed QR code is told apart
+   from one off the homepage. Defaults to "website" so every existing caller
+   (home, blog, team, FAQ, services) keeps its exact current behaviour. */
+export function SignupForm({ t, source = "website" }) {
   const f = t.form;
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -162,7 +166,7 @@ export function SignupForm({ t }) {
         message: message.trim(),
         lang: t.dir,
         company, // honeypot; backend rejects if non-empty
-        source: "website",
+        source,
       });
       setDone(true);
     } catch {
