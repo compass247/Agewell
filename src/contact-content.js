@@ -27,8 +27,8 @@ export const CONTACT_CONTENT = {
     },
     hero: {
       eyebrow: "Liên hệ",
-      title: "Chúng tôi luôn sẵn sàng lắng nghe bạn",
-      sub: "Để lại thông tin bên dưới, một điều phối viên người Việt sẽ gọi lại cho bạn trong vòng 24 giờ. Miễn phí và không ràng buộc.",
+      title: "Chỉ một bước để kết nối với đội ngũ Compass AgeWell",
+      sub: "Đội ngũ Compass AgeWell luôn sẵn sàng lắng nghe nhu cầu và tư vấn dịch vụ phù hợp. Hoàn toàn miễn phí và không ràng buộc",
       callPre: "Hoặc gọi ngay cho chúng tôi",
     },
   },
@@ -40,8 +40,8 @@ export const CONTACT_CONTENT = {
     },
     hero: {
       eyebrow: "Contact",
-      title: "We're here to listen",
-      sub: "Leave your details below and a Vietnamese-speaking coordinator will call you back within 24 hours. Free and no obligation.",
+      title: "One step away from the Compass AgeWell team",
+      sub: "Our team is ready to listen to what you need and recommend the right services. Completely free, no obligation",
       callPre: "Or call us right now",
     },
   },
