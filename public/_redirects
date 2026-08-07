@@ -8,3 +8,12 @@
 # it has to land on the page. Same reason as above — middleware is stashed out
 # of the static build, so next-intl cannot do this redirect on Pages.
 /roi-calculator    /vi/roi-calculator/    302
+
+# Standalone signup page for BD. This bare path is what gets PRINTED — it is
+# encoded in public/assets/qr-contact-us.{png,svg} and handed to clients — so
+# it must resolve forever, even if the page or the default locale later moves.
+# Both spellings, because a hand-typed or pasted link may or may not carry the
+# trailing slash. Same reason as above: middleware is stashed out of the
+# static build, so next-intl cannot do this redirect on Pages.
+/contact-us     /vi/contact-us/    302
+/contact-us/    /vi/contact-us/    302
