@@ -18,6 +18,7 @@ export default async function AdminUsersPage() {
     .select({
       id: users.id,
       email: users.email,
+      name: users.name,
       role: users.role,
       isActive: users.isActive,
       mfaEnrolledAt: users.mfaEnrolledAt,
@@ -36,6 +37,7 @@ export default async function AdminUsersPage() {
         <table className="pf-table">
           <thead>
             <tr>
+              <th>Name</th>
               <th>Email</th>
               <th>Role</th>
               <th>MFA</th>

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { setRole, setActive, resetMfa } from "../_actions/users.js";
 
-const ROLES = ["ADMIN", "BD", "CS"];
+const ROLES = ["ADMIN", "BD", "CS", "BOD"];
 
 function fmt(d) {
   if (!d) return "—";
@@ -48,7 +48,8 @@ export default function UserRow({ user, selfId }) {
 
   return (
     <tr>
-      <td>{user.email}{isSelf ? <span className="pf-muted"> (you)</span> : null}</td>
+      <td>{user.name}{isSelf ? <span className="pf-muted"> (you)</span> : null}</td>
+      <td>{user.email}</td>
       <td>
         <select defaultValue={user.role} onChange={onRole} disabled={busy || isSelf}>
           {ROLES.map((r) => (

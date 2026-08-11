@@ -13,6 +13,13 @@ export default function NewUserPage() {
         {state?.error ? <div className="pf-error">{state.error}</div> : null}
         <form action={formAction}>
           <div className="pf-field">
+            <label htmlFor="name">User name</label>
+            <input id="name" name="name" type="text" required maxLength={100} autoComplete="off" />
+            <span className="pf-muted">
+              Shown as the Referrer on leads this person brings in — use their real name.
+            </span>
+          </div>
+          <div className="pf-field">
             <label htmlFor="email">Email</label>
             <input id="email" name="email" type="email" required autoComplete="off" />
           </div>
@@ -34,6 +41,7 @@ export default function NewUserPage() {
               <option value="ADMIN">Admin</option>
               <option value="BD">BD</option>
               <option value="CS">CS</option>
+              <option value="BOD">BOD (board member — BOD Leads only)</option>
             </select>
           </div>
           <SubmitButton className="pf-btn" pendingLabel="Creating…">Create user</SubmitButton>

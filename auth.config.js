@@ -6,6 +6,7 @@
    gate. The Credentials provider with the real authorize() lives in auth.js
    (Node), which spreads this config in.
    ============================================================ */
+import { homePathFor } from "./src/lib/phi/rbac.js";
 
 const IDLE_MINUTES = Number(process.env.PHI_SESSION_IDLE_MINUTES || 15);
 const IDLE_MS = IDLE_MINUTES * 60 * 1000;
@@ -91,14 +92,16 @@ export const authConfig = {
         return Response.redirect(new URL(target, request.nextUrl));
       }
 
+      // Where this role belongs — also the bounce target for every rule below.
+      const home = homePathFor(auth.user.role);
+      const bounce = () => Response.redirect(new URL(home, request.nextUrl));
+
       // Logged in + MFA ok: keep them out of auth screens.
-      if (isAuthScreen) {
-        return Response.redirect(new URL("/portal/patients", request.nextUrl));
-      }
+      if (isAuthScreen) return bounce();
 
       // Admin area requires ADMIN (coarse; actions re-check).
       if (pathname.startsWith("/portal/admin") && auth.user.role !== "ADMIN") {
-        return Response.redirect(new URL("/portal/patients", request.nextUrl));
+        return bounce();
       }
 
       // Marketing-leads area requires ADMIN or BD (coarse; page re-checks).
@@ -106,7 +109,22 @@ export const authConfig = {
         pathname.startsWith("/portal/leads") &&
         !["ADMIN", "BD"].includes(auth.user.role)
       ) {
-        return Response.redirect(new URL("/portal/patients", request.nextUrl));
+        return bounce();
+      }
+
+      // BOD-leads area requires ADMIN, BD, or BOD (coarse; actions re-check).
+      if (
+        pathname.startsWith("/portal/bod-leads") &&
+        !["ADMIN", "BD", "BOD"].includes(auth.user.role)
+      ) {
+        return bounce();
+      }
+
+      // A BOD sees ONE module. Anything else under /portal (patients, notes,
+      // exports…) is off-limits — bounce rather than 403 so a stale bookmark
+      // still lands somewhere useful.
+      if (auth.user.role === "BOD" && !pathname.startsWith("/portal/bod-leads")) {
+        return bounce();
       }
 
       return true;

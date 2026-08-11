@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireSession } from "../../../../src/lib/phi/session.js";
+import { homePathFor } from "../../../../src/lib/phi/rbac.js";
 import { listLeads } from "../../../../src/lib/leads.repo.js";
 import LeadsExportButton from "../_components/LeadsExportButton.jsx";
 import "../portal.css";
@@ -25,7 +26,7 @@ function fmtDateTime(iso) {
 
 export default async function LeadsPage({ searchParams }) {
   const actor = await requireSession();
-  if (!ALLOWED_ROLES.includes(actor.role)) redirect("/portal/patients");
+  if (!ALLOWED_ROLES.includes(actor.role)) redirect(homePathFor(actor.role));
 
   const filters = {
     search: searchParams.q || "",

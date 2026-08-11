@@ -21,6 +21,24 @@ export async function getPatientAudit(patientId, limit = 100) {
     .limit(limit);
 }
 
+/** Audit rows for a BOD lead, newest first. */
+export async function getBodLeadAudit(leadId, limit = 100) {
+  return db
+    .select({
+      id: auditLog.id,
+      at: auditLog.at,
+      actorEmail: auditLog.actorEmail,
+      action: auditLog.action,
+      entity: auditLog.entity,
+      changes: auditLog.changes,
+      meta: auditLog.meta,
+    })
+    .from(auditLog)
+    .where(and(eq(auditLog.entity, "bod_lead"), eq(auditLog.entityId, leadId)))
+    .orderBy(desc(auditLog.at))
+    .limit(limit);
+}
+
 /** Notes thread for a patient with author email, oldest first. */
 export async function getPatientNotes(patientId) {
   return db
