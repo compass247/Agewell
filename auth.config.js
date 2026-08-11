@@ -74,6 +74,23 @@ export const authConfig = {
       const isLoggedIn = Boolean(auth?.user);
       const mfaOk = auth?.mfa === "ok";
 
+      /**
+       * Bounce a NAVIGATION, but never a Server Action.
+       *
+       * A Server Action is a POST to the URL of the page the user is looking
+       * at. Right after sign-in the MFA screen arrives by soft navigation, so
+       * that URL can still be the login route — and redirecting the POST turns
+       * it into a GET, meaning the action never runs. The user sees the form
+       * come back untouched and reads it as "wrong code", which is exactly the
+       * long-standing "first MFA code is always rejected, refresh and it
+       * works" bug. Letting non-GET through is safe: this gate is coarse by
+       * design and every action re-checks with requireSession() + requireCan*.
+       */
+      const bounce = (to) =>
+        request.method === "GET"
+          ? Response.redirect(new URL(to, request.nextUrl))
+          : true;
+
       // Public auth screens.
       const isAuthScreen =
         pathname.startsWith("/portal/login") ||
@@ -89,19 +106,18 @@ export const authConfig = {
         // Already on the correct MFA screen → allow it to render.
         if (pathname.startsWith(target)) return true;
         // The login page is the post-signIn landing; bounce it to MFA too.
-        return Response.redirect(new URL(target, request.nextUrl));
+        return bounce(target);
       }
 
-      // Where this role belongs — also the bounce target for every rule below.
+      // Where this role belongs — the bounce target for every rule below.
       const home = homePathFor(auth.user.role);
-      const bounce = () => Response.redirect(new URL(home, request.nextUrl));
 
       // Logged in + MFA ok: keep them out of auth screens.
-      if (isAuthScreen) return bounce();
+      if (isAuthScreen) return bounce(home);
 
       // Admin area requires ADMIN (coarse; actions re-check).
       if (pathname.startsWith("/portal/admin") && auth.user.role !== "ADMIN") {
-        return bounce();
+        return bounce(home);
       }
 
       // Marketing-leads area requires ADMIN or BD (coarse; page re-checks).
@@ -109,7 +125,7 @@ export const authConfig = {
         pathname.startsWith("/portal/leads") &&
         !["ADMIN", "BD"].includes(auth.user.role)
       ) {
-        return bounce();
+        return bounce(home);
       }
 
       // BOD-leads area requires ADMIN, BD, or BOD (coarse; actions re-check).
@@ -117,14 +133,14 @@ export const authConfig = {
         pathname.startsWith("/portal/bod-leads") &&
         !["ADMIN", "BD", "BOD"].includes(auth.user.role)
       ) {
-        return bounce();
+        return bounce(home);
       }
 
       // A BOD sees ONE module. Anything else under /portal (patients, notes,
       // exports…) is off-limits — bounce rather than 403 so a stale bookmark
       // still lands somewhere useful.
       if (auth.user.role === "BOD" && !pathname.startsWith("/portal/bod-leads")) {
-        return bounce();
+        return bounce(home);
       }
 
       return true;

@@ -5,6 +5,7 @@
    ============================================================ */
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 import {
@@ -16,12 +17,10 @@ import {
 import { db } from "../../../../src/lib/phi/db.js";
 import { users } from "../../../../src/lib/phi/schema.js";
 import { writeAudit } from "../../../../src/lib/phi/audit.js";
-import { encryptField, decryptField } from "../../../../src/lib/phi/crypto.js";
-import {
-  generateTotpSecret,
-  buildEnrollment,
-  verifyTotp,
-} from "../../../../src/lib/phi/totp.js";
+import { decryptField } from "../../../../src/lib/phi/crypto.js";
+import { verifyTotp, measureDrift } from "../../../../src/lib/phi/totp.js";
+import { rotatePendingSecret } from "../../../../src/lib/phi/mfa.repo.js";
+import { homePathFor } from "../../../../src/lib/phi/rbac.js";
 import {
   isLocked,
   recordFailure,
@@ -65,32 +64,68 @@ export async function loginAction(_prev, formData) {
   }
 }
 
-/** Begin TOTP enrollment: generate + store an encrypted secret, return a QR. */
-export async function startMfaEnrollment() {
+/**
+ * Discard the pending QR and issue a new one. Deliberate user action only —
+ * enrollment itself is idempotent now (see mfa.repo.js), so this is the ONLY
+ * way the secret changes before enrollment completes.
+ */
+export async function regenerateMfaSecret() {
   const session = await auth();
   if (!session?.user) redirect("/portal/login");
 
-  // An already-enrolled user must NOT be able to regenerate the secret here:
-  // a stolen password would otherwise let an attacker enroll their own
-  // authenticator and bypass MFA. Legitimate re-enrollment (lost phone) goes
-  // through an ADMIN resetMfa (users.js), which nulls the enrollment first.
+  const secret = await rotatePendingSecret(session.user.id);
+  // null means the account is already enrolled: a stolen password must not be
+  // enough to enroll a new device. Legitimate re-enrollment goes through an
+  // ADMIN resetMfa (users.js), which clears the enrollment first.
+  if (!secret) return { error: "Already enrolled — ask an admin to reset MFA." };
+
+  await writeAudit(db, {
+    actorId: session.user.id,
+    actorEmail: session.user.email,
+    action: "MFA_ENROLL",
+    entity: "session",
+    meta: { regenerated: true },
+  });
+
+  revalidatePath("/portal/mfa/setup");
+  return { ok: true };
+}
+
+/** Stored secret for a user, or null if absent/unreadable. */
+async function readSecret(userId) {
   const [row] = await db
-    .select({ mfaEnrolledAt: users.mfaEnrolledAt })
+    .select({ mfaSecret: users.mfaSecret })
     .from(users)
-    .where(eq(users.id, session.user.id))
+    .where(eq(users.id, userId))
     .limit(1);
-  if (row?.mfaEnrolledAt) {
-    redirect(session.mfa === "ok" ? "/portal/patients" : "/portal/mfa/verify");
+  if (!row?.mfaSecret) return null;
+  try {
+    return decryptField(row.mfaSecret);
+  } catch {
+    return null;
   }
+}
 
-  const secret = generateTotpSecret();
-  await db
-    .update(users)
-    .set({ mfaSecret: encryptField(secret) })
-    .where(eq(users.id, session.user.id));
-
-  const { qrDataUrl, otpauth } = await buildEnrollment(secret, session.user.email);
-  return { qrDataUrl, otpauth };
+/**
+ * Audit a rejected TOTP code. `drift` is what makes a report actionable: a
+ * number means the code was right but the clocks disagree; null means the code
+ * belongs to a DIFFERENT secret (typically a stale duplicate entry left in the
+ * authenticator app). Before this, a wrong code left no trace at all — the
+ * throttle counter is deleted by clearFailures on the next success.
+ */
+async function auditBadTotp(session, { token, secret, stage }) {
+  await writeAudit(db, {
+    actorId: session.user.id,
+    actorEmail: session.user.email,
+    action: "LOGIN_FAILED",
+    entity: "session",
+    meta: {
+      mfa: true,
+      stage,
+      reason: secret ? "bad_totp" : "no_secret",
+      drift: secret ? measureDrift(token, secret) : null,
+    },
+  });
 }
 
 /** Confirm enrollment with a TOTP code → mark enrolled + flip session to ok. */
@@ -102,15 +137,10 @@ export async function confirmMfaEnrollment(_prev, formData) {
   const totpKey = `totp:${session.user.id}`;
   if (await isLocked(db, [totpKey])) return { error: LOCKED_MESSAGE };
 
-  const [row] = await db
-    .select({ mfaSecret: users.mfaSecret })
-    .from(users)
-    .where(eq(users.id, session.user.id))
-    .limit(1);
-
-  const secret = row?.mfaSecret ? decryptField(row.mfaSecret) : null;
+  const secret = await readSecret(session.user.id);
   if (!secret || !verifyTotp(token, secret)) {
     await recordFailure(db, totpKey, TOTP_POLICY);
+    await auditBadTotp(session, { token, secret, stage: "enroll" });
     return { error: "Invalid code. Scan the QR and try again." };
   }
   await clearFailures(db, [totpKey]);
@@ -127,7 +157,9 @@ export async function confirmMfaEnrollment(_prev, formData) {
   });
 
   await unstable_update({ mfa: "ok", mfaEnrolled: true });
-  redirect("/portal/patients");
+  // Land on the module this role owns — a BOD has no access to /portal/patients
+  // and would only be bounced again by the middleware.
+  redirect(homePathFor(session.user.role));
 }
 
 /** Verify a TOTP code at each login → flip session to ok. */
@@ -139,15 +171,10 @@ export async function verifyMfaAction(_prev, formData) {
   const totpKey = `totp:${session.user.id}`;
   if (await isLocked(db, [totpKey])) return { error: LOCKED_MESSAGE };
 
-  const [row] = await db
-    .select({ mfaSecret: users.mfaSecret })
-    .from(users)
-    .where(eq(users.id, session.user.id))
-    .limit(1);
-
-  const secret = row?.mfaSecret ? decryptField(row.mfaSecret) : null;
+  const secret = await readSecret(session.user.id);
   if (!secret || !verifyTotp(token, secret)) {
     await recordFailure(db, totpKey, TOTP_POLICY);
+    await auditBadTotp(session, { token, secret, stage: "verify" });
     return { error: "Invalid code." };
   }
   await clearFailures(db, [totpKey]);
@@ -156,9 +183,18 @@ export async function verifyMfaAction(_prev, formData) {
     .update(users)
     .set({ lastLoginAt: new Date() })
     .where(eq(users.id, session.user.id));
+  // Completing MFA is the moment the session actually becomes usable; without
+  // this row the whole verify step is invisible in audit_log.
+  await writeAudit(db, {
+    actorId: session.user.id,
+    actorEmail: session.user.email,
+    action: "LOGIN",
+    entity: "session",
+    meta: { mfa: true },
+  });
 
   await unstable_update({ mfa: "ok" });
-  redirect("/portal/patients");
+  redirect(homePathFor(session.user.role));
 }
 
 /** Logout: audit + clear session. */
