@@ -20,6 +20,7 @@ import { writeAudit } from "../../../../src/lib/phi/audit.js";
 import { decryptField } from "../../../../src/lib/phi/crypto.js";
 import { verifyTotp, measureDrift } from "../../../../src/lib/phi/totp.js";
 import { rotatePendingSecret } from "../../../../src/lib/phi/mfa.repo.js";
+import { homePathFor } from "../../../../src/lib/phi/rbac.js";
 import {
   isLocked,
   recordFailure,
@@ -156,7 +157,9 @@ export async function confirmMfaEnrollment(_prev, formData) {
   });
 
   await unstable_update({ mfa: "ok", mfaEnrolled: true });
-  redirect("/portal/patients");
+  // Land on the module this role owns — a BOD has no access to /portal/patients
+  // and would only be bounced again by the middleware.
+  redirect(homePathFor(session.user.role));
 }
 
 /** Verify a TOTP code at each login → flip session to ok. */
@@ -191,7 +194,7 @@ export async function verifyMfaAction(_prev, formData) {
   });
 
   await unstable_update({ mfa: "ok" });
-  redirect("/portal/patients");
+  redirect(homePathFor(session.user.role));
 }
 
 /** Logout: audit + clear session. */

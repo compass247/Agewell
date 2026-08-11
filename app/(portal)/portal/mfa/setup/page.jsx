@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "../../../../../auth.js";
 import { getOrCreatePendingSecret } from "../../../../../src/lib/phi/mfa.repo.js";
 import { buildEnrollment } from "../../../../../src/lib/phi/totp.js";
+import { homePathFor } from "../../../../../src/lib/phi/rbac.js";
 import MfaSetupForm from "../../_components/MfaSetupForm.jsx";
 import "../../portal.css";
 
@@ -18,7 +19,9 @@ export default async function MfaSetupPage() {
   const pending = await getOrCreatePendingSecret(session.user.id);
   if (!pending) redirect("/portal/login");
   if (pending.enrolled) {
-    redirect(session.mfa === "ok" ? "/portal/patients" : "/portal/mfa/verify");
+    redirect(
+      session.mfa === "ok" ? homePathFor(session.user.role) : "/portal/mfa/verify"
+    );
   }
 
   const { qrDataUrl } = await buildEnrollment(pending.secret, session.user.email);

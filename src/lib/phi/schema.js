@@ -21,9 +21,16 @@ import {
   index,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import {
+  LEAD_SOURCE_VALUES,
+  TIER_VALUES,
+  CONTACT_CHANNEL_VALUES,
+  LEAD_STATUS_VALUES,
+  SERVICE_VALUES,
+} from "./bod-leads.options.js";
 
 // ---------------- Enums ----------------
-export const roleEnum = pgEnum("role", ["ADMIN", "BD", "CS"]);
+export const roleEnum = pgEnum("role", ["ADMIN", "BD", "CS", "BOD"]);
 
 export const patientStatusEnum = pgEnum("patient_status", [
   "NEW",
@@ -40,6 +47,17 @@ export const preferredLanguageEnum = pgEnum("preferred_language", [
 ]);
 
 export const genderEnum = pgEnum("gender", ["MALE", "FEMALE", "OTHER"]);
+
+// BOD-referred lead enums. Values come from bod-leads.options.js so the
+// dropdown, the zod schema, and the column type can never drift apart.
+export const bodLeadSourceEnum = pgEnum("bod_lead_source", LEAD_SOURCE_VALUES);
+export const bodLeadTierEnum = pgEnum("bod_lead_tier", TIER_VALUES);
+export const bodContactChannelEnum = pgEnum(
+  "bod_contact_channel",
+  CONTACT_CHANNEL_VALUES
+);
+export const bodServiceEnum = pgEnum("bod_service", SERVICE_VALUES);
+export const bodLeadStatusEnum = pgEnum("bod_lead_status", LEAD_STATUS_VALUES);
 
 export const auditActionEnum = pgEnum("audit_action", [
   "CREATE",
@@ -61,6 +79,9 @@ export const users = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     email: text("email").notNull().unique(), // stored lowercase
+    // Display name of the staff member. Doubles as the Referrer shown on BOD
+    // leads, so every BOD account must carry the person's real name.
+    name: text("name").notNull(),
     passwordHash: text("password_hash").notNull(), // argon2id
     role: roleEnum("role").notNull(),
     isActive: boolean("is_active").notNull().default(true),
@@ -177,6 +198,73 @@ export const patientNotes = pgTable(
       t.patientId,
       t.createdAt
     ),
+  })
+);
+
+// ---------------- bod_leads ----------------
+// Customer leads referred by BOD (board) members. Lives in the PHI database
+// because it carries DOB + contact details; DOB is app-layer encrypted exactly
+// like patients.dob_enc. Managed by BD; BOD members see this module only.
+export const bodLeads = pgTable(
+  "bod_leads",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+
+    // Human-facing Lead ID (BOD-000123) is derived from this sequence — never
+    // typed by hand, so it can't collide or be back-dated.
+    leadNo: bigserial("lead_no", { mode: "number" }).notNull().unique(),
+
+    leadSource: bodLeadSourceEnum("lead_source").notNull(),
+
+    // Attribution: the BOD account credited with the referral, plus a snapshot
+    // of their name at creation time so renaming/deactivating a user later
+    // never rewrites the history of who brought the lead in.
+    referrerUserId: uuid("referrer_user_id")
+      .notNull()
+      .references(() => users.id),
+    referrer: text("referrer").notNull(),
+
+    customerName: text("customer_name").notNull(),
+    phone: text("phone").notNull(), // plaintext + indexed (searchable), like patients.primary_phone
+    state: text("state").notNull(),
+    dobEnc: text("dob_enc"), // AES-GCM ciphertext (MM/DD/YYYY); optional
+
+    tier: bodLeadTierEnum("tier").notNull(),
+    preferredContactChannel: bodContactChannelEnum(
+      "preferred_contact_channel"
+    ).notNull(),
+    consentToContact: boolean("consent_to_contact").notNull(),
+    consentDate: timestamp("consent_date", { withTimezone: true }),
+    serviceInterested: bodServiceEnum("service_interested"),
+    founderNote: text("founder_note"),
+
+    leadStatus: bodLeadStatusEnum("lead_status").notNull().default("NEW"),
+    dateReceived: timestamp("date_received", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+
+    createdBy: uuid("created_by")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    lastModifiedBy: uuid("last_modified_by").references(() => users.id),
+    lastModifiedAt: timestamp("last_modified_at", { withTimezone: true }),
+
+    // Soft delete — same retention rule as patients, never hard-deleted.
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    deletedBy: uuid("deleted_by").references(() => users.id),
+  },
+  (t) => ({
+    statusIdx: index("bod_leads_status_idx").on(t.leadStatus),
+    receivedIdx: index("bod_leads_received_idx").on(t.dateReceived),
+    referrerIdx: index("bod_leads_referrer_idx").on(t.referrerUserId),
+    customerIdx: index("bod_leads_customer_idx").on(t.customerName),
+    phoneIdx: index("bod_leads_phone_idx").on(t.phone),
+    activeIdx: index("bod_leads_active_idx")
+      .on(t.dateReceived)
+      .where(sql`${t.deletedAt} IS NULL`),
   })
 );
 

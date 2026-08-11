@@ -46,6 +46,20 @@
 .pf-badge--ENTERED_IN_EMR { background: #e7e0ff; color: #5b34c4; }
 .pf-badge--COMPLETE { background: #dcf5e3; color: #1d7a3a; }
 
+/* BOD-lead pipeline. Prefixed BL_ so it never collides with a patient status
+   of the same name (both pipelines start at NEW). Blue = untouched, amber =
+   in flight, green = won, grey = closed without a sale. */
+.pf-badge--BL_NEW { background: #e3f0ff; color: #1d4ed8; }
+.pf-badge--BL_ASSIGNED { background: #e7e0ff; color: #5b34c4; }
+.pf-badge--BL_CONTACTING,
+.pf-badge--BL_CONTACTED { background: #fff3d6; color: #92670a; }
+.pf-badge--BL_QUALIFIED,
+.pf-badge--BL_APPOINTMENT { background: #d9f2f7; color: #0e6d80; }
+.pf-badge--BL_ENROLLED { background: #dcf5e3; color: #1d7a3a; }
+.pf-badge--BL_NOT_INTERESTED,
+.pf-badge--BL_UNABLE_TO_REACH,
+.pf-badge--BL_NOT_ELIGIBLE { background: #eef2f6; color: #5a6b78; }
+
 .pf-error { background: #fde8e8; color: #9b1c1c; padding: 10px 12px; border-radius: 7px; font-size: 14px; margin: 12px 0; }
 .pf-muted { color: #7a8893; font-size: 13px; }
 .pf-toolbar { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-bottom: 14px; }

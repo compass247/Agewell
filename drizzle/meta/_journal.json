@@ -36,6 +36,20 @@
       "when": 1784107738923,
       "tag": "0004_audit_append_only",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786420671737,
+      "tag": "0005_add_bod_role",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1786420903894,
+      "tag": "0006_bod_leads",
+      "breakpoints": true
     }
   ]
 }

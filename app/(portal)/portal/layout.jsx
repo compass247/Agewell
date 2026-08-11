@@ -26,8 +26,11 @@ export default async function PortalLayout({ children }) {
   return (
     <>
       <nav className="pf-nav">
-        <a href="/portal/patients">Patients</a>
+        {user.role === "BOD" ? null : <a href="/portal/patients">Patients</a>}
         {["ADMIN", "BD"].includes(user.role) ? <a href="/portal/leads">Leads</a> : null}
+        {["ADMIN", "BD", "BOD"].includes(user.role) ? (
+          <a href="/portal/bod-leads">BOD Leads</a>
+        ) : null}
         {user.role === "ADMIN" ? <a href="/portal/admin/users">Users</a> : null}
         <span className="pf-spacer" />
         <span className="pf-user">

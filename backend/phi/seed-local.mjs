@@ -46,12 +46,12 @@ if (!/@(localhost|127\.0\.0\.1):/.test(url)) {
 
 const sql = postgres(url, { max: 1 });
 const db = drizzle(sql, { schema });
-const { users, patients } = schema;
+const { users, patients, bodLeads } = schema;
 
 // argon2id params (OWASP-ish defaults).
 const argonOpts = { memoryCost: 19456, timeCost: 2, parallelism: 1 };
 
-async function upsertUser({ email, password, role }) {
+async function upsertUser({ email, name, password, role }) {
   const passwordHash = await argonHash(password, argonOpts);
   const [existing] = await db
     .select({ id: users.id })
@@ -61,14 +61,14 @@ async function upsertUser({ email, password, role }) {
   if (existing) {
     await db
       .update(users)
-      .set({ passwordHash, role, isActive: true })
+      .set({ passwordHash, name, role, isActive: true })
       .where(eq(users.id, existing.id));
     console.log(`= user ${email} (${role}) updated`);
     return existing.id;
   }
   const [row] = await db
     .insert(users)
-    .values({ email, passwordHash, role })
+    .values({ email, name, passwordHash, role })
     .returning({ id: users.id });
   console.log(`+ user ${email} (${role}) created`);
   return row.id;
@@ -79,18 +79,29 @@ async function main() {
 
   const adminId = await upsertUser({
     email: "admin@compassagewell.com",
+    name: "Portal Admin",
     password: "AdminLocal123!",
     role: "ADMIN",
   });
   const bdId = await upsertUser({
     email: "bd@compassagewell.com",
+    name: "BD Rep",
     password: "BdLocal123!",
     role: "BD",
   });
   const csId = await upsertUser({
     email: "cs@compassagewell.com",
+    name: "CS Rep",
     password: "CsLocal123!",
     role: "CS",
+  });
+  // Board member. Their user name IS the Referrer shown on the leads they
+  // enter — see src/lib/phi/bod-leads.options.js pickReferrerUserId().
+  const bodId = await upsertUser({
+    email: "bod@compassagewell.com",
+    name: "Anh Taylor",
+    password: "BodLocal123!",
+    role: "BOD",
   });
 
   // Synthetic patients (fake data only).
@@ -157,10 +168,70 @@ async function main() {
     console.log(`+ patient ${s.firstName} ${s.lastName} (${s.status})`);
   }
 
+  // Synthetic BOD-referred leads (fake data only).
+  const leadSamples = [
+    {
+      leadSource: "FOUNDER_REFERRAL",
+      referrerUserId: bodId,
+      referrer: "Anh Taylor",
+      customerName: "Hoa Pham",
+      phone: "714-555-0301",
+      state: "CA",
+      dob: "07/22/1950",
+      tier: "TIER_1",
+      preferredContactChannel: "ZALO",
+      consentToContact: true,
+      consentDate: new Date("2026-07-15T00:00:00Z"),
+      serviceInterested: "CCM",
+      founderNote: "Cousin of a board member. Prefers Vietnamese.",
+      leadStatus: "NEW",
+      createdBy: bodId,
+    },
+    {
+      leadSource: "COMMUNITY",
+      referrerUserId: bodId,
+      referrer: "Anh Taylor",
+      customerName: "David Le",
+      phone: "714-555-0302",
+      state: "TX",
+      dob: "01/09/1955",
+      tier: "TIER_2A",
+      preferredContactChannel: "PHONE",
+      consentToContact: true,
+      consentDate: new Date("2026-07-20T00:00:00Z"),
+      serviceInterested: "MTM_CMR",
+      founderNote: "Met at the Houston community health fair.",
+      leadStatus: "CONTACTING",
+      createdBy: bdId,
+    },
+    {
+      leadSource: "PARTNER",
+      referrerUserId: bodId,
+      referrer: "Anh Taylor",
+      customerName: "Mai Vo",
+      phone: "714-555-0303",
+      state: "CA",
+      tier: "TIER_2B",
+      preferredContactChannel: "EMAIL",
+      consentToContact: false,
+      serviceInterested: "UNDECIDED",
+      founderNote: "Pharmacy owner — do not contact until she calls back.",
+      leadStatus: "NOT_INTERESTED",
+      createdBy: bdId,
+    },
+  ];
+
+  for (const s of leadSamples) {
+    const { dob, ...rest } = s;
+    await db.insert(bodLeads).values({ ...rest, dobEnc: encryptField(dob) });
+    console.log(`+ bod lead ${s.customerName} (${s.leadStatus})`);
+  }
+
   console.log("\n✓ Seed complete. Logins:");
   console.log("  admin@compassagewell.com / AdminLocal123!  (ADMIN)");
   console.log("  bd@compassagewell.com    / BdLocal123!     (BD)");
   console.log("  cs@compassagewell.com    / CsLocal123!     (CS)");
+  console.log("  bod@compassagewell.com   / BodLocal123!    (BOD — Anh Taylor)");
   void adminId;
 }
 

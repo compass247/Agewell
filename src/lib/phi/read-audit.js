@@ -22,3 +22,23 @@ export async function logPatientSearch(actor, { filters, resultCount }) {
     meta: { search: true, filters, resultCount },
   });
 }
+
+export async function logBodLeadRead(actor, leadId) {
+  await writeAudit(db, {
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "READ",
+    entity: "bod_lead",
+    entityId: leadId,
+  });
+}
+
+export async function logBodLeadSearch(actor, { filters, resultCount }) {
+  await writeAudit(db, {
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "READ",
+    entity: "bod_lead",
+    meta: { search: true, filters, resultCount },
+  });
+}

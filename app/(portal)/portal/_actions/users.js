@@ -14,10 +14,14 @@ import { writeAudit } from "../../../../src/lib/phi/audit.js";
 
 const argonOpts = { memoryCost: 19456, timeCost: 2, parallelism: 1 };
 
+const ROLE_VALUES = ["ADMIN", "BD", "CS", "BOD"];
+
 const createSchema = z.object({
+  // Shown as the Referrer on BOD leads, so it must be the person's real name.
+  name: z.string().trim().min(1, "User name is required").max(100),
   email: z.string().trim().email().max(200),
   password: z.string().min(10, "Password must be at least 10 characters").max(200),
-  role: z.enum(["ADMIN", "BD", "CS"]),
+  role: z.enum(ROLE_VALUES),
 });
 
 export async function createUser(_prev, formData) {
@@ -25,6 +29,7 @@ export async function createUser(_prev, formData) {
   requireCan(actor, "manageUsers");
 
   const parsed = createSchema.safeParse({
+    name: formData.get("name"),
     email: formData.get("email"),
     password: formData.get("password"),
     role: formData.get("role"),
@@ -49,6 +54,7 @@ export async function createUser(_prev, formData) {
       .insert(users)
       .values({
         email,
+        name: parsed.data.name,
         passwordHash,
         role: parsed.data.role,
         createdBy: actor.id,
@@ -63,6 +69,7 @@ export async function createUser(_prev, formData) {
       entityId: newId,
       changes: [
         { field: "email", old: null, new: email },
+        { field: "name", old: null, new: parsed.data.name },
         { field: "role", old: null, new: parsed.data.role },
       ],
     });
@@ -76,7 +83,7 @@ export async function setRole(userId, formData) {
   const actor = await requireSession();
   requireCan(actor, "manageUsers");
   const role = String(formData.get("role") || "");
-  if (!["ADMIN", "BD", "CS"].includes(role)) return { error: "Invalid role." };
+  if (!ROLE_VALUES.includes(role)) return { error: "Invalid role." };
 
   await db.transaction(async (tx) => {
     const [before] = await tx
