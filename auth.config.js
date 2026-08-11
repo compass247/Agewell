@@ -73,6 +73,23 @@ export const authConfig = {
       const isLoggedIn = Boolean(auth?.user);
       const mfaOk = auth?.mfa === "ok";
 
+      /**
+       * Bounce a NAVIGATION, but never a Server Action.
+       *
+       * A Server Action is a POST to the URL of the page the user is looking
+       * at. Right after sign-in the MFA screen arrives by soft navigation, so
+       * that URL can still be the login route — and redirecting the POST turns
+       * it into a GET, meaning the action never runs. The user sees the form
+       * come back untouched and reads it as "wrong code", which is exactly the
+       * long-standing "first MFA code is always rejected, refresh and it
+       * works" bug. Letting non-GET through is safe: this gate is coarse by
+       * design and every action re-checks with requireSession() + requireCan*.
+       */
+      const bounce = (to) =>
+        request.method === "GET"
+          ? Response.redirect(new URL(to, request.nextUrl))
+          : true;
+
       // Public auth screens.
       const isAuthScreen =
         pathname.startsWith("/portal/login") ||
@@ -88,17 +105,15 @@ export const authConfig = {
         // Already on the correct MFA screen → allow it to render.
         if (pathname.startsWith(target)) return true;
         // The login page is the post-signIn landing; bounce it to MFA too.
-        return Response.redirect(new URL(target, request.nextUrl));
+        return bounce(target);
       }
 
       // Logged in + MFA ok: keep them out of auth screens.
-      if (isAuthScreen) {
-        return Response.redirect(new URL("/portal/patients", request.nextUrl));
-      }
+      if (isAuthScreen) return bounce("/portal/patients");
 
       // Admin area requires ADMIN (coarse; actions re-check).
       if (pathname.startsWith("/portal/admin") && auth.user.role !== "ADMIN") {
-        return Response.redirect(new URL("/portal/patients", request.nextUrl));
+        return bounce("/portal/patients");
       }
 
       // Marketing-leads area requires ADMIN or BD (coarse; page re-checks).
@@ -106,7 +121,7 @@ export const authConfig = {
         pathname.startsWith("/portal/leads") &&
         !["ADMIN", "BD"].includes(auth.user.role)
       ) {
-        return Response.redirect(new URL("/portal/patients", request.nextUrl));
+        return bounce("/portal/patients");
       }
 
       return true;
