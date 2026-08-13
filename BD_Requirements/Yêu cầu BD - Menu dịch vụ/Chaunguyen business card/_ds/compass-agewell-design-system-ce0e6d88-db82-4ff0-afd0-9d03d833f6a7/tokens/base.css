@@ -1,0 +1,53 @@
+/* Compass AgeWell — Base element defaults bound to tokens.
+ * Lightweight resets + sensible typographic defaults. Consumers get readable
+ * defaults out of the box; components and kits layer on top.
+ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: var(--weight-light);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-body);
+  background: var(--surface-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4 {
+  margin: 0 0 0.4em;
+  color: var(--text-strong);
+  font-family: var(--font-display);
+  line-height: var(--leading-tight);
+  text-wrap: balance;
+}
+h1 { font-size: var(--text-h1); font-weight: var(--weight-extrabold); letter-spacing: var(--tracking-display); }
+h2 { font-size: var(--text-h2); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); }
+h3 { font-size: var(--text-h3); font-weight: var(--weight-bold); line-height: var(--leading-snug); }
+h4 { font-size: var(--text-h4); font-weight: var(--weight-medium); line-height: var(--leading-snug); }
+
+p { margin: 0 0 1em; text-wrap: pretty; }
+
+a { color: var(--text-link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+strong, b { font-weight: var(--weight-bold); }
+
+small { font-size: var(--text-xs); }
+
+:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Eyebrow / overline helper */
+.eyebrow {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-brand);
+}

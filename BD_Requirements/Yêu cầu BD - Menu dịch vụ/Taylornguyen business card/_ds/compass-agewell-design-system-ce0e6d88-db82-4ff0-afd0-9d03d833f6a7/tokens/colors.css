@@ -1,0 +1,83 @@
+/* Compass AgeWell — Color tokens
+ * Source: VN Brand Guideline Compass AgeWell.
+ * Three brand colors (green / blue / orange) on a warm cream-and-platinum neutral base.
+ * Palette built around trust + warmth for a Vietnamese-American Medicare audience (65+).
+ */
+
+:root {
+  /* ---- Brand: Restorative Emerald (green) ---- */
+  --green-900: #0e3d1c;
+  --green-800: #145026;
+  --green-700: #1b6b2f;   /* "AGEWELL" wordmark dark green */
+  --green-600: #1c7a34;   /* logo ring shadow */
+  --green-500: #26a146;   /* PRIMARY brand green — logo ring, CTAs */
+  --green-400: #4cb968;
+  --green-300: #86d39a;
+  --green-200: #bce0c6;   /* light-green icon / watermark */
+  --green-100: #e3f2e8;
+  --green-50:  #f1f8f3;
+
+  /* ---- Brand: Precision Azure (blue) ---- */
+  --blue-900: #043a5c;
+  --blue-700: #015a90;
+  --blue-500: #007bc3;    /* tagline, links, secondary accents */
+  --blue-400: #339cd6;
+  --blue-200: #abd7ee;
+  --blue-100: #e0f0f9;
+  --blue-50:  #eff7fc;
+
+  /* ---- Brand: Active Vitality (orange) ---- */
+  --orange-700: #c75a26;
+  --orange-500: #f47d42;  /* compass needle, vitality highlights */
+  --orange-400: #f79566;
+  --orange-200: #fbd0bb;
+  --orange-100: #fde8dd;
+  --orange-50:  #fef4ee;
+
+  /* ---- Neutrals (warm) ---- */
+  --cream:      #f9f8f6;  /* Molecular Cloud — page background */
+  --white:      #ffffff;
+  --gray-100:   #f0efed;
+  --gray-200:   #e4e3e1;
+  --gray-300:   #c5c4c4;  /* Platinum Pure — borders, dividers */
+  --gray-400:   #a3a2a2;
+  --gray-500:   #7d7c7c;
+  --gray-600:   #5a5959;
+  --ink-700:    #3a3d3b;
+  --ink-900:    #1f2422;  /* primary text — warm near-black */
+
+  /* ---- Semantic: surfaces ---- */
+  --surface-page:    var(--cream);
+  --surface-card:    var(--white);
+  --surface-raised:  var(--white);
+  --surface-sunken:  var(--gray-100);
+  --surface-brand:   var(--green-500);
+  --surface-brand-soft: var(--green-50);
+  --surface-accent-soft: var(--blue-50);
+  --surface-inverse: var(--green-700);
+
+  /* ---- Semantic: text ---- */
+  --text-strong:   var(--ink-900);
+  --text-body:     var(--ink-700);
+  --text-muted:    var(--gray-500);
+  --text-on-brand: var(--white);
+  --text-link:     var(--blue-500);
+  --text-brand:    var(--green-700);
+
+  /* ---- Semantic: borders ---- */
+  --border-subtle: var(--gray-200);
+  --border-default: var(--gray-300);
+  --border-strong: var(--gray-400);
+  --border-brand:  var(--green-500);
+  --focus-ring:    var(--blue-400);
+
+  /* ---- Semantic: status ---- */
+  --success: var(--green-500);
+  --success-soft: var(--green-100);
+  --info:    var(--blue-500);
+  --info-soft: var(--blue-100);
+  --warning: var(--orange-500);
+  --warning-soft: var(--orange-100);
+  --danger:  #d4452f;
+  --danger-soft: #fbe5e1;
+}

@@ -33,9 +33,12 @@ export const config = {
     // Marketing i18n
     "/",
     "/(vi|en)/:path*",
-    // Everything except API, healthz, Next internals, static assets, and the
-    // portal namespace (handled above). Portal is added to the negative
-    // lookahead so next-intl never rewrites portal URLs.
-    "/((?!api|healthz|portal|_next|_vercel|assets|.*\\..*).*)",
+    // Everything except API, healthz, Next internals, static assets, the
+    // portal namespace (handled above) and the digital business cards.
+    // Portal is in the negative lookahead so next-intl never rewrites portal
+    // URLs; taylornguyen/chaunguyen are there because they live outside
+    // app/[lang]/ (English-only, bare URL printed on a QR code) — without the
+    // exclusion, localePrefix "always" would bounce them to /vi/… and 404.
+    "/((?!api|healthz|portal|taylornguyen|chaunguyen|_next|_vercel|assets|.*\\..*).*)",
   ],
 };
