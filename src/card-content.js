@@ -34,9 +34,12 @@ const CARDS = {
     phone: "+1 619 534 5959",
     tel: "+16195345959",
     email: "taylornguyen@compassagewell.com",
-    photo: "/assets/cards/taylor.png",
-    // Square source, already framed — no crop nudge needed.
-    photoPosition: "50% 50%",
+    photo: "/assets/cards/taylor-professional.jpg",
+    // Tall 3:4 source (700x933 after resize): object-fit:cover crops top+bottom
+    // to fit the square ring. Measured hair-top ~11% / chin ~45% of source
+    // height; 15% keeps ~10% headroom above the hair with eyes landing near
+    // the 35% line instead of getting pushed to the top by a 50% center-crop.
+    photoPosition: "50% 15%",
   },
   chaunguyen: {
     name: "Chau Nguyen, PhD",
@@ -44,9 +47,11 @@ const CARDS = {
     phone: "+1 916 917 4538",
     tel: "+19169174538",
     email: "chau.nguyen@compassagewell.com",
-    photo: "/assets/cards/chau.jpg",
-    // Tall 2:3 source: pull the crop up so the face sits centred in the circle.
-    photoPosition: "50% 30%",
+    photo: "/assets/cards/chau-professional.jpg",
+    // Square source (700x700 after resize), same aspect as the ring: cover
+    // fits with zero crop either axis, so object-position has no visible
+    // effect — value kept as a neutral placeholder for the next photo swap.
+    photoPosition: "50% 50%",
   },
 };
 
