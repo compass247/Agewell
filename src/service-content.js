@@ -27,14 +27,14 @@ const CCM = {
     accent: "green",
     breadcrumbLabel: "Quản lý bệnh mãn tính",
     meta: {
-      title: "Quản lý bệnh mãn tính (CCM)",
+      title: "Quản lý bệnh mãn tính",
       description:
-        "Chương trình Quản lý Bệnh Mạn tính (CCM) giúp anh chị được theo dõi sức khỏe hàng tháng với đội ngũ y tế nói tiếng Việt.",
+        "Chương trình Quản lý Bệnh Mạn tính giúp anh chị được theo dõi sức khỏe hàng tháng với đội ngũ y tế nói tiếng Việt.",
     },
     hero: {
-      eyebrow: "Quản lý Bệnh Mạn Tính · CCM",
+      eyebrow: "Quản lý Bệnh Mạn Tính",
       title: "Chăm sóc đều đặn, an tâm mỗi ngày",
-      sub: "Chương trình Quản lý Bệnh Mạn tính (CCM) giúp anh chị được theo dõi sức khỏe hàng tháng với đội ngũ y tế nói tiếng Việt.",
+      sub: "Chương trình Quản lý Bệnh Mạn tính giúp anh chị được theo dõi sức khỏe hàng tháng với đội ngũ y tế nói tiếng Việt.",
       cta: "Đăng ký tư vấn ngay",
       hotlinePre: "Hoặc gọi ngay",
       trust: ["Theo dõi sức khỏe hàng tháng", "Đội ngũ nói tiếng Việt"],
@@ -142,7 +142,7 @@ const CCM = {
       title: "Câu hỏi thường gặp",
       items: [
         { q: "Tôi có phải đến phòng khám không?", a: "Không. Toàn bộ dịch vụ diễn ra qua điện thoại, ngay tại nhà anh chị. Điều phối viên chăm sóc sẽ gọi cho anh chị mỗi tháng vào ngày giờ đã hẹn. Anh chị không phải đi đâu cả." },
-        { q: "Tôi có cần bỏ bác sĩ đang khám hiện tại không?", a: "Không. Anh chị vẫn giữ nguyên bác sĩ gia đình và các bác sĩ chuyên khoa. Dịch vụ CCM là người đồng hành thêm, giúp kết nối và phối hợp giữa anh chị với tất cả bác sĩ, để không ai bị bỏ sót." },
+        { q: "Tôi có cần bỏ bác sĩ đang khám hiện tại không?", a: "Không. Anh chị vẫn giữ nguyên bác sĩ gia đình và các bác sĩ chuyên khoa. Dịch vụ quản lý bệnh mãn tính là người đồng hành thêm, giúp kết nối và phối hợp giữa anh chị với tất cả bác sĩ, để không ai bị bỏ sót." },
         { q: "Điều phối viên chăm sóc có phải là bác sĩ không?", a: "Điều phối viên chăm sóc là người được đào tạo chuyên môn, làm việc dưới sự giám sát của bác sĩ. Họ là cầu nối giữa anh chị và bác sĩ. Khi cần quyết định y khoa, bác sĩ sẽ trực tiếp tham gia." },
         { q: "Nếu tôi cần giúp đỡ gấp giữa các cuộc gọi hàng tháng thì sao?", a: "Anh chị có thể gọi chúng tôi 24/7. Nếu là vấn đề khẩn cấp, chúng tôi sẽ kết nối anh chị với bác sĩ ngay. Nếu là cấp cứu, chúng tôi sẽ hướng dẫn anh chị gọi 911." },
       ],
@@ -287,14 +287,14 @@ const MTM = {
     accent: "green",
     breadcrumbLabel: "Rà soát thuốc",
     meta: {
-      title: "Quản lý và rà soát thuốc (MTM)",
+      title: "Quản lý và rà soát thuốc",
       description:
-        "Chương trình Quản lý và Rà soát Thuốc (MTM) giúp anh chị được dược sĩ kiểm tra toàn bộ đơn thuốc, tránh tương tác nguy hiểm và tối ưu hiệu quả điều trị.",
+        "Chương trình Quản lý và Rà soát Thuốc giúp anh chị được dược sĩ kiểm tra toàn bộ đơn thuốc, tránh tương tác nguy hiểm và tối ưu hiệu quả điều trị.",
     },
     hero: {
-      eyebrow: "Quản lý và Rà soát Thuốc · MTM",
+      eyebrow: "Quản lý và Rà soát Thuốc",
       title: "Mỗi viên thuốc đúng, mỗi ngày an tâm",
-      sub: "Chương trình Quản lý và Rà soát Thuốc (MTM) giúp anh chị được dược sĩ kiểm tra toàn bộ đơn thuốc, tránh tương tác nguy hiểm và tối ưu hiệu quả điều trị.",
+      sub: "Chương trình Quản lý và Rà soát Thuốc giúp anh chị được dược sĩ kiểm tra toàn bộ đơn thuốc, tránh tương tác nguy hiểm và tối ưu hiệu quả điều trị.",
       cta: "Đăng ký tư vấn ngay",
       hotlinePre: "Hoặc gọi hotline",
       trust: ["Qua điện thoại, tại nhà", "Dược sĩ nói tiếng Việt", "Nằm trong quyền lợi Medicare Part D"],
@@ -317,7 +317,7 @@ const MTM = {
         "Theo dõi định kỳ mỗi quý, đảm bảo anh chị luôn dùng thuốc an toàn",
       ],
       closing:
-        "Dịch vụ được thực hiện qua điện thoại, ngay tại nhà — anh chị không cần đến phòng khám, chỉ cần ngồi kể cho dược sĩ nghe mình đang uống những gì. MTM là quyền lợi bổ sung từ Medicare Part D. Anh chị đang dùng CCM vẫn có thể tham gia MTM song song — hai dịch vụ bổ trợ cho nhau.",
+        "Dịch vụ được thực hiện qua điện thoại, ngay tại nhà — anh chị không cần đến phòng khám, chỉ cần ngồi kể cho dược sĩ nghe mình đang uống những gì. Rà soát thuốc là quyền lợi bổ sung từ Medicare Part D. Anh chị đang dùng dịch vụ quản lý bệnh mãn tính vẫn có thể tham gia rà soát thuốc song song — hai dịch vụ bổ trợ cho nhau.",
     },
     whoFor: {
       eyebrow: "Kiểm tra điều kiện",
@@ -332,13 +332,13 @@ const MTM = {
           "Chi phí thuốc hàng năm ≥ $1,623 (ngưỡng CMS 2025)",
         ],
       },
-      tagsTitle: "Những tình huống MTM đặc biệt hữu ích:",
+      tagsTitle: "Những tình huống rà soát thuốc đặc biệt hữu ích:",
       tags: [
         "Anh chị vừa xuất viện, đơn thuốc thay đổi nhiều so với trước",
         "Anh chị khám nhiều bác sĩ chuyên khoa khác nhau, mỗi người kê một ít thuốc",
         "Anh chị cảm thấy mệt, chóng mặt, buồn nôn mà không rõ nguyên nhân, có thể do tương tác thuốc",
         "Người nhà lo lắng không biết ba mẹ uống thuốc có đúng không",
-        "Anh chị đang tham gia CCM và muốn có thêm lớp bảo vệ về thuốc",
+        "Anh chị đang tham gia dịch vụ quản lý bệnh mãn tính và muốn có thêm lớp bảo vệ về thuốc",
       ],
       tagsVariant: "list",
       callout: `Không chắc mình có đủ điều kiện không? Gọi ${HOTLINE} — đội ngũ AgeWell sẽ giúp anh chị kiểm tra.`,
@@ -393,7 +393,7 @@ const MTM = {
       title: "Câu hỏi thường gặp",
       items: [
         { q: "Tôi có phải đến phòng khám không?", a: "Không. Toàn bộ dịch vụ diễn ra qua điện thoại, ngay tại nhà anh chị. Dược sĩ sẽ gọi cho anh chị vào ngày giờ đã hẹn. Anh chị không phải đi đâu cả." },
-        { q: "Tôi đang tham gia CCM, có được MTM không?", a: "Được. MTM và CCM là hai dịch vụ song song, bổ trợ cho nhau. CCM giúp anh chị theo dõi sức khỏe toàn diện mỗi tháng. MTM giúp tối ưu toàn bộ đơn thuốc. Cùng một tháng, anh chị vừa nhận cuộc gọi từ Điều phối viên chăm sóc, vừa được dược sĩ rà soát thuốc — hai dịch vụ không thay thế nhau." },
+        { q: "Tôi đang tham gia dịch vụ Quản lý bệnh mãn tính, có được Rà soát thuốc không?", a: "Được. Rà soát thuốc và Quản lý bệnh mãn tính là hai dịch vụ song song, bổ trợ cho nhau. Quản lý bệnh mãn tính giúp anh chị theo dõi sức khỏe toàn diện mỗi tháng. Rà soát thuốc giúp tối ưu toàn bộ đơn thuốc. Cùng một tháng, anh chị vừa nhận cuộc gọi từ Điều phối viên chăm sóc, vừa được dược sĩ rà soát thuốc — hai dịch vụ không thay thế nhau." },
         { q: "Tôi có cần bỏ bác sĩ đang khám hiện tại không?", a: "Không. Anh chị vẫn giữ nguyên bác sĩ gia đình và các bác sĩ chuyên khoa. Dược sĩ của chúng tôi phối hợp với bác sĩ của anh chị, đề xuất điều chỉnh nếu cần — anh chị vẫn là người quyết định cuối cùng." },
         { q: "Tôi uống cả thuốc mua ngoài và thực phẩm chức năng, có cần kể không?", a: "Có — rất quan trọng. Thuốc mua ngoài và thực phẩm chức năng cũng có thể tương tác với thuốc kê đơn. Anh chị hãy kể cho dược sĩ tất cả những gì mình đang uống, kể cả vitamin, thảo dược, thuốc bổ." },
         { q: "Rà soát xong thì sao? Tôi có phải làm gì không?", a: "Dược sĩ sẽ gửi anh chị một bản tóm tắt kết quả rà soát. Nếu mọi thứ ổn, anh chị tiếp tục uống thuốc như bình thường và chờ cuộc gọi theo dõi mỗi quý. Nếu có vấn đề cần điều chỉnh, dược sĩ sẽ giải thích rõ và phối hợp với bác sĩ của anh chị." },
@@ -545,12 +545,12 @@ const EM = {
     accent: "green",
     breadcrumbLabel: "Khám bệnh từ xa",
     meta: {
-      title: "Khám bệnh từ xa (Telehealth)",
+      title: "Khám bệnh từ xa",
       description:
         "Gặp bác sĩ nói tiếng Việt qua điện thoại hoặc video, ngay tại nhà. Không lái xe, không phòng chờ, không rào cản ngôn ngữ.",
     },
     hero: {
-      eyebrow: "Khám Bệnh Từ Xa · Telehealth",
+      eyebrow: "Khám Bệnh Từ Xa",
       title: "Bác sĩ nói tiếng Việt, khám bệnh ngay tại nhà",
       sub: "Không lái xe, không phòng chờ, không rào cản ngôn ngữ. Gặp bác sĩ qua điện thoại hoặc video, tất cả bằng tiếng Việt.",
       cta: "Đăng ký khám ngay",
@@ -775,9 +775,9 @@ const EM = {
 // links to the other two, with the accent color used on the shipped designs.
 const RELATED_CARDS = {
   vi: {
-    ccm: { slug: "ccm", tag: "CCM", icon: "calendar", color: "green", title: "Quản lý bệnh mãn tính", text: "Sống với nhiều bệnh mạn tính? Đội ngũ bác sĩ, dược sĩ và Điều phối viên chăm sóc đồng hành mỗi tháng, theo dõi sức khỏe ngay tại nhà." },
-    mtm: { slug: "mtm", tag: "MTM", icon: "pill", color: "orange", title: "Rà soát thuốc", text: "Uống nhiều loại thuốc mỗi ngày? Dược sĩ rà soát toàn bộ toa thuốc, giúp anh chị dùng thuốc an toàn hơn, tránh tương tác nguy hiểm." },
-    em: { slug: "em", tag: "Telehealth", icon: "video", color: "blue", title: "Khám bệnh từ xa", text: "Cần gặp bác sĩ gấp nhưng ngại đi lại? Khám bệnh qua điện thoại hoặc video với bác sĩ nói tiếng Việt, ngay tại nhà." },
+    ccm: { slug: "ccm", tag: "", icon: "calendar", color: "green", title: "Quản lý bệnh mãn tính", text: "Sống với nhiều bệnh mạn tính? Đội ngũ bác sĩ, dược sĩ và Điều phối viên chăm sóc đồng hành mỗi tháng, theo dõi sức khỏe ngay tại nhà." },
+    mtm: { slug: "mtm", tag: "", icon: "pill", color: "orange", title: "Rà soát thuốc", text: "Uống nhiều loại thuốc mỗi ngày? Dược sĩ rà soát toàn bộ toa thuốc, giúp anh chị dùng thuốc an toàn hơn, tránh tương tác nguy hiểm." },
+    em: { slug: "em", tag: "", icon: "video", color: "blue", title: "Khám bệnh từ xa", text: "Cần gặp bác sĩ gấp nhưng ngại đi lại? Khám bệnh qua điện thoại hoặc video với bác sĩ nói tiếng Việt, ngay tại nhà." },
   },
   en: {
     ccm: { slug: "ccm", tag: "CCM", icon: "calendar", color: "green", title: "Chronic Care Management", text: "Living with multiple chronic conditions? A team of doctors, pharmacists and care coordinators is by your side every month, monitoring your health from home." },
