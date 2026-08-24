@@ -45,6 +45,9 @@ jobs:
       TF_VAR_aws_region: ${{ vars.AWS_REGION }}
       # The portal cloudflared sidecar reads this token from the PHI secret.
       TF_VAR_portal_tunnel_token: ${{ secrets.PHI_TUNNEL_TOKEN }}
+      # The CMS cloudflared sidecar reads this token. Missing = Terraform
+      # drops the sidecar and cms.compassagewell.com returns 1033.
+      TF_VAR_cms_tunnel_token: ${{ secrets.CMS_TUNNEL_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
