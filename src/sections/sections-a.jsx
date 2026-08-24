@@ -251,7 +251,7 @@ export function Services({ t, variant }) {
                   <Reveal key={i} className="svc-card" delay={i * 90} style={{ ["--c"]: col.hex }}>
                     <span className={"icon-chip " + col.chip}><Icon name={c.icon} /></span>
                     <div className="svc-body">
-                      <span className="svc-tag">{c.tag}</span>
+                      {c.tag && <span className="svc-tag">{c.tag}</span>}
                       <h3>{c.title}</h3>
                       <p>{c.text}</p>
                       <Link className="svc-link" href={"/services/" + SVC_SLUGS[i]}>
@@ -264,7 +264,7 @@ export function Services({ t, variant }) {
               return (
                 <Reveal key={i} className="svc-card" delay={i * 90} style={{ ["--c"]: col.hex }}>
                   <span className={"icon-chip " + col.chip}><Icon name={c.icon} /></span>
-                  <span className="svc-tag">{c.tag}</span>
+                  {c.tag && <span className="svc-tag">{c.tag}</span>}
                   <h3>{c.title}</h3>
                   <p>{c.text}</p>
                   <Link className="svc-link" href={"/services/" + SVC_SLUGS[i]}>

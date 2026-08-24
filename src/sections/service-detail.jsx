@@ -268,8 +268,8 @@ export function ServiceRelated({ s }) {
               const col = C()[card.color] || C().green;
               return (
                 <Reveal key={i} className="svc-card" delay={i * 90} style={{ ["--c"]: col.hex }}>
-                  <span className={"icon-chip " + col.chip}><Icon name={card.icon} /></span>
-                  <span className="svc-tag">{card.tag}</span>
+                  <span className={`icon-chip ${col.chip}`}><Icon name={card.icon} /></span>
+                  {card.tag && <span className="svc-tag">{card.tag}</span>}
                   <h3>{card.title}</h3>
                   <p>{card.text}</p>
                   <Link className="svc-link" href={"/services/" + card.slug}>
