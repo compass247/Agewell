@@ -1,0 +1,835 @@
+/* ============================================================
+   /[lang]/cmg — Compass Medical Group landing page.
+
+   Co-located with the route (same convention as contact-us/contact.css and
+   roi-calculator/roi.css) because this page is its only consumer — the global
+   styles.css stays untouched.
+
+   Everything is scoped under .cmg. The page carries its OWN design tokens
+   (the Claude Design "Compass AgeWell design system" export: green/blue/orange
+   on a warm neutral base), declared on .cmg so they shadow the global
+   :root values for this subtree only and never leak to the rest of the site.
+
+   Mobile-first: the grids use repeat(auto-fit, minmax(min(100%, X), 1fr)) so
+   they collapse to one column on narrow screens without media queries; only
+   the 4-up journey row needs an explicit breakpoint.
+   ============================================================ */
+
+.cmg {
+  /* Brand: Restorative Emerald */
+  --green-900: #0e3d1c;
+  --green-800: #145026;
+  --green-700: #1b6b2f;
+  --green-600: #1c7a34;
+  --green-500: #26a146;
+  --green-300: #86d39a;
+  --green-200: #bce0c6;
+  --green-100: #e3f2e8;
+  --green-50: #f1f8f3;
+
+  /* Brand: Precision Azure */
+  --blue-700: #015a90;
+  --blue-500: #007bc3;
+  --blue-200: #abd7ee;
+
+  /* Brand: Active Vitality */
+  --orange-700: #c75a26;
+  --orange-500: #f47d42;
+  --orange-200: #fbd0bb;
+  --orange-50: #fef4ee;
+
+  /* Warm neutrals */
+  --cream: #f9f8f6;
+  --gray-200: #e4e3e1;
+  --gray-300: #c5c4c4;
+  --gray-500: #7d7c7c;
+  --gray-600: #5a5959;
+  --ink-700: #3a3d3b;
+  --ink-900: #1f2422;
+
+  /* Shadows + motion (prefixed: the global sheet owns --shadow-*) */
+  --cmg-shadow-sm: 0 2px 6px rgba(31, 36, 34, 0.08);
+  --cmg-shadow-md: 0 6px 18px rgba(31, 36, 34, 0.1);
+  --cmg-shadow-lg: 0 16px 40px rgba(31, 36, 34, 0.12);
+  --cmg-shadow-brand: 0 8px 24px rgba(38, 161, 70, 0.22);
+  --cmg-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --cmg-pad: clamp(20px, 4vw, 48px);
+  --cmg-section-y: clamp(56px, 7vw, 104px);
+
+  position: relative;
+  background: #fff;
+  overflow-x: hidden;
+  font-weight: 300;
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--ink-700);
+}
+
+/* The global sheet styles h1-h3, a, ul, p and img — neutralise it here so the
+   page matches the design export instead of the AgeWell marketing site.
+
+   Wrapped in :where() on purpose. Written plainly, `.cmg p` (0,1,1) outranks a
+   component class like `.cmg-eyebrow` (0,1,0), so every margin and colour set
+   below would silently lose. :where() contributes no specificity, so these
+   stay pure defaults that any component class overrides. */
+.cmg :where(h1, h2, h3) {
+  color: var(--ink-900);
+  font-family: inherit;
+}
+.cmg :where(p) { margin: 0; }
+.cmg :where(ul) { list-style: none; margin: 0; padding: 0; }
+.cmg :where(a) { color: var(--blue-500); text-decoration: none; }
+.cmg :where(a:hover) { color: var(--green-600); text-decoration: none; }
+/* height:auto is load-bearing: every <img> carries width/height attributes (so
+   the browser reserves space and the page does not shift while loading), and a
+   definite height makes the browser ignore the aspect-ratio the design asks
+   for — the hero rendered 556x1375 instead of 556x695. */
+.cmg :where(img) { display: block; max-width: 100%; height: auto; }
+.cmg ::selection { background: var(--green-100); }
+
+/* Anchor targets sit under a sticky bar that is now ~104px tall, so the
+   global html{scroll-padding-top:84px} no longer clears it. */
+.cmg [id] { scroll-margin-top: 92px; }
+@media (min-width: 600px) {
+  .cmg [id] { scroll-margin-top: 116px; }
+}
+
+.cmg-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-inline: var(--cmg-pad);
+}
+
+.cmg-section {
+  position: relative;
+  z-index: 1;
+  padding-block: var(--cmg-section-y);
+}
+.cmg-section.divided { border-top: 1px solid var(--gray-200); }
+.cmg-band { background: var(--cream); }
+
+/* ---------- Shared bits ---------- */
+
+.cmg-eyebrow {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--green-600);
+  margin: 0 0 18px;
+}
+
+.cmg-h2 {
+  font-size: clamp(32px, 3.6vw, 52px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
+  margin: 0 0 20px;
+  text-wrap: balance;
+}
+.cmg-h2.tight { margin-bottom: 0; }
+
+.cmg-sub {
+  font-size: clamp(19px, 1.4vw, 21px);
+  margin: 0;
+  max-width: 44em;
+}
+
+/* Section-closing pull quote. */
+.cmg-close {
+  margin: clamp(40px, 5vw, 64px) 0 0;
+  font-size: clamp(21px, 2vw, 28px);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--green-700);
+  max-width: 26em;
+  text-wrap: balance;
+}
+.cmg-close.center {
+  margin-inline: auto;
+  max-width: 30em;
+  text-align: center;
+  font-size: clamp(21px, 2.1vw, 30px);
+  line-height: 1.35;
+}
+
+.cmg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 56px;
+  padding: 10px 30px;
+  border-radius: 999px;
+  background: var(--green-500);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  box-shadow: var(--cmg-shadow-brand);
+  transition: filter 220ms var(--cmg-ease), transform 220ms var(--cmg-ease);
+}
+.cmg-btn:hover {
+  filter: brightness(0.94);
+  transform: translateY(-1px);
+  color: #fff;
+}
+.cmg-btn.sm { min-height: 52px; padding-inline: 28px; font-size: 16px; }
+.cmg-btn.xs { min-height: 44px; padding-inline: 20px; font-size: 14px; }
+
+.cmg-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 56px;
+  padding: 10px 30px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--gray-300);
+  color: var(--ink-900);
+  font-size: 17px;
+  font-weight: 700;
+  transition: background 220ms var(--cmg-ease), border-color 220ms var(--cmg-ease);
+}
+.cmg-btn-ghost:hover {
+  background: var(--green-50);
+  border-color: var(--green-300);
+  color: var(--ink-900);
+}
+
+.cmg-cta-row { display: flex; flex-wrap: wrap; gap: 14px; }
+
+/* ---------- Header ---------- */
+
+.cmg-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.cmg-header-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 12px var(--cmg-pad);
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2vw, 32px);
+}
+
+/* The stacked CMG lockup. It is 1.19:1, so height drives the header: 80px of
+   logo + 12px padding top and bottom = a ~104px bar. Phones get 58px (~82px
+   bar) — a 104px sticky header eats too much of a short screen. */
+.cmg-logo {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.cmg-logo img { width: auto; height: 58px; }
+@media (min-width: 600px) {
+  .cmg-logo img { height: 80px; }
+}
+
+.cmg-nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 1.4vw, 22px);
+  margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.cmg-nav-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-700);
+  white-space: nowrap;
+}
+.cmg-nav-link:hover { color: var(--green-600); }
+
+/* Phone header carries the lockup and the language toggle only. The section
+   links are noise at that width, and the CTA cannot fit beside the toggle —
+   its VI label ("Khám phá dịch vụ") wrapped to two lines and overflowed. The
+   hero repeats the same CTA one screen down, so nothing is lost. */
+.cmg-nav-links { display: none; gap: clamp(10px, 1.4vw, 22px); }
+.cmg-header .cmg-btn { display: none; }
+@media (min-width: 600px) {
+  .cmg-header .cmg-btn { display: inline-flex; }
+}
+/* 1040px, not the 900px the journey row uses: the VI labels are the long ones
+   ("Vì sao chọn Compass", "Đối tượng phục vụ") and below this the nav wrapped
+   to a second row, pushing the sticky header to 116px. EN alone would fit at
+   960px — one breakpoint for both keeps the two locales identical. (This was
+   1240px while the header still carried the mark plus a text wordmark; the
+   lockup image is ~170px narrower, so the links now fit far earlier.) */
+@media (min-width: 1040px) {
+  .cmg-nav-links { display: flex; align-items: center; }
+}
+
+.cmg-lang {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--gray-300);
+  border-radius: 999px;
+  overflow: hidden;
+  height: 34px;
+}
+.cmg-lang a {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--gray-600);
+}
+.cmg-lang a:hover { color: var(--green-700); }
+.cmg-lang a[aria-current="true"] { background: var(--green-500); color: #fff; }
+
+/* ---------- Hero ---------- */
+
+.cmg-hero { padding-block: clamp(48px, 7vw, 104px) clamp(56px, 7vw, 96px); }
+
+.cmg-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
+  gap: clamp(36px, 5vw, 72px);
+  align-items: center;
+}
+
+.cmg-h1 {
+  font-size: clamp(44px, 6.2vw, 82px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  margin: 0 0 28px;
+  /* pretty, not balance: the hero column is narrow enough that both headline
+     lines wrap in either language, and balance broke the VI line as
+     "Chăm sóc y / tế kết nối." — splitting "y tế". Greedy filling keeps the
+     phrase intact and reads the same in EN. */
+  text-wrap: pretty;
+}
+.cmg-h1 span { display: block; }
+.cmg-h1 .accent { color: var(--green-600); }
+
+.cmg-hero :where(p:not([class])) {
+  font-size: clamp(19px, 1.5vw, 22px);
+  line-height: 1.6;
+  max-width: 36em;
+  margin: 0 0 14px;
+}
+.cmg-hero p + p { margin-bottom: 36px; }
+
+.cmg-hero-media { position: relative; }
+.cmg-hero-media::before {
+  content: "";
+  position: absolute;
+  width: 74%;
+  height: 74%;
+  right: -6%;
+  top: -8%;
+  border-radius: 999px;
+  background: var(--green-100);
+  filter: blur(60px);
+  opacity: 0.85;
+}
+.cmg-hero-media img {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 28px;
+  box-shadow: var(--cmg-shadow-lg);
+}
+
+/* ---------- Ecosystem intro ---------- */
+
+.cmg-split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+  gap: clamp(32px, 5vw, 72px);
+  margin-bottom: clamp(44px, 5vw, 72px);
+}
+.cmg-split.centered { align-items: center; }
+.cmg-split p + p { margin-top: 12px; }
+
+.cmg-eco-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: clamp(20px, 2.5vw, 32px);
+}
+.cmg-eco-grid img {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 18px;
+  margin-bottom: 20px;
+  box-shadow: var(--cmg-shadow-sm);
+}
+.cmg-eco-grid h3 { font-size: 21px; font-weight: 700; margin: 0 0 8px; }
+.cmg-eco-grid p { font-size: 17px; }
+
+/* ---------- Services ---------- */
+
+.cmg-intro { max-width: 900px; margin-bottom: clamp(36px, 4vw, 56px); }
+
+.cmg-card-wide {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: var(--cmg-shadow-md);
+  margin-bottom: clamp(20px, 2.5vw, 28px);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+}
+.cmg-card-wide.flat { box-shadow: var(--cmg-shadow-sm); }
+.cmg-card-wide > img {
+  width: 100%;
+  height: 100%;
+  min-height: 340px;
+  object-fit: cover;
+}
+.cmg-card-wide-body { padding: clamp(28px, 3.5vw, 56px); }
+
+/* The 24/7 card puts copy first, image second — but only once the grid is
+   actually two columns, otherwise the image would fall below the text. */
+.cmg-card-wide.media-right > img { order: 2; }
+.cmg-card-wide.media-right > .cmg-card-wide-body { order: 1; }
+
+.cmg-service-name {
+  font-size: clamp(28px, 2.6vw, 38px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--green-700);
+  margin: 0 0 10px;
+}
+.cmg-service-name.sm { font-size: clamp(26px, 2.3vw, 34px); }
+
+.cmg-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.cmg-title-row .cmg-service-name { margin: 0; }
+
+.cmg-badge {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--orange-700);
+  background: var(--orange-50);
+  border: 1px solid var(--orange-200);
+  border-radius: 999px;
+  padding: 5px 12px;
+}
+
+.cmg-tagline {
+  font-size: clamp(19px, 1.5vw, 22px);
+  font-weight: 500;
+  color: var(--blue-500);
+  margin: 0 0 22px;
+  line-height: 1.35;
+}
+.cmg-tagline.sm { font-size: clamp(19px, 1.4vw, 21px); }
+
+.cmg-body p + p { margin-top: 12px; }
+.cmg-body { margin-bottom: 26px; }
+
+.cmg-list { display: grid; gap: 10px; margin-bottom: 26px; }
+.cmg-list.two-col {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 10px 24px;
+}
+.cmg-list li { display: flex; gap: 12px; align-items: flex-start; }
+.cmg-list li::before {
+  content: "";
+  flex: 0 0 8px;
+  height: 8px;
+  margin-top: 11px;
+  border-radius: 999px;
+  background: var(--green-500);
+}
+.cmg-list.blue li::before { background: var(--blue-500); }
+.cmg-list.orange li::before { background: var(--orange-500); }
+.cmg-list span { font-size: 17px; font-weight: 500; color: var(--ink-900); }
+
+.cmg-quote {
+  font-size: 19px;
+  font-style: italic;
+  color: var(--green-700);
+  margin: 0 0 28px;
+  padding-left: 18px;
+  border-left: 2px solid var(--green-200);
+}
+.cmg-quote.last { margin-bottom: 0; }
+.cmg-quote.blue { border-left-color: var(--blue-200); }
+.cmg-quote.orange { border-left-color: var(--orange-200); }
+
+.cmg-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  gap: clamp(20px, 2.5vw, 28px);
+}
+
+.cmg-card {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: var(--cmg-shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+.cmg-card > img { aspect-ratio: 16 / 10; width: 100%; object-fit: cover; }
+.cmg-card-body {
+  padding: clamp(24px, 2.5vw, 36px);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.cmg-card-body .cmg-tagline { font-size: 20px; margin-bottom: 18px; }
+.cmg-card-body .cmg-body p { font-size: 18px; }
+.cmg-card-body .cmg-body p + p { margin-top: 10px; }
+.cmg-card-body .cmg-body { margin-bottom: 22px; }
+.cmg-card-body .cmg-quote { font-size: 18px; padding-left: 16px; }
+.cmg-card-body .cmg-quote.push { margin: auto 0 0; }
+.cmg-card-body .cmg-btn { align-self: flex-start; margin-top: auto; }
+
+.cmg-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+.cmg-tags span {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--green-700);
+  background: var(--green-50);
+  border: 1px solid var(--green-100);
+  border-radius: 999px;
+  padding: 7px 14px;
+}
+
+/* ---------- How it connects ---------- */
+
+.cmg-journey-media {
+  aspect-ratio: 5 / 4;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 24px;
+  box-shadow: var(--cmg-shadow-md);
+}
+
+.cmg-journey {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+}
+@media (min-width: 900px) {
+  .cmg-journey {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(20px, 3vw, 40px);
+  }
+}
+
+.cmg-step-head { display: flex; align-items: center; margin-bottom: 22px; }
+.cmg-step-num {
+  display: flex;
+  flex: 0 0 70px;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid var(--green-300);
+  color: var(--green-700);
+  font-size: 20px;
+  font-weight: 800;
+}
+.cmg-step-num.blue { border-color: var(--blue-200); color: var(--blue-700); }
+.cmg-step-num.orange { border-color: var(--orange-200); color: var(--orange-700); }
+
+/* The rule linking one step to the next: only meaningful in the 4-up row. */
+.cmg-step-line { display: none; flex: 1; height: 2px; margin-left: 14px; background: var(--green-200); }
+.cmg-step-line.blue { background: var(--blue-200); }
+.cmg-step-line.orange { background: var(--orange-200); }
+@media (min-width: 900px) {
+  .cmg-step-line { display: block; }
+}
+
+.cmg-journey h3 { font-size: 21px; font-weight: 700; margin: 0 0 10px; }
+.cmg-journey p { font-size: 17px; }
+
+/* ---------- Why Compass ---------- */
+
+.cmg-why-grid {
+  display: grid;
+  gap: clamp(20px, 2.2vw, 26px);
+  margin-bottom: clamp(20px, 2.2vw, 26px);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+}
+.cmg-why-grid.trio {
+  margin-bottom: 0;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 232px), 1fr));
+}
+
+.cmg-why-card {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: 24px;
+  box-shadow: var(--cmg-shadow-sm);
+  padding: clamp(28px, 3vw, 44px);
+}
+.cmg-why-num {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--orange-700);
+  margin: 0 0 12px;
+}
+.cmg-why-kicker {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  margin: 0 0 10px;
+}
+.cmg-why-card h3 {
+  font-size: clamp(22px, 1.9vw, 26px);
+  font-weight: 700;
+  margin: 0 0 16px;
+  line-height: 1.2;
+}
+.cmg-why-card :where(p:not([class])) { font-size: 18px; }
+.cmg-why-card p + p { margin-top: 10px; }
+
+/* ---------- Who we serve ---------- */
+
+.cmg-who-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
+  gap: 1px;
+  background: var(--gray-200);
+  border: 1px solid var(--gray-200);
+  border-radius: 24px;
+  overflow: hidden;
+}
+.cmg-who-cell { background: #fff; padding: clamp(28px, 3vw, 44px); }
+.cmg-who-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background: var(--green-50);
+  border: 1px solid var(--green-100);
+  margin-bottom: 22px;
+  /* <Icon> strokes with currentColor. */
+  color: var(--green-600);
+}
+.cmg-who-cell h3 {
+  font-size: clamp(26px, 2.3vw, 32px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 10px;
+  line-height: 1.12;
+}
+.cmg-who-cell .cmg-tagline { font-size: 19px; margin-bottom: 16px; }
+.cmg-who-cell p { font-size: 18px; }
+.cmg-who-cell .cmg-body p + p { margin-top: 10px; }
+.cmg-who-cell .cmg-body { margin-bottom: 0; }
+
+/* ---------- Vision & mission ---------- */
+
+.cmg-vision {
+  background: var(--green-700);
+  color: #fff;
+  padding-block: clamp(64px, 8vw, 120px);
+  overflow: hidden;
+}
+.cmg-vision-inner { position: relative; }
+.cmg-vision-inner::before {
+  content: "";
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 999px;
+  background: var(--green-600);
+  filter: blur(80px);
+  opacity: 0.7;
+  right: -80px;
+  top: -160px;
+  pointer-events: none;
+}
+.cmg-vision-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  gap: clamp(36px, 5vw, 80px);
+}
+.cmg-vision .cmg-eyebrow { color: var(--green-200); }
+.cmg-vision .cmg-h2 { color: #fff; margin-bottom: 32px; }
+.cmg-vision-blocks { display: grid; gap: 28px; max-width: 34em; }
+.cmg-vision-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--green-200);
+  margin: 0 0 8px;
+}
+.cmg-vision-blocks > div > p:last-child {
+  font-size: clamp(19px, 1.4vw, 21px);
+  color: #fff;
+  opacity: 0.94;
+}
+.cmg-beliefs { display: flex; flex-direction: column; justify-content: center; }
+.cmg-beliefs p {
+  font-size: clamp(20px, 1.7vw, 25px);
+  font-weight: 300;
+  line-height: 1.4;
+  color: #fff;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  opacity: 0.92;
+}
+.cmg-beliefs p:first-child { font-weight: 500; opacity: 1; }
+.cmg-beliefs p:last-child {
+  font-weight: 500;
+  color: var(--green-200);
+  border-bottom: 0;
+  padding-bottom: 0;
+  opacity: 1;
+}
+
+/* ---------- Partners ---------- */
+
+.cmg-partner-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: clamp(16px, 2vw, 24px);
+}
+.cmg-partner-card {
+  background: var(--cream);
+  border: 1px solid var(--gray-200);
+  border-radius: 20px;
+  padding: clamp(24px, 2.5vw, 32px);
+  transition: box-shadow 220ms var(--cmg-ease), transform 220ms var(--cmg-ease);
+}
+.cmg-partner-card:hover { box-shadow: var(--cmg-shadow-md); transform: translateY(-2px); }
+.cmg-partner-card h3 { font-size: 20px; font-weight: 700; color: var(--green-700); margin: 0 0 10px; }
+.cmg-partner-card p { font-size: 17px; }
+
+/* ---------- Closing band ---------- */
+
+.cmg-final { padding-block: var(--cmg-section-y); }
+.cmg-final-inner {
+  position: relative;
+  max-width: 1280px;
+  margin: 0 auto;
+  border-radius: 32px;
+  overflow: hidden;
+  min-height: min(72vh, 620px);
+  display: flex;
+  align-items: flex-end;
+  background: linear-gradient(135deg, var(--green-700) 0%, var(--green-600) 55%, var(--blue-700) 100%);
+  padding: clamp(28px, 4vw, 64px);
+}
+.cmg-final h2 {
+  font-size: clamp(36px, 4.6vw, 64px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  color: #fff;
+  margin: 0 0 22px;
+}
+.cmg-final-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: clamp(24px, 3vw, 48px);
+  align-items: end;
+}
+.cmg-final-grid p {
+  font-size: clamp(19px, 1.4vw, 21px);
+  color: #fff;
+  opacity: 0.95;
+}
+.cmg-final-grid p + p { margin-top: 6px; }
+
+.cmg-btn-white {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 56px;
+  padding: 10px 28px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--green-700);
+  font-size: 17px;
+  font-weight: 700;
+  transition: transform 220ms var(--cmg-ease);
+}
+.cmg-btn-white:hover { transform: translateY(-1px); color: var(--green-700); }
+
+.cmg-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 56px;
+  padding: 10px 28px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  transition: background 220ms var(--cmg-ease);
+}
+.cmg-btn-outline:hover { background: rgba(255, 255, 255, 0.14); color: #fff; }
+
+/* ---------- Footer ---------- */
+
+.cmg-footer {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--gray-200);
+  padding: clamp(40px, 5vw, 64px) var(--cmg-pad);
+}
+.cmg-footer-grid {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: clamp(28px, 4vw, 56px);
+  align-items: start;
+}
+.cmg-footer img { width: 132px; height: auto; margin-bottom: 18px; }
+.cmg-footer :where(p:not([class])) { font-size: 16px; color: var(--gray-600); max-width: 24em; }
+.cmg-footer-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  margin: 0 0 14px;
+}
+.cmg-footer-links { display: grid; gap: 10px; }
+.cmg-footer-links a { font-size: 16px; color: var(--ink-700); }
+.cmg-footer-links a:hover { color: var(--green-600); }
+.cmg-footer-contact { font-size: 16px; color: var(--ink-700); margin-bottom: 8px; }
+.cmg-legal {
+  max-width: 1280px;
+  margin: clamp(32px, 4vw, 48px) auto 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--gray-200);
+  font-size: 14px;
+  color: var(--gray-500);
+}

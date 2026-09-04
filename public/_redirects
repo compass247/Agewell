@@ -17,3 +17,10 @@
 # static build, so next-intl cannot do this redirect on Pages.
 /contact-us     /vi/contact-us/    302
 /contact-us/    /vi/contact-us/    302
+
+# Compass Medical Group landing page. /cmg is the bare path that gets typed,
+# printed and shared, so it has to land on the page. Same reason as above:
+# middleware is stashed out of the static build, so next-intl cannot do this
+# redirect on Pages. Both spellings, with and without the trailing slash.
+/cmg     /vi/cmg/    302
+/cmg/    /vi/cmg/    302
