@@ -449,7 +449,11 @@ function Footer({ C }) {
         </div>
         <div>
           <p className="cmg-footer-label">{C.footer.contactLabel}</p>
-          <p className="cmg-footer-contact">{C.contact.email}</p>
+          {/* Gated on emailLive — the mailbox does not exist yet, so showing
+              the address would just collect mail nobody reads. */}
+          {C.contact.emailLive ? (
+            <p className="cmg-footer-contact">{C.contact.email}</p>
+          ) : null}
           <p>{C.footer.entity}</p>
         </div>
       </div>
