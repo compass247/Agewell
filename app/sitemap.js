@@ -21,6 +21,7 @@ const LANGS = ["vi", "en"];
 const STATIC_PATHS = [
   "",
   "/blog",
+  "/cmg",
   "/team",
   "/services/ccm",
   "/services/mtm",
