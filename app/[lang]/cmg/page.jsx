@@ -373,11 +373,13 @@ function Partners({ C }) {
             {C.partners.p.map((t) => (
               <p key={t}>{t}</p>
             ))}
-            {/* Partnership enquiries land in the AgeWell lead form — the only
-                intake this ecosystem actually has today. */}
-            <Link className="cmg-btn" href="/contact-us" style={{ marginTop: 28 }}>
+            {/* Scrolls back to the hero, as in the design export (href="#top").
+                It briefly pointed at /[lang]/contact-us instead; that sent people
+                off to the AgeWell lead form, which is a different brand's intake
+                and not what this page's CTA promises. */}
+            <a className="cmg-btn" href="#top" style={{ marginTop: 28 }}>
               {C.partners.cta}
-            </Link>
+            </a>
           </div>
         </div>
         <div className="cmg-partner-grid">
