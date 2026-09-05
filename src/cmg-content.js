@@ -29,7 +29,11 @@ const MEDIA = {
 export const CMG_CONTACT = {
   tel: "8559999911",
   phone: "855-999-9911",
+  // Hộp thư này CHƯA được tạo, nên footer đang ẩn địa chỉ đi — hiện lên chỉ
+  // khiến người dùng gửi thư vào hư không. Đổi emailLive thành true là hiện
+  // lại, không phải sửa gì thêm.
   email: "info@compassmedicalgroup.com",
+  emailLive: false,
 };
 
 export const CMG_CONTENT = {
